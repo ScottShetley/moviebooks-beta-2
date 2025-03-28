@@ -1,0 +1,44 @@
+/* client/src/components/Notification/NotificationList/NotificationList.module.css */
+.listContainer {
+    max-width: 800px; /* Limit width */
+    margin: 0 auto; /* Center */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header h2 {
+   margin: 0; /* Remove default heading margin */
+}
+
+.markAllButton {
+   font-size: var(--font-size-sm);
+   color: var(--color-primary);
+   background: none;
+   border: none;
+   cursor: pointer;
+   padding: var(--space-xs);
+   font-weight: 600;
+   transition: var(--transition-fast);
+}
+ .markAllButton:hover {
+     text-decoration: underline;
+     color: var(--color-accent);
+ }
+ .markAllButton:disabled {
+     color: var(--color-text-light);
+     cursor: not-allowed;
+     text-decoration: none;
+ }
+
+.emptyMessage {
+    text-align: center;
+    color: var(--color-text-light);
+    padding: var(--space-xl) 0;
+}

@@ -1,0 +1,102 @@
+/* client/src/components/Layout/Header/Header.module.css */
+.header {
+    background-color: var(--color-secondary);
+    padding: var(--space-sm) 0; /* Reduced padding for header */
+    box-shadow: var(--shadow-md);
+    position: sticky; /* Make header sticky */
+    top: 0;
+    z-index: var(--z-index-header);
+    width: 100%;
+  }
+  
+  .navContainer {
+    /* Use container utility class for max-width and padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .logo a {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-text-on-secondary);
+    text-decoration: none;
+    transition: var(--transition-fast);
+  }
+  .logo a:hover,
+  .logo a:focus {
+     color: var(--color-accent);
+     text-decoration: none;
+  }
+  
+  .navLinks {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg); /* Spacing between nav items */
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navLinks a,
+  .navLinks button { /* Style buttons (like logout) similarly */
+    color: var(--color-text-on-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--font-size-md);
+    transition: var(--transition-fast);
+    position: relative; /* For notification badge positioning */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-xs); /* Add some padding for easier clicking */
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .navLinks a:hover,
+  .navLinks a:focus,
+  .navLinks button:hover,
+  .navLinks button:focus {
+    color: var(--color-accent);
+    text-decoration: none; /* Remove underline */
+    background-color: rgba(255, 255, 255, 0.1); /* Subtle background on hover */
+  }
+  
+  /* Style for the active link (using NavLink) */
+  .navLinks a.active {
+    color: var(--color-accent);
+    font-weight: 700; /* Make active link bold */
+  }
+  
+  /* Basic responsive */
+  @media (max-width: 768px) {
+      .navLinks {
+          gap: var(--space-md); /* Reduce gap on smaller screens */
+      }
+       .navLinks a,
+       .navLinks button {
+          font-size: var(--font-size-sm);
+       }
+  }
+  
+   /* Notification Badge Styles */
+  .notificationLink {
+      position: relative;
+  }
+  
+  .badge {
+      position: absolute;
+      top: 0px; /* Adjust position as needed */
+      right: 0px; /* Adjust position as needed */
+      background-color: var(--color-error); /* Or use primary/accent */
+      color: white;
+      border-radius: 50%;
+      padding: 0.1em 0.4em; /* Small padding */
+      font-size: 0.7rem; /* Small font size */
+      font-weight: bold;
+      line-height: 1;
+      min-width: 18px; /* Ensure circle shape for single digit */
+      text-align: center;
+      border: 1px solid var(--color-secondary); /* Match header background */
+  }

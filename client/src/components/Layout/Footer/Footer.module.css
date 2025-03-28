@@ -1,0 +1,24 @@
+/* client/src/components/Layout/Footer/Footer.module.css */
+.footer {
+    flex-shrink: 0; /* Prevent footer from shrinking - needed for sticky footer */
+    background-color: var(--color-secondary);
+    color: var(--color-text-on-secondary);
+    padding: var(--space-md) 0; /* Vertical padding */
+    margin-top: var(--space-xl); /* Space above the footer */
+    font-size: var(--font-size-sm);
+    text-align: center;
+  }
+  
+  .footer p {
+      margin-bottom: 0; /* Reset paragraph margin inside footer */
+  }
+  
+  .footer a {
+      color: var(--color-accent); /* Use accent color for links in footer */
+      text-decoration: underline;
+  }
+  
+  .footer a:hover,
+  .footer a:focus {
+      color: var(--color-text-on-secondary); /* Lighten on hover */
+  }

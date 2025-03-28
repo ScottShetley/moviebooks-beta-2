@@ -1,0 +1,72 @@
+/* client/src/components/Connection/CreateConnectionForm/CreateConnectionForm.module.css */
+.form {
+    max-width: 600px; /* Limit form width */
+    margin: 0 auto; /* Center the form */
+    padding: var(--space-lg);
+    background-color: var(--color-card);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-md);
+  }
+
+  .form h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: var(--space-lg);
+  }
+
+  /* --- ADDED: Style for grouping label/input/preview --- */
+  .fileInputGroup {
+      margin-bottom: var(--space-md); /* Add space between each file group */
+  }
+  /* --- END ADDITION --- */
+
+
+  .fileInputLabel {
+      display: block;
+      margin-bottom: var(--space-xs);
+      font-weight: 600;
+      color: var(--color-text-light);
+      font-size: var(--font-size-sm);
+  }
+
+  .fileInput {
+      display: block; /* Make file input block level */
+      /* Removed margin-bottom here, moved to fileInputGroup */
+      font-size: var(--font-size-sm);
+      color: var(--color-text-light);
+  }
+  /* Style the file input button itself (browser-specific) */
+  .fileInput::file-selector-button {
+      margin-right: var(--space-sm);
+      padding: var(--space-xs) var(--space-sm);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-sm);
+      background-color: var(--color-background);
+      color: var(--color-text);
+      cursor: pointer;
+      transition: var(--transition-fast);
+  }
+   .fileInput::file-selector-button:hover {
+       background-color: var(--color-primary);
+       color: var(--color-text-on-primary);
+       border-color: var(--color-primary);
+   }
+
+  .preview {
+      margin-top: var(--space-sm);
+      /* Removed margin-bottom here, moved to fileInputGroup */
+      max-width: 200px; /* Limit preview size */
+      border: 1px solid var(--color-border);
+      padding: var(--space-xxs);
+      background-color: var(--color-background); /* Add slight background to preview area */
+  }
+   .preview img {
+       display: block;
+       max-width: 100%;
+       height: auto;
+   }
+
+
+  .submitButtonContainer {
+    margin-top: var(--space-lg);
+  }

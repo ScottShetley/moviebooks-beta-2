@@ -1,0 +1,19 @@
+/* client/src/components/Common/ErrorMessage/ErrorMessage.module.css */
+.errorMessage {
+    /* Use error colors defined in tokens.css */
+    color: var(--color-error);
+    /* Optional: Add a light background/border for more emphasis */
+    background-color: rgba(var(--color-error-rgb, 211, 47, 47), 0.1); /* Light error background */
+    border: 1px solid rgba(var(--color-error-rgb, 211, 47, 47), 0.3);
+    border-radius: var(--border-radius-sm);
+    padding: var(--space-sm); /* Padding inside the message box */
+    margin: var(--space-md) 0; /* Default margin above/below */
+    font-size: var(--font-size-sm); /* Slightly smaller font size */
+    text-align: left; /* Default text alignment */
+    word-wrap: break-word; /* Ensure long errors wrap */
+  }
+  
+  /* Optional: Style for centering the text if needed */
+  .textCenter {
+      text-align: center;
+  }

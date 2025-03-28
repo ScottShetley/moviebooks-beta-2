@@ -1,0 +1,71 @@
+/* client/src/components/Common/Input/Input.module.css */
+.inputGroup {
+    margin-bottom: var(--space-md); /* Space below the input group */
+    width: 100%; /* Inputs usually take full width of their container */
+    position: relative; /* For potential icon positioning later */
+  }
+  
+  .label {
+    display: block; /* Label on its own line */
+    margin-bottom: var(--space-xs);
+    font-weight: 600;
+    color: var(--color-text-light); /* Slightly lighter label text */
+    font-size: var(--font-size-sm);
+    cursor: pointer; /* Indicate it's clickable */
+  }
+  
+  /* Base styles for both input and textarea */
+  .input {
+    width: 100%;
+    padding: var(--space-xs) var(--space-sm);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    background-color: var(--color-card); /* Usually white */
+    color: var(--color-text);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    line-height: 1.5; /* Ensure consistent line height */
+  }
+  
+  /* Focus state */
+  .input:focus {
+    outline: none; /* Remove default browser outline */
+    border-color: var(--color-primary); /* Highlight border with primary color */
+    /* Add a subtle box-shadow using RGB version of primary color */
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 139, 30, 63), 0.2);
+  }
+  
+  /* Disabled state */
+   .input:disabled {
+      background-color: var(--color-background); /* Slightly greyed out background */
+      cursor: not-allowed;
+      opacity: 0.7;
+   }
+  
+  
+  /* Error state */
+  .input.error {
+      border-color: var(--color-error); /* Use error color for border */
+  }
+   /* Error focus state */
+   .input.error:focus {
+       border-color: var(--color-error); /* Keep border red on focus */
+       /* Use error color for focus shadow */
+       box-shadow: 0 0 0 3px rgba(var(--color-error-rgb, 211, 47, 47), 0.2);
+   }
+  
+  /* Styles specifically for textarea */
+  .textarea {
+      min-height: 100px; /* Give textarea some default height */
+      resize: vertical; /* Allow users to resize vertically only */
+      font-family: inherit; /* Ensure font consistency */
+  }
+  
+  /* Error message associated with the input */
+  .errorMessage {
+      color: var(--color-error);
+      font-size: var(--font-size-sm);
+      margin-top: var(--space-xxs);
+      display: block; /* Ensure it takes space */
+      min-height: calc(var(--font-size-sm) * var(--line-height-body)); /* Reserve space even when empty? Optional */
+  }

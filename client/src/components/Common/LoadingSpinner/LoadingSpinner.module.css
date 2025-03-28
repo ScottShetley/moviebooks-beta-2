@@ -1,0 +1,33 @@
+/* client/src/components/Common/LoadingSpinner/LoadingSpinner.module.css */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1); /* Light grey border */
+    border-left-color: var(--color-primary); /* Spinner color using primary */
+    border-radius: 50%;
+    width: 36px; /* Size of the spinner */
+    height: 36px;
+    animation: spin 1s linear infinite; /* Animation properties */
+    margin: var(--space-md) auto; /* Center horizontally if needed */
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Optional: Small variant */
+  .small {
+      width: 20px;
+      height: 20px;
+      border-width: 3px;
+  }
+  
+   /* Optional: Inline variant */
+  .inline {
+      display: inline-block;
+      margin: 0 var(--space-xs);
+      vertical-align: middle; /* Align with text */
+  }

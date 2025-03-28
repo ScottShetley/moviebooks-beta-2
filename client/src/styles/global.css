@@ -1,0 +1,143 @@
+/* client/src/styles/global.css */
+/* Import tokens first so they are available */
+@import './tokens.css';
+/* Optional: Import web fonts if needed (make sure they are linked in public/index.html or loaded via JS) */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@400;600;700&display=swap');
+
+/* Reset and Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%; /* Base font size, typically 16px */
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh; /* Ensure body takes at least full viewport height */
+  display: flex; /* Use flexbox for sticky footer */
+  flex-direction: column;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: var(--line-height-heading);
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-sm);
+  color: var(--color-secondary); /* Darker headings */
+  font-weight: 700;
+}
+
+h1 { font-size: var(--font-size-xxl); margin-top: 0;} /* Often first heading needs no top margin */
+h2 { font-size: var(--font-size-xl); }
+h3 { font-size: var(--font-size-lg); }
+h4 { font-size: var(--font-size-md); font-weight: 600; }
+
+p {
+    margin-bottom: var(--space-md);
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+a:hover, a:focus {
+  color: var(--color-accent);
+  text-decoration: underline;
+  outline: none; /* Improve focus visibility later if needed */
+}
+
+/* Basic Form Styles (can be overridden by components) */
+input,
+textarea,
+button,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+img, svg {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Remove extra space below images */
+}
+
+/* Utility Classes (Optional, but helpful) */
+.container {
+  width: 100%;
+  max-width: 1200px; /* Adjust max width as needed */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
+}
+
+.text-center { text-align: center; }
+.error-message { color: var(--color-error); font-size: var(--font-size-sm); margin-top: var(--space-xxs);}
+.success-message { color: var(--color-success); font-size: var(--font-size-sm); margin-top: var(--space-xxs);}
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+
+/* Basic Responsive */
+@media (max-width: 768px) {
+  h1 { font-size: var(--font-size-xl); }
+  h2 { font-size: var(--font-size-lg); }
+  .container {
+      padding-left: var(--space-sm);
+      padding-right: var(--space-sm);
+  }
+}
+
+/* Root layout for sticky footer */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Main content area */
+main {
+  flex: 1 0 auto; /* Allow main to grow and shrink, but not shrink below content size */
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-lg);
+}
+
+/* Footer specific styling */
+/* Assuming a Footer component exists, handled via Layout/Footer.module.css is better */
+/* footer { */
+    /* flex-shrink: 0; */ /* Prevent footer from shrinking */
+/* } */
