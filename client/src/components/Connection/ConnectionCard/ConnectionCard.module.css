@@ -50,7 +50,9 @@
 .screenshot {
     display: block;
     max-width: 100%;
-    height: auto;
+    height: auto; /* Keep height auto */
+    aspect-ratio: 16 / 9; /* Optional: Define aspect ratio for consistency */
+    object-fit: cover; /* Use cover if aspect-ratio is set */
     border-radius: var(--border-radius-sm);
     margin-top: var(--space-sm);
     margin-bottom: var(--space-md);
@@ -58,22 +60,22 @@
     background-color: var(--color-background);
 }
 .noScreenshotPlaceholder {
-    /* No styles needed for now */
+    /* Could add a min-height/background if desired */
 }
 
 .context {
     margin-top: var(--space-sm);
-    margin-bottom: var(--space-md); /* Keep margin bottom */
+    margin-bottom: var(--space-md);
     line-height: 1.6;
     white-space: pre-wrap;
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-base); /* Assuming --font-size-base exists, otherwise use md */
     color: var(--color-text);
 }
 
 /* --- Styles for Additional Images --- */
 .additionalImagesContainer {
     display: flex;
-    justify-content: flex-start;
+    /* justify-content: flex-start; */ /* Default is flex-start */
     gap: var(--space-sm);
     margin-top: var(--space-sm);
     margin-bottom: var(--space-md);
@@ -82,17 +84,30 @@
 
 .additionalImage {
     display: block;
-    /* --- MODIFIED: Increased height --- */
-    height: 200px; /* Changed from 100px */
-    /* --- END MODIFICATION --- */
-    width: auto;
-    max-width: 45%; /* Still limiting width to help fit side-by-side */
+    /* --- MODIFIED --- */
+    height: auto; /* Let height adjust based on width */
+    width: calc(50% - (var(--space-sm) / 2)); /* Aim for 2 columns with gap accounted for */
+    max-width: 200px; /* Add a max-width to prevent them getting huge on wide screens */
+    aspect-ratio: 2 / 3; /* Common poster/cover ratio, adjust if needed */
     object-fit: cover;
+    /* --- END MODIFICATION --- */
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--color-border);
     background-color: var(--color-background);
 }
-/* --- END Styles for Additional Images --- */
+
+/* --- Media Query for when images likely wrap --- */
+/* Adjust breakpoint as needed based on testing */
+@media (max-width: 480px) {
+    .additionalImage {
+         /* Take up slightly less than half width on very small screens when wrapped */
+         /* Could also use 100% if preferred */
+         width: calc(50% - (var(--space-sm) / 2)); /* Keep 2-column look even when wrapped? */
+         /* Or uncomment below for full width when wrapped */
+         /* width: 100%; */
+         /* max-width: 150px; */ /* Adjust max-width for smaller screens if needed */
+    }
+}
 
 
 .actions {
@@ -144,7 +159,7 @@
 }
 
 .deleteButton {
-    margin-left: auto;
+    margin-left: auto; /* Keep pushing to right by default */
     color: var(--color-text-light);
 }
 .deleteButton:hover:not(:disabled) {
@@ -158,4 +173,22 @@
     margin-left: var(--space-sm);
     flex-basis: 100%;
     text-align: right;
+}
+
+/* --- Optional: Adjust delete button position when wrapped --- */
+@media (max-width: 480px) { /* Example breakpoint, adjust as needed */
+    .actions {
+        /* You might want less gap on small screens */
+        /* gap: var(--space-sm); */
+    }
+    .deleteButton {
+        /* Remove margin-left:auto to align left when wrapped */
+        /* margin-left: 0; */
+
+        /* Or make it full width on its own line? */
+         /* margin-left: 0; */
+         /* flex-basis: 100%; */
+         /* margin-top: var(--space-sm); */
+         /* text-align: right; */
+    }
 }
