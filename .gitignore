@@ -1,0 +1,35 @@
+# General
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies (Covers root, client, and server)
+/node_modules/
+/client/node_modules/
+/server/node_modules/
+
+# Build Output / Artifacts
+/build/          # CRA default build output folder (often in client)
+/client/build/   # Explicit path for client build
+# Add /server/dist/ or similar if your server has a build step
+
+# Environment Variables - CRITICAL
+.env
+.env.*
+!/.env.example  # Make sure example files are NOT ignored
+!/.env.production
+!/.env.development
+
+# Specific Environment Files often used by CRA (client-side)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Specific path for the server's environment file - MOST IMPORTANT for you
+server/.env
+
+# Uploaded Files (Should not be in version control)
+/server/uploads/
