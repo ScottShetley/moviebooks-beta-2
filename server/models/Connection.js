@@ -23,13 +23,22 @@ const connectionSchema = mongoose.Schema(
       trim: true,
     },
     // --- UPDATED IMAGE FIELDS ---
-    moviePosterUrl: { // Optional path/URL to the movie poster image
+    moviePosterUrl: { // Cloudinary URL for the movie poster image
       type: String,
     },
-    bookCoverUrl: {   // Optional path/URL to the book cover image
+    moviePosterPublicId: { // Cloudinary public_id for deletion
       type: String,
     },
-    screenshotUrl: {  // Optional path/URL to the screenshot image
+    bookCoverUrl: {   // Cloudinary URL for the book cover image
+      type: String,
+    },
+    bookCoverPublicId: { // Cloudinary public_id for deletion
+      type: String,
+    },
+    screenshotUrl: {  // Cloudinary URL for the screenshot image
+      type: String,
+    },
+    screenshotPublicId: { // Cloudinary public_id for deletion
       type: String,
     },
     // --- END UPDATED IMAGE FIELDS ---

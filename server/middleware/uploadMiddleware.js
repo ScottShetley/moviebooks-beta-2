@@ -1,125 +1,79 @@
 // server/middleware/uploadMiddleware.js
 const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinary'); // Import configured instance
 const path = require('path');
-const fs = require('fs');
+// const fs = require('fs'); // No longer needed
 
-// Define the destination directory for uploads
-const uploadDir = path.join(__dirname, '../uploads'); // Go up one level from middleware, then into uploads
+// --- Removed local directory creation logic ---
 
-// Ensure the 'uploads' directory exists, create it if it doesn't
-if (!fs.existsSync(uploadDir)) {
-  try {
-    fs.mkdirSync(uploadDir);
-    console.log(`Created uploads directory at: ${uploadDir}`);
-  } catch (err) {
-    console.error(`Error creating uploads directory: ${err}`);
-    process.exit(1);
-  }
-}
+// --- Cloudinary Storage Configuration ---
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: (req, file) => {
+    // Determine folder based on environment variable or default
+    const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'moviebooks_dev';
+    // Generate a unique public ID (filename in Cloudinary)
+    // Example: moviebooks_dev/moviePoster-1678886400000-originalnameWithoutExt
+    const uniqueSuffix = Date.now();
+    const originalNameWithoutExt = path.parse(file.originalname).name;
+    // Sanitize original name slightly (replace spaces, etc.) - optional but good practice
+    const sanitizedOriginalName = originalNameWithoutExt.replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = `${file.fieldname}-${uniqueSuffix}-${sanitizedOriginalName}`;
 
-// --- Multer Disk Storage Configuration ---
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Generate a unique filename: fieldname-timestamp.extension
-    const uniqueSuffix = Date.now() + path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix);
+    console.log(`[Cloudinary Storage] Uploading ${file.originalname} as ${folder}/${filename}`);
+
+    return {
+      folder: folder,
+      public_id: filename, // Use generated filename as public_id
+      allowed_formats: ['jpg', 'jpeg', 'png', 'gif'], // Specify allowed formats directly here
+      // Optional: Add transformations during upload
+      // transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+    };
   },
 });
 
-// --- File Filter Function ---
+
+// --- File Filter Function (Kept your existing logic) ---
 function checkFileType(file, cb) {
   const filetypes = /jpeg|jpg|png|gif/;
+  // Check extension
   const extname = filetypes.test(
     path.extname(file.originalname).toLowerCase()
   );
+  // Check mimetype
   const mimetype = filetypes.test(file.mimetype);
 
   if (mimetype && extname) {
+    console.log(`[File Filter] Accepting file: ${file.originalname} (Type: ${file.mimetype})`);
     return cb(null, true); // Accept file
   } else {
+    console.log(`[File Filter] Rejecting file: ${file.originalname} (Type: ${file.mimetype})`);
     // Reject file with a specific error message
-    cb(new Error('Error: Images Only! (jpeg, jpg, png, gif)'));
+    cb(new Error('Error: Images Only! (jpeg, jpg, png, gif)'), false); // Pass false to reject
   }
 }
 
-// --- Initialize Multer ---
+// --- Initialize Multer with Cloudinary Storage ---
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit per file
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit per file (kept your limit)
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
-  // --- UPDATED: Use .fields() to accept specific named files ---
-}).fields([
+});
+
+// --- Middleware Instance for Specific Fields ---
+// This directly uses the upload instance configured above
+const uploadConnectionImages = upload.fields([
   { name: 'moviePoster', maxCount: 1 },
   { name: 'bookCover', maxCount: 1 },
   { name: 'screenshot', maxCount: 1 },
 ]);
-// --- END UPDATE ---
 
-// --- Middleware Function to Use in Routes ---
-const handleUpload = (req, res, next) => {
-  console.log(
-    '[Upload Middleware] Request received for path:',
-    req.originalUrl
-  );
-  console.log(
-    '[Upload Middleware] Content-Type Header:',
-    req.headers['content-type']
-  );
+// --- Removed the handleUpload wrapper function ---
+// Error handling will now primarily be managed by your global error handler
+// or specific checks within the controller if needed. Multer errors call next(err).
 
-  upload(req, res, function (err) { // Call the configured Multer middleware
-    console.log('[Upload Middleware] Multer processing complete.');
-
-    if (err instanceof multer.MulterError) {
-      console.error(
-        '[Upload Middleware] Multer Error Encountered:',
-        err.code,
-        '-',
-        err.message
-      );
-      let message = 'File upload error';
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        message = 'File is too large. Maximum size is 5MB per file.';
-      } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-        // This can happen if the frontend sends a field name not defined in .fields()
-         message = `Unexpected file field received: ${err.field}. Please use 'moviePoster', 'bookCover', or 'screenshot'.`;
-      }
-      return res.status(400).json({ message: message });
-    } else if (err) {
-      // Handle custom filter errors or other unexpected issues
-      console.error(
-        '[Upload Middleware] File Filter or Other Error:',
-        err.message
-      );
-      return res.status(400).json({ message: err.message }); // e.g., 'Error: Images Only!'
-    } else {
-      // --- UPDATED: Log uploaded files information ---
-      console.log('[Upload Middleware] No upload errors during processing.');
-      if (req.files && Object.keys(req.files).length > 0) {
-        console.log('[Upload Middleware] req.files is DEFINED. Files uploaded:');
-        // Log details for each uploaded file type
-        Object.keys(req.files).forEach(fieldName => {
-             if (req.files[fieldName] && req.files[fieldName][0]) {
-                const file = req.files[fieldName][0];
-                console.log(`  - ${fieldName}: ${file.filename} (Size: ${file.size})`);
-             }
-        });
-      } else {
-        console.log(
-          '[Upload Middleware] req.files is UNDEFINED or EMPTY. (No files uploaded or issue attaching them)'
-        );
-      }
-      // --- END UPDATE ---
-
-      // Proceed to the next middleware (createConnection controller)
-      console.log('[Upload Middleware] Calling next().');
-      next();
-    }
-  });
-};
-
-module.exports = handleUpload; // Export the wrapper middleware
+// --- Export the configured middleware instance directly ---
+module.exports = uploadConnectionImages;

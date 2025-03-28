@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+// --- Keep imports, but we won't use getStaticFileUrl for Cloudinary URLs ---
 import { getStaticFileUrl, deleteConnection } from '../../../services/api';
 import api from '../../../services/api';
 import LoadingSpinner from '../../Common/LoadingSpinner/LoadingSpinner';
@@ -24,10 +25,12 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
   const isFavoritedByCurrentUser = user && connection.favorites?.includes(user._id);
   const isOwner = user && user._id === connection.userRef._id;
 
-  // --- MODIFIED: Get URLs for all three images ---
-  const screenshotImageUrl = connection.screenshotUrl ? getStaticFileUrl(connection.screenshotUrl) : null;
-  const moviePosterImageUrl = connection.moviePosterUrl ? getStaticFileUrl(connection.moviePosterUrl) : null;
-  const bookCoverImageUrl = connection.bookCoverUrl ? getStaticFileUrl(connection.bookCoverUrl) : null;
+  // --- MODIFIED: Use Cloudinary URLs directly. No need for getStaticFileUrl ---
+  // const screenshotImageUrl = connection.screenshotUrl ? getStaticFileUrl(connection.screenshotUrl) : null; // OLD WAY
+  // const moviePosterImageUrl = connection.moviePosterUrl ? getStaticFileUrl(connection.moviePosterUrl) : null; // OLD WAY
+  // const bookCoverImageUrl = connection.bookCoverUrl ? getStaticFileUrl(connection.bookCoverUrl) : null; // OLD WAY
+
+  // We can use the URLs directly in the src attribute below, no intermediate variables needed unless preferred.
   // --- END MODIFICATION ---
 
   // --- Handlers (like, favorite, delete - remain unchanged) ---
@@ -80,8 +83,9 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     } catch (err) {
       console.error("Delete connection error:", err);
       setLocalError("Failed to delete connection.");
-      setIsDeleting(false);
+      setIsDeleting(false); // Reset deleting state on error
     }
+    // No finally block needed here as deletion removes the component
   };
   // --- End Handlers ---
 
@@ -104,16 +108,16 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
         {new Date(connection.createdAt).toLocaleDateString()}
       </p>
 
-      {/* Screenshot Image (Main Image) */}
-      {screenshotImageUrl ? (
+      {/* --- MODIFIED: Use connection.screenshotUrl directly in src --- */}
+      {connection.screenshotUrl ? (
           <img
-              src={screenshotImageUrl}
+              src={connection.screenshotUrl} // <-- USE DIRECTLY
               alt={`Scene from ${connection.movieRef.title} featuring book ${connection.bookRef.title}`}
               className={styles.screenshot}
               loading="lazy"
           />
       ) : (
-           <div className={styles.noScreenshotPlaceholder}></div>
+           <div className={styles.noScreenshotPlaceholder}></div> // Placeholder if no image
       )}
 
       {/* Context Text */}
@@ -121,20 +125,20 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
         <p className={styles.context}>{connection.context}</p>
       )}
 
-      {/* --- NEW: Section for Movie Poster and Book Cover --- */}
-      {(moviePosterImageUrl || bookCoverImageUrl) && ( // Only render container if at least one exists
+      {/* --- MODIFIED: Use connection.moviePosterUrl and connection.bookCoverUrl directly in src --- */}
+      {(connection.moviePosterUrl || connection.bookCoverUrl) && (
         <div className={styles.additionalImagesContainer}>
-          {moviePosterImageUrl && (
+          {connection.moviePosterUrl && (
             <img
-              src={moviePosterImageUrl}
+              src={connection.moviePosterUrl} // <-- USE DIRECTLY
               alt={`Movie Poster for ${connection.movieRef.title}`}
               className={styles.additionalImage}
               loading="lazy"
             />
           )}
-          {bookCoverImageUrl && (
+          {connection.bookCoverUrl && (
             <img
-              src={bookCoverImageUrl}
+              src={connection.bookCoverUrl} // <-- USE DIRECTLY
               alt={`Book Cover for ${connection.bookRef.title}`}
               className={styles.additionalImage}
               loading="lazy"
@@ -142,7 +146,7 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
           )}
         </div>
       )}
-      {/* --- END NEW SECTION --- */}
+      {/* --- END MODIFICATION --- */}
 
 
       {/* Action Buttons Footer */}

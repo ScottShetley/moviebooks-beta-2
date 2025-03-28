@@ -5,10 +5,11 @@ const {
     getConnections,
     likeConnection,
     favoriteConnection,
-    deleteConnection // <-- ADDED import
+    deleteConnection
 } = require('../controllers/connectionController.js');
 const { protect } = require('../middleware/authMiddleware.js'); // Middleware to protect routes
-const handleUpload = require('../middleware/uploadMiddleware.js'); // Middleware to handle file uploads
+// --- UPDATED: Import the new middleware instance ---
+const uploadConnectionImages = require('../middleware/uploadMiddleware.js');
 
 const router = express.Router();
 
@@ -18,10 +19,10 @@ const router = express.Router();
 // POST /api/connections: Create a new connection (Private, requires login, handles upload)
 router.route('/')
     .get(getConnections)
-    .post(protect, handleUpload, createConnection); // Apply protect and upload middleware only to POST
+    // --- UPDATED: Use the new middleware instance ---
+    .post(protect, uploadConnectionImages, createConnection);
 
 // --- Routes for '/api/connections/:id' ---
-// Note: We don't have GET /api/connections/:id for a single connection detail page in BETA, but could add later.
 
 // POST /api/connections/:id/like: Like/Unlike a connection (Private)
 router.route('/:id/like').post(protect, likeConnection);
@@ -30,7 +31,6 @@ router.route('/:id/like').post(protect, likeConnection);
 router.route('/:id/favorite').post(protect, favoriteConnection);
 
 // DELETE /api/connections/:id: Delete a connection (Private, Owner only)
-// This single line defines the route and applies middleware + controller
-router.route('/:id').delete(protect, deleteConnection); // <-- ADDED ROUTE DEFINITION
+router.route('/:id').delete(protect, deleteConnection);
 
 module.exports = router;
