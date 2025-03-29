@@ -1,61 +1,59 @@
 // client/src/components/Auth/SignupForm.js
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Input from '../Common/Input/Input';
 import Button from '../Common/Button/Button';
 import ErrorMessage from '../Common/ErrorMessage/ErrorMessage';
 import LoadingSpinner from '../Common/LoadingSpinner/LoadingSpinner';
-
-// Optional: Define common styles for auth forms if needed
-// import styles from './AuthForm.module.css';
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import styles from './AuthForm.module.css'; // Import the CSS module
 
 const SignupForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [localError, setLocalError] = useState(''); // For client-side validation errors (e.g., password mismatch)
-  const { signup, loading, error: authError, clearError } = useAuth(); // Rename context error to avoid clash
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [localError, setLocalError] = useState('');
+  const { signup, loading, error: authError, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    clearError(); // Clear errors from previous attempts (from context)
-    setLocalError(''); // Clear local errors from previous attempts
+    clearError();
+    setLocalError('');
 
-    // --- Client-side validation ---
     if (password !== confirmPassword) {
       setLocalError('Passwords do not match.');
-      return; // Stop submission
+      return;
     }
     if (password.length < 6) {
         setLocalError('Password must be at least 6 characters long.');
-        return; // Stop submission
+        return;
     }
-    // Add more client-side validation here if needed (e.g., email format)
-    // Although the backend and Input type='email' provide some validation
 
-    // Call the signup function from AuthContext
     const success = await signup(email, password);
 
     if (success) {
-      // Redirect after successful signup
-       const from = location.state?.from?.pathname || "/"; // Default to homepage
+      const from = location.state?.from?.pathname || "/";
       console.log(`Signup successful, navigating to: ${from}`);
       navigate(from, { replace: true });
     }
-    // If signup fails on the backend, the authError state will be set
-    // and displayed by the ErrorMessage component below.
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   return (
-    // Optionally add className={styles.authForm}
     <form onSubmit={handleSubmit}>
       <h2 style={{ textAlign: 'center', marginBottom: 'var(--space-lg)' }}>Sign Up</h2>
-
-      {/* Display API errors from context OR local validation errors */}
-      {/* Prioritize local errors if they exist */}
       <ErrorMessage message={localError || authError} />
 
       <Input
@@ -68,36 +66,63 @@ const SignupForm = () => {
         autoComplete="email"
         placeholder="you@example.com"
         disabled={loading}
-        // Pass the specific error related to this field if needed later
-        // error={fieldErrors?.email}
       />
-      <Input
-        label="Password"
-        type="password"
-        id="signup-password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        minLength={6} // HTML5 validation (also checked in handleSubmit)
-        autoComplete="new-password" // Browser hint
-        placeholder="Create a password (min. 6 characters)"
-        disabled={loading}
-         // Pass the specific error related to this field if needed later
-        // error={fieldErrors?.password}
-      />
-       <Input
-        label="Confirm Password"
-        type="password"
-        id="signup-confirm-password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        required
-        autoComplete="new-password"
-        placeholder="Re-enter your password"
-        disabled={loading}
-         // Pass the specific error related to this field if needed later
-        // error={fieldErrors?.confirmPassword || localError} // Show mismatch here too?
-      />
+
+      {/* Password Field */}
+      <div className={styles.passwordWrapper}>
+        <Input
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          id="signup-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={6}
+          autoComplete="new-password"
+          placeholder="Create a password (min. 6 characters)"
+          disabled={loading}
+          // --- MODIFICATION: Pass specific class to Input component ---
+          inputClassName={styles.passwordInputWithIcon}
+          // --- END MODIFICATION ---
+        />
+        <button
+          type="button"
+          className={styles.passwordToggle}
+          onClick={togglePasswordVisibility}
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
+          title={showPassword ? 'Hide password' : 'Show password'}
+        >
+          {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+        </button>
+      </div>
+
+      {/* Confirm Password Field */}
+      <div className={styles.passwordWrapper}>
+        <Input
+          label="Confirm Password"
+          type={showConfirmPassword ? 'text' : 'password'}
+          id="signup-confirm-password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+          autoComplete="new-password"
+          placeholder="Re-enter your password"
+          disabled={loading}
+           // --- MODIFICATION: Pass specific class to Input component ---
+           inputClassName={styles.passwordInputWithIcon}
+           // --- END MODIFICATION ---
+        />
+         <button
+          type="button"
+          className={styles.passwordToggle}
+          onClick={toggleConfirmPasswordVisibility}
+          aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+          title={showConfirmPassword ? 'Hide password' : 'Show password'}
+        >
+          {showConfirmPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+        </button>
+      </div>
+
       <div style={{ marginTop: 'var(--space-lg)' }}>
         <Button
             type="submit"

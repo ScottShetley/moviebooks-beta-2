@@ -1,0 +1,52 @@
+/* client/src/components/Auth/AuthForm.module.css */
+
+.passwordWrapper {
+    position: relative; /* Keep relative positioning on the wrapper */
+    /* This wrapper now directly contains the Input component */
+    /* Input component's internal .inputGroup provides spacing, so margin-bottom here might not be needed */
+     margin-bottom: var(--space-md); /* Or rely on Input.module.css's .inputGroup margin */
+  }
+  
+  /* --- NEW: Class specifically for the password input element --- */
+  /* This class will be passed via the inputClassName prop to Input.js */
+  .passwordInputWithIcon {
+    padding-right: 40px !important; /* Add space for the icon; !important may be needed */
+  }
+  /* --- End of NEW --- */
+  
+  
+  .passwordToggle {
+    position: absolute;
+    /* Position relative to the .passwordWrapper div */
+  
+    /* Try to align vertically with the input field inside the Input component */
+    /* Since label is above input, 50% of the wrapper height might be too high. */
+    /* Start by trying to align based on assumed input height + label offset */
+    /* Adjust this value based on visual testing */
+    top: 38px; /* Example: Approximate position - TWEAK THIS AS NEEDED */
+    /* Alternatively, using bottom might be easier if label height varies */
+    /* bottom: 10px; */ /* TWEAK THIS AS NEEDED */
+  
+    right: 10px; /* Adjust space from edge */
+    /* transform: translateY(-50%); */ /* Remove transform if using fixed top/bottom */
+    transform: none; /* Reset transform if using fixed top */
+  
+    background: none;
+    border: none;
+    padding: 5px; /* Clickable area */
+    cursor: pointer;
+    color: var(--color-text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2; /* Ensure icon is above the input field */
+  }
+  
+  .passwordToggle:hover {
+    color: var(--color-text);
+  }
+  
+  /* NOTE: The 'top' value for .passwordToggle is the most likely thing */
+  /* you'll need to adjust slightly after seeing it visually. */
+  /* Measure the distance from the top of the Input component's wrapper */
+  /* to the middle of the input field itself. */
