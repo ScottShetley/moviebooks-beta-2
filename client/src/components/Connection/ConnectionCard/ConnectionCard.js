@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
-// --- Keep imports, but we won't use getStaticFileUrl for Cloudinary URLs ---
-import { getStaticFileUrl, deleteConnection } from '../../../services/api';
+// No need for getStaticFileUrl, keep deleteConnection if used elsewhere or remove if only used here via api instance
+import { deleteConnection } from '../../../services/api';
 import api from '../../../services/api';
 import LoadingSpinner from '../../Common/LoadingSpinner/LoadingSpinner';
 import styles from './ConnectionCard.module.css';
@@ -16,22 +16,18 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
   const [localError, setLocalError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  if (!connection || !connection.movieRef || !connection.bookRef || !connection.userRef) {
-     console.error("ConnectionCard received incomplete data:", connection);
+  // --- MODIFICATION START: Check for username in userRef ---
+  if (!connection || !connection.movieRef || !connection.bookRef || !connection.userRef || !connection.userRef.username) {
+     // Added check for username property existence
+     console.error("ConnectionCard received incomplete data (missing refs or username):", connection);
      return <div className={styles.card}>Error: Incomplete connection data.</div>;
   }
+  // --- MODIFICATION END ---
 
   const isLikedByCurrentUser = user && connection.likes?.includes(user._id);
   const isFavoritedByCurrentUser = user && connection.favorites?.includes(user._id);
   const isOwner = user && user._id === connection.userRef._id;
 
-  // --- MODIFIED: Use Cloudinary URLs directly. No need for getStaticFileUrl ---
-  // const screenshotImageUrl = connection.screenshotUrl ? getStaticFileUrl(connection.screenshotUrl) : null; // OLD WAY
-  // const moviePosterImageUrl = connection.moviePosterUrl ? getStaticFileUrl(connection.moviePosterUrl) : null; // OLD WAY
-  // const bookCoverImageUrl = connection.bookCoverUrl ? getStaticFileUrl(connection.bookCoverUrl) : null; // OLD WAY
-
-  // We can use the URLs directly in the src attribute below, no intermediate variables needed unless preferred.
-  // --- END MODIFICATION ---
 
   // --- Handlers (like, favorite, delete - remain unchanged) ---
   const handleLikeToggle = async () => {
@@ -41,7 +37,7 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     try {
       const { data: updatedConnection } = await api.post(`/connections/${connection._id}/like`);
       if (onUpdate) {
-        onUpdate(updatedConnection);
+        onUpdate(updatedConnection); // Backend now sends back userRef with username
       }
     } catch (err) {
       console.error("Like toggle error:", err);
@@ -58,7 +54,7 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     try {
       const { data: updatedConnection } = await api.post(`/connections/${connection._id}/favorite`);
       if (onUpdate) {
-        onUpdate(updatedConnection);
+        onUpdate(updatedConnection); // Backend now sends back userRef with username
       }
     } catch (err) {
       console.error("Favorite toggle error:", err);
@@ -76,16 +72,18 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     setIsDeleting(true);
     setLocalError(null);
     try {
-      await deleteConnection(connection._id);
+      // Using the imported service function directly (assuming it uses the api instance)
+      // OR call api.delete directly: await api.delete(`/connections/${connection._id}`);
+      await api.delete(`/connections/${connection._id}`); // Switched to api instance call for consistency
       if (onDelete) {
         onDelete(connection._id);
       }
     } catch (err) {
+      const message = err.response?.data?.message || err.message || "Failed to delete connection.";
       console.error("Delete connection error:", err);
-      setLocalError("Failed to delete connection.");
-      setIsDeleting(false); // Reset deleting state on error
+      setLocalError(message);
+      setIsDeleting(false);
     }
-    // No finally block needed here as deletion removes the component
   };
   // --- End Handlers ---
 
@@ -94,6 +92,7 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
       {/* Header (Movie & Book Titles) */}
       <header className={styles.header}>
         <h3>
+          {/* Ensure movie/book refs also have _id for links */}
           <Link to={`/movies/${connection.movieRef._id}`}>{connection.movieRef.title}</Link>
           {' & '}
           <Link to={`/books/${connection.bookRef._id}`}>{connection.bookRef.title}</Link>
@@ -101,23 +100,26 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
       </header>
 
       {/* Meta Information (Author, Date) */}
+      {/* --- MODIFICATION START: Display username --- */}
       <p className={styles.meta}>
         Added by{' '}
-        <Link to={`/users/${connection.userRef._id}`}>{connection.userRef.email}</Link>
+        <Link to={`/profile/${connection.userRef._id}`}>{connection.userRef.username}</Link> {/* <-- USE USERNAME & link to /profile */}
         {' on '}
         {new Date(connection.createdAt).toLocaleDateString()}
       </p>
+      {/* --- MODIFICATION END --- */}
 
-      {/* --- MODIFIED: Use connection.screenshotUrl directly in src --- */}
+
+      {/* Screenshot (Uses direct Cloudinary URL) */}
       {connection.screenshotUrl ? (
           <img
-              src={connection.screenshotUrl} // <-- USE DIRECTLY
+              src={connection.screenshotUrl}
               alt={`Scene from ${connection.movieRef.title} featuring book ${connection.bookRef.title}`}
               className={styles.screenshot}
               loading="lazy"
           />
       ) : (
-           <div className={styles.noScreenshotPlaceholder}></div> // Placeholder if no image
+           <div className={styles.noScreenshotPlaceholder}></div>
       )}
 
       {/* Context Text */}
@@ -125,28 +127,17 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
         <p className={styles.context}>{connection.context}</p>
       )}
 
-      {/* --- MODIFIED: Use connection.moviePosterUrl and connection.bookCoverUrl directly in src --- */}
+      {/* Additional Images (Poster/Cover - Uses direct Cloudinary URL) */}
       {(connection.moviePosterUrl || connection.bookCoverUrl) && (
         <div className={styles.additionalImagesContainer}>
           {connection.moviePosterUrl && (
-            <img
-              src={connection.moviePosterUrl} // <-- USE DIRECTLY
-              alt={`Movie Poster for ${connection.movieRef.title}`}
-              className={styles.additionalImage}
-              loading="lazy"
-            />
+            <img src={connection.moviePosterUrl} alt={`Movie Poster`} className={styles.additionalImage} loading="lazy" />
           )}
           {connection.bookCoverUrl && (
-            <img
-              src={connection.bookCoverUrl} // <-- USE DIRECTLY
-              alt={`Book Cover for ${connection.bookRef.title}`}
-              className={styles.additionalImage}
-              loading="lazy"
-            />
+            <img src={connection.bookCoverUrl} alt={`Book Cover`} className={styles.additionalImage} loading="lazy" />
           )}
         </div>
       )}
-      {/* --- END MODIFICATION --- */}
 
 
       {/* Action Buttons Footer */}
@@ -173,7 +164,7 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
             <span className={styles.count}>{connection.favorites?.length || 0}</span>
           </button>
 
-          {/* Delete Button (Conditionally Rendered) */}
+          {/* Delete Button */}
           {isOwner && (
             <button
               className={`${styles.actionButton} ${styles.deleteButton}`}
