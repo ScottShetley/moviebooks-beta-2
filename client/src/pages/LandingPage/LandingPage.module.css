@@ -1,0 +1,153 @@
+/* Using variables from your tokens.css / global.css */
+
+.landingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-xl) var(--space-md); /* Use spacing tokens */
+    max-width: 900px;
+    margin: var(--space-xl) auto; /* Use spacing tokens */
+    gap: var(--space-xl); /* Use spacing tokens */
+    text-align: center;
+    color: var(--color-text);
+    background-color: var(--color-background); /* Consistent background */
+    border-radius: var(--border-radius-md); /* Use border token */
+    box-shadow: var(--shadow-md); /* Use shadow token */
+}
+
+.heroHeader {
+    width: 100%;
+    padding-bottom: var(--space-md); /* Use spacing tokens */
+    /* border-bottom: var(--border-width) solid var(--color-border); */ /* Optional separator */
+}
+
+.heroHeader h1 {
+    font-size: var(--font-size-xxl); /* Use font size token */
+    margin-bottom: var(--space-xs); /* Use spacing tokens */
+    /* --- THIS IS THE CHANGED LINE --- */
+    color: var(--color-primary); /* Use correct primary color variable */
+    /* --- END CHANGE --- */
+    font-weight: 700; /* Use font weight consistent with global h1 */
+    font-family: var(--font-heading); /* Ensure heading font */
+    line-height: var(--line-height-heading); /* Ensure heading line height */
+}
+
+.subtitle {
+    font-size: var(--font-size-lg); /* Use font size token */
+    color: var(--color-text-light); /* Use light text color token */
+    font-weight: 400; /* Standard weight */
+}
+
+.aboutSection {
+    max-width: 700px;
+    line-height: var(--line-height-body); /* Use body line height token */
+}
+
+/* Headings within sections use global styles by default (color: var(--color-secondary)) */
+/* If you want them primary, uncomment below */
+/*
+.aboutSection h2,
+.ctaSection h2 {
+    color: var(--color-primary);
+}
+*/
+
+.aboutSection p {
+    margin-bottom: var(--space-md); /* Use spacing tokens */
+    font-size: var(--font-size-md); /* Consistent base font size */
+    color: var(--color-text); /* Use standard text color */
+}
+
+.conceptImage {
+    max-width: 100%;
+    height: auto;
+    margin-top: var(--space-lg); /* Use spacing tokens */
+    border-radius: var(--border-radius-md); /* Use border token */
+}
+
+.ctaSection {
+    width: 100%;
+    padding-top: var(--space-lg); /* Use spacing tokens */
+    margin-top: var(--space-lg); /* Use spacing tokens */
+    border-top: var(--border-width) solid var(--color-border); /* Use border tokens */
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-lg); /* Use spacing tokens */
+    margin-top: var(--space-md); /* Use spacing tokens */
+    flex-wrap: wrap;
+}
+
+.orText {
+    font-style: italic;
+    color: var(--color-text-light); /* Use light text color token */
+    margin: 0 var(--space-xs); /* Use spacing tokens */
+}
+
+.linkNoUnderline {
+    text-decoration: none;
+}
+
+/* Styling for custom <Button/> component is handled within Button.module.css */
+/* Assuming Button uses var(--color-primary) and var(--color-secondary) correctly */
+
+.landingFooter {
+    margin-top: var(--space-xl); /* Use spacing tokens */
+    padding-top: var(--space-md); /* Use spacing tokens */
+    border-top: var(--border-width) solid var(--color-border); /* Use border tokens */
+    font-size: var(--font-size-sm); /* Use font size token */
+    color: var(--color-text-light); /* Use light text color token */
+    width: 100%;
+}
+
+/* Responsive Adjustments */
+@media (max-width: var(--breakpoint-md)) {
+    .landingContainer {
+        margin: var(--space-md); /* Use spacing tokens */
+        padding: var(--space-lg) var(--space-sm); /* Use spacing tokens */
+        gap: var(--space-lg); /* Use spacing tokens */
+        box-shadow: none;
+        border: var(--border-width) solid var(--color-border); /* Use border tokens */
+    }
+
+    .heroHeader h1 {
+        font-size: var(--font-size-xl); /* Use font size token */
+    }
+
+    .subtitle {
+        font-size: var(--font-size-md); /* Use font size token */
+    }
+
+    /* Section Headings H2 already have responsive size via global.css */
+
+    .aboutSection p {
+        font-size: var(--font-size-sm); /* Use font size token */
+    }
+
+    .buttonGroup {
+        flex-direction: column;
+        gap: var(--space-md); /* Use spacing tokens */
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .buttonGroup > .linkNoUnderline,
+    .buttonGroup > .linkNoUnderline > button {
+        width: 80%;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .buttonGroup > .linkNoUnderline > *[class*="Button_button"] {
+         width: 100%;
+         padding-left: var(--space-sm); /* Use spacing tokens */
+         padding-right: var(--space-sm); /* Use spacing tokens */
+     }
+
+    .orText {
+        display: none;
+    }
+}
