@@ -7,9 +7,12 @@ import Button from '../Common/Button/Button';
 import ErrorMessage from '../Common/ErrorMessage/ErrorMessage';
 import LoadingSpinner from '../Common/LoadingSpinner/LoadingSpinner';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import styles from './AuthForm.module.css'; // Import the CSS module
+import styles from './AuthForm.module.css';
 
 const SignupForm = () => {
+  // --- MODIFICATION START: Add username state ---
+  const [username, setUsername] = useState('');
+  // --- MODIFICATION END: Add username state ---
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,9 +25,22 @@ const SignupForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    clearError();
-    setLocalError('');
+    clearError(); // Clear context error
+    setLocalError(''); // Clear local error
 
+    // --- MODIFICATION START: Basic frontend validation ---
+    if (!username || !email || !password || !confirmPassword) {
+        setLocalError('Please fill in all fields.');
+        return;
+    }
+    if (username.length < 3 || username.length > 20) {
+        setLocalError('Username must be between 3 and 20 characters.');
+        return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+       setLocalError('Username can only contain letters, numbers, and underscores.');
+       return;
+    }
     if (password !== confirmPassword) {
       setLocalError('Passwords do not match.');
       return;
@@ -33,14 +49,26 @@ const SignupForm = () => {
         setLocalError('Password must be at least 6 characters long.');
         return;
     }
+    // Basic email check (optional, backend validates more thoroughly)
+    if (!/.+\@.+\..+/.test(email)) {
+        setLocalError('Please enter a valid email address.');
+        return;
+    }
+    // --- MODIFICATION END: Basic frontend validation ---
 
-    const success = await signup(email, password);
+
+    // --- MODIFICATION START: Call signup with username ---
+    const success = await signup(username, email, password);
+    // --- MODIFICATION END: Call signup with username ---
 
     if (success) {
+      // User state in AuthContext now includes username
+      // Backend login/signup response now includes username
       const from = location.state?.from?.pathname || "/";
-      console.log(`Signup successful, navigating to: ${from}`);
+      console.log(`Signup successful for ${username}, navigating to: ${from}`);
       navigate(from, { replace: true });
     }
+    // If signup fails, authError state in useAuth() will be set
   };
 
   const togglePasswordVisibility = () => {
@@ -52,9 +80,29 @@ const SignupForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} noValidate> {/* Add noValidate to rely on our checks */}
       <h2 style={{ textAlign: 'center', marginBottom: 'var(--space-lg)' }}>Sign Up</h2>
+      {/* Display local errors first, then context errors */}
       <ErrorMessage message={localError || authError} />
+
+      {/* --- MODIFICATION START: Add Username Input --- */}
+      <Input
+        label="Username"
+        type="text"
+        id="signup-username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        required
+        minLength={3}
+        maxLength={20}
+        pattern="^[a-zA-Z0-9_]+$" // Corresponds to backend regex
+        title="Username can only contain letters, numbers, and underscores (3-20 characters)."
+        autoComplete="username"
+        placeholder="Choose a public username"
+        disabled={loading}
+      />
+      {/* --- MODIFICATION END: Add Username Input --- */}
+
 
       <Input
         label="Email Address"
@@ -81,9 +129,7 @@ const SignupForm = () => {
           autoComplete="new-password"
           placeholder="Create a password (min. 6 characters)"
           disabled={loading}
-          // --- MODIFICATION: Pass specific class to Input component ---
           inputClassName={styles.passwordInputWithIcon}
-          // --- END MODIFICATION ---
         />
         <button
           type="button"
@@ -108,9 +154,7 @@ const SignupForm = () => {
           autoComplete="new-password"
           placeholder="Re-enter your password"
           disabled={loading}
-           // --- MODIFICATION: Pass specific class to Input component ---
-           inputClassName={styles.passwordInputWithIcon}
-           // --- END MODIFICATION ---
+          inputClassName={styles.passwordInputWithIcon}
         />
          <button
           type="button"

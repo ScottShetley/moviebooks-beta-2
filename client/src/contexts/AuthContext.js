@@ -7,21 +7,27 @@ const AuthContext = createContext();
 
 // Create the provider component
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Holds user info { _id, email, token, createdAt } or null
-  const [loading, setLoading] = useState(true); // Tracks initial loading state (checking localStorage)
+  // Holds user info { _id, username, email, token, createdAt } or null
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Tracks initial loading state
   const [error, setError] = useState(null); // Holds login/signup error messages
 
   // Effect to check localStorage for existing user session on initial app load
   useEffect(() => {
-    let isMounted = true; // Flag to prevent state updates if component unmounts quickly
+    let isMounted = true;
     setLoading(true);
     try {
         const storedUserInfo = localStorage.getItem('userInfo');
         if (storedUserInfo) {
             const userInfo = JSON.parse(storedUserInfo);
-            // Optional: Add token expiry check here if needed, though API calls will fail anyway
-            if (isMounted) {
+            // Now that username is essential, maybe verify its presence?
+            // For now, just load whatever is stored. API calls will fail if token is bad.
+            if (isMounted && userInfo && userInfo.token) { // Basic check for token existence
                  setUser(userInfo);
+                 // Set the default auth header for subsequent API calls on reload
+                 api.defaults.headers.common['Authorization'] = `Bearer ${userInfo.token}`;
+            } else if (isMounted) {
+                localStorage.removeItem('userInfo'); // Clear invalid stored info
             }
         }
     } catch(e) {
@@ -32,93 +38,101 @@ export const AuthProvider = ({ children }) => {
             setLoading(false); // Finished initial check
          }
     }
-    return () => { isMounted = false; }; // Cleanup function on unmount
-  }, []); // Empty dependency array ensures this runs only once on mount
+    return () => { isMounted = false; };
+  }, []); // Runs only once on mount
 
   // --- Login Function ---
   const login = useCallback(async (email, password) => {
-    setLoading(true); // Indicate loading state
-    setError(null); // Clear previous errors
+    setLoading(true);
+    setError(null);
     try {
-      // Make API request to login endpoint
       const { data } = await api.post('/auth/login', { email, password });
-      // Save user info (including token) to localStorage
+      // Backend now returns username, _id, email, token, createdAt
       localStorage.setItem('userInfo', JSON.stringify(data));
-      // Update user state
-      setUser(data);
+      // Set default auth header for subsequent requests in this session
+      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+      setUser(data); // User state now includes username
       setLoading(false);
-      return true; // Indicate success
+      return true;
     } catch (err) {
-      // Extract error message from API response or use default
       const message = err.response?.data?.message || err.message || 'Login failed. Please try again.';
       console.error("Login error:", message);
-      setError(message); // Set error state
+      setError(message);
+      // Clear invalid token if login fails due to auth issue
+      if (err.response?.status === 401) {
+        delete api.defaults.headers.common['Authorization'];
+        localStorage.removeItem('userInfo');
+        setUser(null);
+      }
       setLoading(false);
-      return false; // Indicate failure
+      return false;
     }
-  }, []); // useCallback to memoize the function
+  }, []);
 
-  // --- Signup Function ---
-  const signup = useCallback(async (email, password) => {
+  // --- Signup Function (MODIFIED) ---
+  const signup = useCallback(async (username, email, password) => { // <-- Added username parameter
      setLoading(true);
      setError(null);
      try {
-       // Make API request to register endpoint
-       const { data } = await api.post('/auth/register', { email, password });
-       // Save new user info to localStorage
+       // --- MODIFICATION START: Send username to API ---
+       const { data } = await api.post('/auth/register', { username, email, password });
+       // --- MODIFICATION END: Send username to API ---
+
+       // Backend now returns username, _id, email, token, createdAt
        localStorage.setItem('userInfo', JSON.stringify(data));
-       // Update user state
-       setUser(data);
+        // Set default auth header for subsequent requests in this session
+       api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+       setUser(data); // User state now includes username
        setLoading(false);
-       return true; // Indicate success
+       return true;
      } catch (err) {
        const message = err.response?.data?.message || err.message || 'Signup failed. Please try again.';
        console.error("Signup error:", message);
        setError(message);
+       // Ensure no stale auth state if signup fails
+       delete api.defaults.headers.common['Authorization'];
+       localStorage.removeItem('userInfo');
+       setUser(null);
        setLoading(false);
-       return false; // Indicate failure
+       return false;
      }
-  }, []); // useCallback
+  }, []); // useCallback dependency array is empty, function is stable
 
   // --- Logout Function ---
   const logout = useCallback(() => {
-    // Remove user info from localStorage
     localStorage.removeItem('userInfo');
-    // Clear user state
+    // Remove default auth header on logout
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
-    // Clear any lingering errors
     setError(null);
-    // Note: Navigation/redirect after logout should be handled in the component calling logout
     console.log("User logged out.");
-  }, []); // useCallback
+    // Navigation should be handled by the component calling logout (e.g., Header)
+  }, []);
 
-  // Function to manually clear errors (e.g., when user dismisses an error message)
+  // Function to manually clear errors
   const clearError = useCallback(() => {
       setError(null);
   }, []);
 
   // Value provided by the context
   const contextValue = {
-      user,           // Current user object or null
-      loading,        // Boolean indicating auth state loading
-      error,          // String containing last auth error message or null
-      login,          // Function to log in
-      signup,         // Function to sign up
-      logout,         // Function to log out
-      clearError      // Function to clear error message
+      user,           // Current user object { _id, username, email, token, createdAt } or null
+      loading,
+      error,
+      login,
+      signup,         // Updated signup function
+      logout,
+      clearError
   };
 
   return (
-    // Provide the context value to children components
-    // Only render children once initial loading (localStorage check) is complete
     <AuthContext.Provider value={contextValue}>
-      {/* Removed !loading check here - App.js can handle its own loading state if needed */}
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to easily consume the AuthContext in components
+// Custom hook to easily consume the AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
