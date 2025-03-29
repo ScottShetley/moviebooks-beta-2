@@ -4,10 +4,21 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = mongoose.Schema(
   {
+    username: { // <-- NEW FIELD
+      type: String,
+      required: [true, 'Please add a username'],
+      unique: true,
+      trim: true,
+      lowercase: true, // Store usernames in lowercase for case-insensitive uniqueness
+      minlength: [3, 'Username must be at least 3 characters long'],
+      maxlength: [20, 'Username cannot be more than 20 characters long'],
+      // Basic validation to prevent spaces or special characters often disallowed in usernames
+      match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'],
+    },
     email: {
       type: String,
       required: [true, 'Please add an email'],
-      unique: true, // Keep this - it creates the unique index needed
+      unique: true,
       match: [/.+\@.+\..+/, 'Please fill a valid email address'],
       lowercase: true,
       trim: true,
@@ -20,7 +31,15 @@ const userSchema = mongoose.Schema(
   },
   {
     timestamps: true,
+    // Ensure password is not sent back in JSON responses by default
     toJSON: {
+        transform(doc, ret) {
+            delete ret.password;
+            return ret;
+        }
+    },
+     // Ensure password is not sent back when converting to Object (used internally sometimes)
+     toObject: {
         transform(doc, ret) {
             delete ret.password;
             return ret;
@@ -29,10 +48,9 @@ const userSchema = mongoose.Schema(
   }
 );
 
-// REMOVED THIS LINE: userSchema.index({ email: 1 });
-
 // Middleware: Hash password before saving a new user or modified password
 userSchema.pre('save', async function (next) {
+  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) {
     return next();
   }
@@ -49,6 +67,11 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Indexing username and email for faster lookups
+userSchema.index({ username: 1 });
+userSchema.index({ email: 1 });
+
 
 const User = mongoose.model('User', userSchema);
 
