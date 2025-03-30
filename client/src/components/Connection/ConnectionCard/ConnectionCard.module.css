@@ -1,31 +1,46 @@
 /* client/src/components/Connection/ConnectionCard/ConnectionCard.module.css */
+
 .card {
+    /* --- FIX: Use variables defined in tokens.css --- */
     background-color: var(--color-card);
+    /* Use --color-card (White) */
     border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
+    /* Use --border-radius-md (Renamed in tokens? Check if -l exists) */
     padding: var(--space-md);
+    /* Use --space-md */
     margin-bottom: var(--space-lg);
-    overflow: hidden;
-    transition: box-shadow var(--transition-base);
-}
-.card:hover {
+    /* Use --space-lg */
     box-shadow: var(--shadow-md);
+    /* Use --shadow-md */
+    overflow: hidden;
+    border: var(--border-width) solid var(--color-border);
+    /* Use --border-width & --color-border */
+    /* --- END FIX --- */
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .header {
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs);
+    /* Use --space-xs */
 }
+
 .header h3 {
-    margin: 0;
+    margin: 0 0 var(--space-xs) 0;
+    /* Use --space-xs */
     font-size: var(--font-size-lg);
-    font-family: var(--font-heading);
-    line-height: 1.3;
+    font-weight: var(--font-weight-bold, 700);
+    /* Add fallback weight */
+    color: var(--color-text);
+    /* Use --color-text or --color-secondary if preferred */
 }
+
 .header h3 a {
-    color: var(--color-secondary);
+    color: inherit;
     text-decoration: none;
-    transition: color var(--transition-fast);
 }
+
 .header h3 a:hover {
     color: var(--color-primary);
     text-decoration: underline;
@@ -35,160 +50,291 @@
     font-size: var(--font-size-sm);
     color: var(--color-text-light);
     margin-bottom: var(--space-md);
+    /* Use --space-md */
 }
+
 .meta a {
-    color: inherit;
-    font-weight: 600;
-    text-decoration: none;
-     transition: color var(--transition-fast);
-}
-.meta a:hover {
     color: var(--color-primary);
-     text-decoration: underline;
+    /* Use --color-primary (or custom link color if defined) */
+    font-weight: var(--font-weight-medium, 600);
+    /* Add fallback weight */
+    text-decoration: none;
+}
+
+.meta a:hover {
+    text-decoration: underline;
 }
 
 .screenshot {
     display: block;
-    max-width: 100%;
-    height: auto; /* Keep height auto */
-    aspect-ratio: 16 / 9; /* Optional: Define aspect ratio for consistency */
-    object-fit: cover; /* Use cover if aspect-ratio is set */
-    border-radius: var(--border-radius-sm);
-    margin-top: var(--space-sm);
+    width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-md);
+    /* Use --border-radius-md */
     margin-bottom: var(--space-md);
-    border: 1px solid var(--color-border);
+    /* Use --space-md */
+    object-fit: cover;
     background-color: var(--color-background);
+    /* Use --color-background as placeholder bg */
 }
+
 .noScreenshotPlaceholder {
-    /* Could add a min-height/background if desired */
+    width: 100%;
+    height: 150px;
+    background-color: var(--color-background);
+    /* Use --color-background */
+    border-radius: var(--border-radius-md);
+    /* Use --border-radius-md */
+    margin-bottom: var(--space-md);
+    /* Use --space-md */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-light);
+    font-style: italic;
+    font-size: var(--font-size-sm);
 }
 
 .context {
-    margin-top: var(--space-sm);
-    margin-bottom: var(--space-md);
-    line-height: 1.6;
-    white-space: pre-wrap;
-    font-size: var(--font-size-base); /* Assuming --font-size-base exists, otherwise use md */
+    font-size: var(--font-size-md);
     color: var(--color-text);
+    line-height: var(--line-height-body);
+    margin-bottom: var(--space-md);
+    /* Use --space-md */
+    white-space: pre-wrap;
 }
 
-/* --- Styles for Additional Images --- */
 .additionalImagesContainer {
     display: flex;
-    /* justify-content: flex-start; */ /* Default is flex-start */
     gap: var(--space-sm);
-    margin-top: var(--space-sm);
+    /* --- FIX: Use --space-sm --- */
     margin-bottom: var(--space-md);
-    flex-wrap: wrap;
+    /* Use --space-md */
 }
 
 .additionalImage {
-    display: block;
-    /* --- MODIFIED --- */
-    height: auto; /* Let height adjust based on width */
-    width: calc(50% - (var(--space-sm) / 2)); /* Aim for 2 columns with gap accounted for */
-    max-width: 200px; /* Add a max-width to prevent them getting huge on wide screens */
-    aspect-ratio: 2 / 3; /* Common poster/cover ratio, adjust if needed */
+    width: 80px;
+    /* Keep this size for now, can adjust */
+    height: auto;
+    max-height: 120px;
     object-fit: cover;
-    /* --- END MODIFICATION --- */
     border-radius: var(--border-radius-sm);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-background);
+    /* Use --border-radius-sm */
+    border: var(--border-width) solid var(--color-border);
+    /* Use --border-width & --color-border */
 }
-
-/* --- Media Query for when images likely wrap --- */
-/* Adjust breakpoint as needed based on testing */
-@media (max-width: 480px) {
-    .additionalImage {
-         /* Take up slightly less than half width on very small screens when wrapped */
-         /* Could also use 100% if preferred */
-         width: calc(50% - (var(--space-sm) / 2)); /* Keep 2-column look even when wrapped? */
-         /* Or uncomment below for full width when wrapped */
-         /* width: 100%; */
-         /* max-width: 150px; */ /* Adjust max-width for smaller screens if needed */
-    }
-}
-
 
 .actions {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-md);
     flex-wrap: wrap;
+    gap: var(--space-sm);
+    /* --- FIX: Use --space-sm --- */
+    border-top: var(--border-width) solid var(--color-border);
+    /* Use --border-width & --color-border */
+    padding-top: var(--space-md);
+    /* Use --space-md */
 }
 
 .actionButton {
+    background-color: transparent;
+    border: var(--border-width) solid var(--color-border);
+    /* Use --border-width & --color-border */
+    color: var(--color-text-light);
     padding: var(--space-xs) var(--space-sm);
+    /* Use --space-xs/sm */
+    border-radius: var(--border-radius-md);
+    /* Use --border-radius-md */
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-size: var(--font-size-m);
+    /* Check if -m is defined, fallback to -md */
     display: inline-flex;
     align-items: center;
     gap: var(--space-xs);
-    font-size: var(--font-size-sm);
-    color: var(--color-text-light);
-    background-color: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+    /* Use --space-xs */
+    line-height: 1;
 }
 
 .actionButton:hover:not(:disabled) {
-   background-color: rgba(var(--color-primary-rgb, 139, 30, 63), 0.08);
-   color: var(--color-primary);
-}
-.actionButton:disabled {
-   cursor: not-allowed;
-   opacity: 0.5;
+    background-color: var(--color-background);
+    /* Use --color-background for subtle hover */
+    border-color: var(--color-text-light);
+    /* Darken border slightly */
+    color: var(--color-text);
 }
 
-.liked,
-.favorited {
-    color: var(--color-primary) !important;
-    font-weight: 600;
+.actionButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .count {
-    font-weight: normal;
-    margin-left: var(--space-xxs);
     font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium, 600);
+    /* Add fallback */
 }
-.liked .count,
-.favorited .count {
-    font-weight: 600;
+
+/* --- FIX: Use variables defined in tokens.css --- */
+.liked {
+    color: var(--color-accent);
+    /* Use --color-accent */
+    border-color: var(--color-accent);
+    /* Use --color-accent directly or create subtle version */
+}
+
+.liked:hover:not(:disabled) {
+    background-color: rgba(var(--color-accent-rgb, 227, 178, 60), 0.1);
+    /* Example subtle bg using RGB */
+    border-color: var(--color-accent);
+}
+
+.favorited {
+    color: var(--color-primary);
+    /* Use --color-primary for favorites */
+    border-color: var(--color-primary);
+    /* Use --color-primary directly or create subtle version */
+}
+
+.favorited:hover:not(:disabled) {
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+    /* Example subtle bg using RGB */
+    border-color: var(--color-primary);
 }
 
 .deleteButton {
-    margin-left: auto; /* Keep pushing to right by default */
-    color: var(--color-text-light);
-}
-.deleteButton:hover:not(:disabled) {
+    margin-left: auto;
     color: var(--color-error);
-    background-color: rgba(var(--color-error-rgb, 211, 47, 47), 0.08);
+    /* Use --color-error */
+    border-color: var(--color-error);
+    /* Use --color-error */
+}
+
+.deleteButton:hover:not(:disabled) {
+    background-color: rgba(var(--color-error-rgb), 0.1);
+    /* Example subtle bg using RGB */
+    border-color: var(--color-error);
+    color: var(--color-error);
+    /* Keep color */
 }
 
 .actionError {
     color: var(--color-error);
     font-size: var(--font-size-xs);
     margin-left: var(--space-sm);
-    flex-basis: 100%;
-    text-align: right;
+    /* Use --space-sm */
 }
 
-/* --- Optional: Adjust delete button position when wrapped --- */
-@media (max-width: 480px) { /* Example breakpoint, adjust as needed */
-    .actions {
-        /* You might want less gap on small screens */
-        /* gap: var(--space-sm); */
-    }
-    .deleteButton {
-        /* Remove margin-left:auto to align left when wrapped */
-        /* margin-left: 0; */
+/* --- END FIX --- */
 
-        /* Or make it full width on its own line? */
-         /* margin-left: 0; */
-         /* flex-basis: 100%; */
-         /* margin-top: var(--space-sm); */
-         /* text-align: right; */
+
+/* --- Comment Section Styles (Use corrected variables) --- */
+.commentsSection {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: var(--border-width) solid var(--color-border);
+    margin-left: calc(-1 * var(--space-md));
+    /* Match card padding */
+    margin-right: calc(-1 * var(--space-md));
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+}
+
+.commentLoading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg) 0;
+    color: var(--color-text-light);
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+}
+
+.commentError {
+    padding: var(--space-md);
+    color: var(--color-error);
+    background-color: rgba(var(--color-error-rgb), 0.1);
+    /* Subtle error bg */
+    border: var(--border-width) solid var(--color-error);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-sm);
+}
+
+.noCommentsYet {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    font-style: italic;
+    text-align: center;
+    padding: var(--space-md) 0;
+    margin-top: var(--space-sm);
+}
+
+/* --- END Comment Section Styles --- */
+
+
+/* --- Basic Responsive (Use corrected variables) --- */
+@media (max-width: var(--breakpoint-md)) {
+
+    /* Use --breakpoint-md */
+    .card {
+        padding: var(--space-sm);
+        /* Use --space-sm */
+        border-radius: var(--border-radius-md);
+    }
+
+    .header h3 {
+        font-size: var(--font-size-lg);
+        /* Use -lg or adjust */
+    }
+
+    .meta {
+        font-size: var(--font-size-xs);
+    }
+
+    .context {
+        font-size: var(--font-size-sm);
+    }
+
+    .additionalImage {
+        width: 60px;
+        max-height: 90px;
+    }
+
+    .actions {
+        gap: var(--space-xs);
+        /* Use --space-xs */
+        padding-top: var(--space-sm);
+        /* Use --space-sm */
+    }
+
+    .actionButton {
+        padding: var(--space-xs) var(--space-sm);
+        /* Use --space-xs/sm */
+        font-size: var(--font-size-md);
+        /* Use -md */
+    }
+
+    .count {
+        font-size: var(--font-size-xs);
+        /* Use -xs */
+    }
+
+    .commentsSection {
+        margin-left: calc(-1 * var(--space-sm));
+        /* Match mobile card padding */
+        margin-right: calc(-1 * var(--space-sm));
+        padding-left: var(--space-sm);
+        padding-right: var(--space-sm);
+        margin-top: var(--space-sm);
+        padding-top: var(--space-sm);
+    }
+
+    .commentLoading,
+    .commentError,
+    .noCommentsYet {
+        font-size: var(--font-size-xs);
+        padding: var(--space-md) 0;
     }
 }

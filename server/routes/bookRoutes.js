@@ -1,9 +1,6 @@
 // server/routes/bookRoutes.js
-const express = require('express');
-const {
-    getBookById,
-    getBookConnections
-} = require('../controllers/bookController.js');
+import express from 'express';
+import { getBookById, getBookConnections } from '../controllers/bookController.js';
 
 const router = express.Router();
 
@@ -17,4 +14,4 @@ router.get('/:id/connections', getBookConnections);
 
 // Could add routes later for searching books, etc.
 
-module.exports = router;
+export default router;

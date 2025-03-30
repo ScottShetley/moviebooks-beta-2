@@ -93,3 +93,18 @@
   --breakpoint-md: 768px;
   /* Added: Breakpoint for switching to mobile nav */
 }
+/* client/src/styles/tokens.css */
+:root {
+  /* Colors */
+  --color-primary: #8B1E3F;
+  /* Burgundy */
+  --color-primary-rgb: 139, 30, 63;
+  /* RGB version for box-shadow */
+
+  /* --- ADD THIS LINE (Choose your preferred dark shade) --- */
+  --color-primary-dark: #6d1732; /* Example: Darker Burgundy */
+  /* --- END ADD --- */
+
+  --color-secondary: #0A1929;
+  /* ... rest of your tokens ... */
+}

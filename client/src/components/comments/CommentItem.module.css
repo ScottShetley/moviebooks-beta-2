@@ -1,0 +1,52 @@
+/* client/src/components/Comment/CommentItem.module.css */
+
+.commentItem {
+    list-style-type: none; /* Remove default list bullet */
+    padding: var(--spacing-s) 0; /* Padding top/bottom */
+    border-bottom: 1px solid var(--color-border-subtle); /* Separator line */
+    /* Optional: Add a subtle background on hover */
+    /* transition: background-color 0.2s ease; */
+}
+
+.commentItem:last-child {
+    border-bottom: none; /* No border for the last item */
+}
+
+/* Removed hover effect for simplicity, can be added back if desired */
+/* .commentItem:hover {
+    background-color: var(--color-background-hover-subtle);
+} */
+
+.commentHeader {
+    display: flex;
+    justify-content: space-between; /* Push username and timestamp apart */
+    align-items: baseline; /* Align text baselines */
+    margin-bottom: var(--spacing-xs);
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: var(--spacing-s); /* Gap between username and timestamp if they wrap */
+}
+
+.username {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-link); /* Use link color */
+    text-decoration: none;
+    font-size: var(--font-size-s); /* Slightly smaller font */
+}
+
+.username:hover {
+    text-decoration: underline;
+}
+
+.timestamp {
+    font-size: var(--font-size-xs); /* Even smaller for timestamp */
+    color: var(--color-text-secondary);
+    white-space: nowrap; /* Prevent timestamp from breaking line */
+}
+
+.commentText {
+    font-size: var(--font-size-s); /* Match username size or keep default */
+    color: var(--color-text-primary);
+    margin: 0; /* Reset paragraph margin */
+    word-wrap: break-word; /* Prevent long words from overflowing */
+    white-space: pre-wrap; /* Respect line breaks and whitespace in comment */
+}
