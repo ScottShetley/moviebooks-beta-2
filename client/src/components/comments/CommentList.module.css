@@ -1,0 +1,28 @@
+/* client/src/components/Comment/CommentList.module.css */
+
+.commentListContainer {
+    margin-top: var(--spacing-m); /* Space above the comment section */
+    padding-top: var(--spacing-m); /* Padding inside the container */
+    border-top: 1px solid var(--color-border-neutral); /* Separator line from card content */
+}
+
+.listTitle {
+    font-size: var(--font-size-m);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-s);
+    font-weight: var(--font-weight-semibold);
+}
+
+.commentList {
+    padding: 0; /* Remove default ul padding */
+    margin: 0; /* Remove default ul margin */
+    list-style: none; /* Ensure no list bullets */
+}
+
+.noCommentsMessage {
+    font-size: var(--font-size-s);
+    color: var(--color-text-secondary);
+    font-style: italic;
+    text-align: center; /* Center the message */
+    padding: var(--spacing-m) 0; /* Add some padding */
+}
