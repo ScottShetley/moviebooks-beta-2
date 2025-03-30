@@ -1,100 +1,103 @@
 // client/src/pages/HomePage.js
-import React, { useState, useEffect, useCallback } from 'react'; // Import useCallback
-import api from '../services/api'; // Axios instance for API calls
-import ConnectionCard from '../components/Connection/ConnectionCard/ConnectionCard'; // Import the ConnectionCard component
-import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner'; // Import LoadingSpinner
-import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage'; // Import ErrorMessage component
-
-// Optional: Import page-specific styles if you create HomePage.module.css for layout
-// import styles from './HomePage.module.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../services/api';
+import ConnectionCard from '../components/Connection/ConnectionCard/ConnectionCard';
+import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
+import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage';
+// import styles from './HomePage.module.css'; // If you create styles
 
 const HomePage = () => {
-  // State to hold the array of connection objects fetched from the API
-  const [connections, setConnections] = useState([]);
-  // State to track whether data is currently being fetched
-  const [loading, setLoading] = useState(true);
-  // State to hold any error messages that occur during fetching
-  const [error, setError] = useState(null);
+    // Initialize state with an empty array, which is correct
+    const [connections, setConnections] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    // Optional: Add state for pagination if you want to implement it later
+    // const [page, setPage] = useState(1);
+    // const [pages, setPages] = useState(1);
 
-  /**
-   * Callback function passed down to each ConnectionCard as 'onUpdate'.
-   * Updates a single connection in the state after a like/favorite action.
-   */
-  const updateConnectionInState = useCallback((updatedConnection) => {
-    setConnections(prevConnections =>
-      prevConnections.map(conn =>
-        conn._id === updatedConnection._id ? updatedConnection : conn
-      )
-    );
-  }, []); // useCallback ensures this function reference remains stable
+    const updateConnectionInState = useCallback((updatedConnection) => {
+        setConnections(prevConnections =>
+            prevConnections.map(conn =>
+                conn._id === updatedConnection._id ? updatedConnection : conn
+            )
+        );
+    }, []);
 
-  // --- START OF ADDITION 1 ---
-  /**
-   * Callback function passed down to each ConnectionCard as 'onDelete'.
-   * Removes a connection from the state after it has been successfully deleted.
-   */
-  const handleDeleteConnection = useCallback((deletedConnectionId) => {
-    setConnections(prevConnections =>
-      // Filter out the connection whose ID matches the deleted one
-      prevConnections.filter(conn => conn._id !== deletedConnectionId)
-    );
-    // Optional: Add a user notification/toast here confirming deletion
-    // console.log(`Connection ${deletedConnectionId} removed from HomePage state.`);
-  }, []); // useCallback ensures this function reference remains stable
-  // --- END OF ADDITION 1 ---
+    const handleDeleteConnection = useCallback((deletedConnectionId) => {
+        setConnections(prevConnections =>
+            prevConnections.filter(conn => conn._id !== deletedConnectionId)
+        );
+    }, []);
+
+    useEffect(() => {
+        const fetchConnections = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                // Fetch data for the current page (add page state later if needed)
+                const { data } = await api.get('/connections'/*, { params: { pageNumber: page } }*/);
+
+                // --- CORRECTED STATE UPDATE ---
+                // Check if data and data.connections exist and are an array
+                if (data && Array.isArray(data.connections)) {
+                     // Set state with the connections array *from* the response object
+                    setConnections(data.connections);
+                     // Optional: Set page info if using pagination state
+                     // setPage(data.page);
+                     // setPages(data.pages);
+                } else {
+                    // Handle unexpected response structure
+                    console.error("Unexpected API response structure:", data);
+                    setConnections([]); // Set to empty array to avoid map error
+                    setError("Received invalid data from server.");
+                }
+                // --- END CORRECTION ---
+
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || "Failed to fetch connections.";
+                console.error("Fetch connections error:", err);
+                setError(message);
+                setConnections([]); // Ensure connections is an array on error
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchConnections();
+        // Add 'page' to dependency array if implementing pagination fetch trigger
+    }, []/* [page] */);
 
 
-  // useEffect hook to fetch connections when the component first mounts
-  useEffect(() => {
-    const fetchConnections = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data } = await api.get('/connections');
-        setConnections(data);
-      } catch (err) {
-        const message = err.response?.data?.message || err.message || "Failed to fetch connections.";
-        console.error("Fetch connections error:", err);
-        setError(message);
-        setConnections([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    return (
+        <div> {/* Consider adding className={styles.container} if using CSS Modules */}
+            <h1>MovieBooks Feed</h1>
+            {/* <p>Discover books spotted in movies!</p> */}
 
-    fetchConnections();
-  }, []);
+            {loading && <LoadingSpinner />}
+            {error && <ErrorMessage message={error} />}
 
-
-  // Render the component's UI
-  return (
-    <div>
-      <h1>MovieBooks Feed</h1>
-      {/* <p>Discover books spotted in movies!</p> */}
-
-      {loading && <LoadingSpinner />}
-      {error && <ErrorMessage message={error} />}
-
-      {!loading && !error && (
-        <div>
-          {connections.length === 0 ? (
-            <p>No connections found yet. Be the first to add one!</p>
-          ) : (
-            <div>
-              {connections.map((connection) => (
-                <ConnectionCard
-                  key={connection._id}
-                  connection={connection}
-                  onUpdate={updateConnectionInState} // Existing prop
-                  onDelete={handleDeleteConnection} // <-- NEW: Pass delete handler as prop
-                />
-              ))}
-            </div>
-          )}
+            {/* Only attempt to map if not loading, no error, and connections is an array */}
+            {!loading && !error && Array.isArray(connections) && (
+                <div>
+                    {connections.length === 0 ? (
+                        <p>No connections found yet. Be the first to add one!</p>
+                    ) : (
+                        <div> {/* Consider className={styles.feedList} */}
+                            {connections.map((connection) => (
+                                <ConnectionCard
+                                    key={connection._id}
+                                    connection={connection}
+                                    onUpdate={updateConnectionInState}
+                                    onDelete={handleDeleteConnection}
+                                />
+                            ))}
+                            {/* Add Pagination controls here later if needed */}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default HomePage;

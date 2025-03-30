@@ -1,14 +1,14 @@
 // server/models/Book.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const bookSchema = mongoose.Schema(
+const bookSchema = mongoose.Schema (
   {
     title: {
       type: String,
       required: true,
       trim: true,
     },
-     // Add author, year later if needed
+    // Add author, year later if needed
   },
   {
     timestamps: true,
@@ -16,8 +16,8 @@ const bookSchema = mongoose.Schema(
 );
 
 // Index for faster title lookups (case-insensitive)
-bookSchema.index({ title: 1 }, { collation: { locale: 'en', strength: 2 } });
+bookSchema.index ({title: 1}, {collation: {locale: 'en', strength: 2}});
 
-const Book = mongoose.model('Book', bookSchema);
+const Book = mongoose.model ('Book', bookSchema);
 
-module.exports = Book;
+export default Book;

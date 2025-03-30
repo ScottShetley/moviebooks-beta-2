@@ -1,18 +1,27 @@
-// server/server.js (Updated Version with CORS Environment Variable)
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const path = require('path');
-const connectDB = require('./config/db.js');
-const { notFound } = require('./middleware/errorMiddleware.js'); // Keep your existing notFound
+// server/server.js (Converted to ES Modules)
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url'; // Needed to replicate __dirname
+import fs from 'fs'; // Import fs for checking client build path
+
+// --- Import Custom Modules ---
+import connectDB from './config/db.js';
+import { notFound } from './middleware/errorMiddleware.js'; // Ensure this file uses export
 
 // --- Import Route Files ---
-const authRoutes = require('./routes/authRoutes.js');
-const connectionRoutes = require('./routes/connectionRoutes.js');
-const movieRoutes = require('./routes/movieRoutes.js');
-const bookRoutes = require('./routes/bookRoutes.js');
-const userRoutes = require('./routes/userRoutes.js');
-const notificationRoutes = require('./routes/notificationRoutes.js');
+import authRoutes from './routes/authRoutes.js';
+import connectionRoutes from './routes/connectionRoutes.js';
+import movieRoutes from './routes/movieRoutes.js';
+import bookRoutes from './routes/bookRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+// --- ---
+
+// --- Replicate __dirname ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // --- ---
 
 // Load environment variables
@@ -24,28 +33,24 @@ connectDB();
 const app = express();
 
 // --- Determine CORS origin ---
-// Read the allowed origin from environment variables for production, fallback for development
 const allowedOrigin = process.env.NODE_ENV === 'production'
-    ? process.env.CLIENT_ORIGIN_URL // <-- Read from this new env var in production
-    : 'http://localhost:3000';      // Allow localhost in development
+    ? process.env.CLIENT_ORIGIN_URL
+    : 'http://localhost:3000';
 
 // --- CORS Middleware ---
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests) OR
-    // if the origin explicitly matches our allowed origin.
     if (!origin || allowedOrigin === origin) {
       callback(null, true);
     } else {
       console.error(`CORS Error: Origin '${origin}' not allowed. Allowed: '${allowedOrigin}'`);
-      callback(new Error('Not allowed by CORS')); // Deny the request
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
-// Log the origin being used by CORS configuration
+  optionsSuccessStatus: 200
+};
 console.log(`CORS Configured: Allowing origin -> ${allowedOrigin || 'requests with no origin (e.g., server-to-server)'}`);
-app.use(cors(corsOptions)); // Apply CORS middleware
+app.use(cors(corsOptions));
 // --- ---
 
 // --- Body Parser Middleware ---
@@ -60,7 +65,6 @@ if (process.env.NODE_ENV === 'development') {
         next();
     });
 } else {
-    // Simple production request logging (optional)
      app.use((req, res, next) => {
         console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} (Origin: ${req.headers.origin || 'N/A'})`);
         next();
@@ -77,17 +81,22 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 // --- ---
 
-// --- Serve Static Files (Uploaded Images - Keep for old data if needed) ---
+// --- Serve Static Files (Uploaded Images) ---
+// Use the derived __dirname
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // --- ---
 
-// --- Production Static Build Serve (Keep for later deployment, though not used by backend itself) ---
+// --- Production Static Build Check ---
+// This section might be less relevant if your frontend is a separate static site on Render
 if (process.env.NODE_ENV === 'production') {
-  // This check is likely irrelevant now as backend doesn't serve frontend build
-  const clientBuildPath = path.join(__dirname, '../client/build');
-  if (!require('fs').existsSync(clientBuildPath)) {
-      console.warn("Production mode: Client build folder not found at:", clientBuildPath, "(Expected for backend service)");
+  const clientBuildPath = path.resolve(__dirname, '../client/build'); // Use path.resolve for better cross-platform path handling
+  // Use imported fs instead of require('fs')
+  if (!fs.existsSync(clientBuildPath)) {
+      console.warn("Production mode: Client build folder not found at:", clientBuildPath);
   }
+  // Note: Serving the client build from the backend is usually not done when
+  // deploying frontend and backend separately (like Render Static Site + Web Service).
+  // Consider removing this section if not needed.
 }
 // Basic root route for API health check
 app.get('/', (req, res) => {
@@ -96,21 +105,21 @@ app.get('/', (req, res) => {
 // --- ---
 
 // --- Error Handling Middleware ---
-// 1. Catch 404s (routes not found)
-app.use(notFound);
+// 1. Catch 404s (Must use imported 'notFound' function)
+app.use(notFound); // Ensure errorMiddleware.js exports 'notFound'
 
-// 2. Catch all other errors - Use detailed inline handler
+// 2. Catch all other errors
 app.use((err, req, res, next) => {
-  // Check if the error is a CORS error generated by our corsOptions function
   const isCorsError = err.message === 'Not allowed by CORS';
-  const statusCode = isCorsError ? 403 : (res.statusCode === 200 ? 500 : res.statusCode); // 403 Forbidden for CORS errors
+  const statusCode = isCorsError ? 403 : (res.statusCode === 200 ? 500 : res.statusCode);
 
   console.error('--- DETAILED ERROR HANDLER ---');
   console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   console.error('Status Code:', statusCode);
   console.error('Error Message:', err.message);
-  if (!isCorsError) { // Don't log full stack for expected CORS denials
-      console.error('Full Error Object:', err);
+  if (!isCorsError) {
+      // Avoid logging full stack for expected CORS denials
+      // console.error('Full Error Object:', err); // Optional: Can be noisy
       console.error('Stack Trace:', err.stack);
   }
   console.error('--- END DETAILED ERROR ---');
@@ -122,6 +131,6 @@ app.use((err, req, res, next) => {
 });
 // --- ---
 
-const PORT = process.env.PORT || 5001; // Render provides the PORT env var
+const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`));

@@ -1,45 +1,44 @@
-// server/middleware/authMiddleware.js
-const jwt = require('jsonwebtoken');
-const User = require('../models/User.js'); // Need the User model to find the user from the token
+// server/middleware/authMiddleware.js (Corrected for ES Modules)
+import jwt from 'jsonwebtoken'; // Use import
+import asyncHandler from 'express-async-handler'; // Import asyncHandler if needed, or remove if protect isn't async wrapped (it is implicitly via asyncHandler usage in routes)
+import User from '../models/User.js'; // Use import (ensure User.js uses export default)
 
 // Middleware to protect routes that require authentication
-const protect = async (req, res, next) => {
+// Wrap with asyncHandler for proper async error handling within the middleware itself
+const protect = asyncHandler (async (req, res, next) => {
   let token;
 
-  // Check if the Authorization header exists and starts with 'Bearer'
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
+    req.headers.authorization.startsWith ('Bearer')
   ) {
     try {
-      // Get token from header (remove 'Bearer ' part)
-      token = req.headers.authorization.split(' ')[1];
+      token = req.headers.authorization.split (' ')[1];
+      const decoded = jwt.verify (token, process.env.JWT_SECRET);
 
-      // Verify the token using the JWT secret
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Find the user associated with the token's ID
-      // We exclude the password field from the user object attached to the request
-      req.user = await User.findById(decoded.id).select('-password');
+      // Fetch user and attach to request
+      req.user = await User.findById (decoded.id).select ('-password');
 
       if (!req.user) {
-        // Handle case where user might have been deleted after token was issued
-        throw new Error('User not found');
+        // Although findById might return null, explicitly handle this
+        res.status (401); // Use 401 Unauthorized
+        throw new Error ('Not authorized, user not found for token');
       }
 
-      // If token is valid and user found, proceed to the next middleware or route handler
-      next();
+      next (); // Proceed if user found
     } catch (error) {
-      console.error('Token verification failed:', error.message);
-      // Send 401 Unauthorized if token is invalid or expired
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      console.error ('Token verification failed:', error.message);
+      res.status (401); // Use 401 Unauthorized
+      // Throw error to be caught by express error handler via asyncHandler
+      throw new Error ('Not authorized, token failed');
     }
   }
 
-  // If no token is found in the header
   if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    res.status (401); // Use 401 Unauthorized
+    throw new Error ('Not authorized, no token');
   }
-};
+});
 
-module.exports = { protect };
+// --- Use named export ---
+export {protect};

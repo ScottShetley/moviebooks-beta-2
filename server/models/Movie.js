@@ -1,7 +1,7 @@
 // server/models/Movie.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const movieSchema = mongoose.Schema(
+const movieSchema = mongoose.Schema (
   {
     title: {
       type: String,
@@ -16,8 +16,8 @@ const movieSchema = mongoose.Schema(
 );
 
 // Index for faster title lookups (case-insensitive)
-movieSchema.index({ title: 1 }, { collation: { locale: 'en', strength: 2 } });
+movieSchema.index ({title: 1}, {collation: {locale: 'en', strength: 2}});
 
-const Movie = mongoose.model('Movie', movieSchema);
+const Movie = mongoose.model ('Movie', movieSchema);
 
-module.exports = Movie;
+export default Movie;

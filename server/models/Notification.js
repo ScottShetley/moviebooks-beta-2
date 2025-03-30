@@ -1,14 +1,16 @@
 // server/models/Notification.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const notificationSchema = mongoose.Schema(
+const notificationSchema = mongoose.Schema (
   {
-    recipientRef: { // The user who receives the notification
+    recipientRef: {
+      // The user who receives the notification
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: 'User',
     },
-    senderRef: { // The user who triggered the notification (e.g., liked the post)
+    senderRef: {
+      // The user who triggered the notification (e.g., liked the post)
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User', // Can be null for system notifications (though not used in BETA)
     },
@@ -17,14 +19,18 @@ const notificationSchema = mongoose.Schema(
       required: true,
       enum: ['NEW_CONNECTION', 'LIKE', 'FAVORITE'], // Define allowed notification types
     },
-    connectionRef: { // The specific connection this notification relates to
+    connectionRef: {
+      // The specific connection this notification relates to
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Connection',
       // Required for LIKE, FAVORITE, NEW_CONNECTION (if notifying others)
       // Might not be required for other future notification types
-      required: function() { return ['LIKE', 'FAVORITE', 'NEW_CONNECTION'].includes(this.type); }
+      required: function () {
+        return ['LIKE', 'FAVORITE', 'NEW_CONNECTION'].includes (this.type);
+      },
     },
-    read: { // Has the recipient seen this notification?
+    read: {
+      // Has the recipient seen this notification?
       type: Boolean,
       default: false,
     },
@@ -35,8 +41,8 @@ const notificationSchema = mongoose.Schema(
 );
 
 // Index for efficient fetching of a user's unread notifications, sorted by newest first
-notificationSchema.index({ recipientRef: 1, read: 1, createdAt: -1 });
+notificationSchema.index ({recipientRef: 1, read: 1, createdAt: -1});
 
-const Notification = mongoose.model('Notification', notificationSchema);
+const Notification = mongoose.model ('Notification', notificationSchema);
 
-module.exports = Notification;
+export default Notification;
