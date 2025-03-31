@@ -26,6 +26,14 @@ const connectionSchema = mongoose.Schema (
       type: String,
       trim: true,
     },
+    // --- NEW FIELD for Phase 1 Filtering ---
+    tags: {
+      // Array of user-defined tags for thematic filtering
+      type: [String], // Defines an array of Strings
+      index: true, // Add an index for efficient tag-based searches
+      default: [], // Default to an empty array
+    },
+    // --- END NEW FIELD ---
     // --- UPDATED IMAGE FIELDS ---
     moviePosterUrl: {
       // Cloudinary URL for the movie poster image
@@ -77,6 +85,7 @@ connectionSchema.index ({userRef: 1, createdAt: -1}); // User's connections feed
 connectionSchema.index ({createdAt: -1}); // Global feed sorted by date
 connectionSchema.index ({movieRef: 1}); // Finding connections by movie
 connectionSchema.index ({bookRef: 1}); // Finding connections by book
+// Note: Index for 'tags' is defined directly in the schema definition above
 
 const Connection = mongoose.model ('Connection', connectionSchema);
 
