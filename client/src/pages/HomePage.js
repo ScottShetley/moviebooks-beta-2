@@ -1,12 +1,28 @@
 // client/src/pages/HomePage.js
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import api from '../services/api';
 import ConnectionCard from '../components/Connection/ConnectionCard/ConnectionCard';
 import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage';
-import Input from '../components/Common/Input/Input'; // Import Input for filter
-import Button from '../components/Common/Button/Button'; // Import Button for filter actions
-import styles from './HomePage.module.css'; // Create and import CSS module
+import Input from '../components/Common/Input/Input';
+import Button from '../components/Common/Button/Button';
+import styles from './HomePage.module.css';
+
+// Helper to check if filter object has any values
+const hasActiveFilters = (filters) => {
+    if (!filters) return false;
+    return Object.values(filters).some(value => value && value.trim() !== '');
+};
+
+// Helper to stringify filters for display
+const formatActiveFilters = (filters) => {
+    if (!filters || !hasActiveFilters(filters)) return '';
+    return Object.entries(filters)
+        .filter(([, value]) => value && value.trim() !== '')
+        .map(([key, value]) => `${key}: "${value}"`)
+        .join('; ');
+};
+
 
 const HomePage = () => {
     const [connections, setConnections] = useState([]);
@@ -14,174 +30,201 @@ const HomePage = () => {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
-    const [totalConnections, setTotalConnections] = useState(0); // Optional: for display
 
-    // --- NEW: State for Filtering ---
-    const [tagFilterInput, setTagFilterInput] = useState(''); // User's input
-    const [activeTagFilter, setActiveTagFilter] = useState(''); // The filter currently applied (comma-separated string)
-    const [isFilterApplied, setIsFilterApplied] = useState(false); // Track if a filter is active
-    const isInitialMount = useRef(true); // Ref to prevent initial fetch on filter state change
-    // --- END Filter State ---
+    // --- State for Filter Inputs ---
+    const [tagInput, setTagInput] = useState('');
+    const [movieGenreInput, setMovieGenreInput] = useState('');
+    const [directorInput, setDirectorInput] = useState('');
+    const [actorInput, setActorInput] = useState('');
+    const [bookGenreInput, setBookGenreInput] = useState('');
+    const [authorInput, setAuthorInput] = useState('');
+
+    // --- State for Applied Filters ---
+    // Use an object to hold all active filters sent to API
+    const [activeFilters, setActiveFilters] = useState({});
+    const isFilterApplied = useMemo(() => hasActiveFilters(activeFilters), [activeFilters]);
+
+    // Ref to prevent initial fetch trigger from filter state init
+    const isInitialMount = useRef(true);
 
     // --- Fetch Connections Function ---
-    const fetchConnections = useCallback(async (currentPage, currentFilter) => {
-        console.log(`[HomePage] Fetching connections - Page: ${currentPage}, Filter: '${currentFilter}'`);
+    const fetchConnections = useCallback(async (currentPage, currentFilters) => {
+        console.log(`[HomePage] Fetching connections - Page: ${currentPage}, Filters:`, currentFilters);
         setLoading(true);
         setError(null);
         try {
+            // Start with pagination param
             const params = {
                 pageNumber: currentPage,
             };
-            // Only add tags parameter if the filter is active and not empty
-            if (currentFilter && currentFilter.trim() !== '') {
-                params.tags = currentFilter.trim();
+            // Add filter params only if they have a non-empty value
+            for (const key in currentFilters) {
+                const value = currentFilters[key]?.trim();
+                if (value) {
+                    params[key] = value;
+                }
             }
+            console.log('[HomePage] API Request Params:', params);
 
             const { data } = await api.get('/connections', { params });
 
             if (data && Array.isArray(data.connections)) {
-                console.log(`[HomePage] Received ${data.connections.length} connections. Total matching: ${data.pages * params.pageSize || data.connections.length}. Filter applied by API: ${data.filterApplied}`); // Log API response details
+                 console.log(`[HomePage] Received ${data.connections.length} connections. Total matching pages: ${data.pages}. Filter applied by API: ${data.filterApplied}`);
 
-                // Set state with the connections array *from* the response object
                 setConnections(data.connections);
                 setPage(data.page);
                 setPages(data.pages);
-                setIsFilterApplied(data.filterApplied || false); // Update based on API response
-
-                // Optional: Update total count (might need backend adjustment if not filtering)
-                // If filtering, 'count' in the response is filtered count.
-                // If not filtering, it's the total count.
-                // setTotalConnections(data.count); // Assumes backend sends 'count'
+                // Reflect the actual filters applied by backend (might differ if backend ignores some)
+                // setActiveFilters(data.activeFilters || {}); // Optional: sync state with backend response if needed
             } else {
                 console.error("[HomePage] Unexpected API response structure:", data);
-                setConnections([]);
-                setPage(1);
-                setPages(1);
+                setConnections([]); setPage(1); setPages(1);
                 setError("Received invalid data from server.");
-                setIsFilterApplied(false);
             }
 
         } catch (err) {
             const message = err.response?.data?.message || err.message || "Failed to fetch connections.";
             console.error("[HomePage] Fetch connections error:", err.response || err);
             setError(message);
-            setConnections([]); // Ensure connections is an array on error
-            setPage(1);
-            setPages(1);
-            setIsFilterApplied(false);
+            setConnections([]); setPage(1); setPages(1);
         } finally {
             setLoading(false);
         }
-    }, []); // No dependencies here, parameters are passed in
+    }, []); // No dependencies needed as params are passed explicitly
 
     // --- Effect for Initial Load and Filter/Page Changes ---
+     // Use stringified activeFilters as dependency for useEffect
+     const activeFiltersString = JSON.stringify(activeFilters);
     useEffect(() => {
-        // Skip fetch on initial mount if triggered by filter state initialization
         if (isInitialMount.current) {
              isInitialMount.current = false;
-             // Fetch initial data without filter
-             fetchConnections(1, ''); // Initial fetch page 1, no filter
+             fetchConnections(1, {}); // Initial fetch: page 1, no filters
         } else {
-            // Fetch when page or activeTagFilter changes
-            fetchConnections(page, activeTagFilter);
+            // Fetch when page or the stringified activeFilters change
+            fetchConnections(page, activeFilters);
         }
-    }, [page, activeTagFilter, fetchConnections]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, activeFiltersString, fetchConnections]); // Depend on stringified filters
 
 
-    // --- Handlers for State Updates (Likes, Deletes) ---
+    // --- Handlers for State Updates (Likes, Deletes) --- Unchanged ---
     const updateConnectionInState = useCallback((updatedConnection) => {
-        setConnections(prevConnections =>
-            prevConnections.map(conn =>
-                conn._id === updatedConnection._id ? updatedConnection : conn
-            )
-        );
+        setConnections(prev => prev.map(c => c._id === updatedConnection._id ? updatedConnection : c));
     }, []);
-
     const handleDeleteConnection = useCallback((deletedConnectionId) => {
-        setConnections(prevConnections =>
-            prevConnections.filter(conn => conn._id !== deletedConnectionId)
-        );
-        // Optionally refetch to get correct total count/pages after deletion
-        // fetchConnections(page, activeTagFilter); // Or just adjust counts locally if possible
+        setConnections(prev => prev.filter(c => c._id !== deletedConnectionId));
+        // TODO: Maybe refetch or adjust pagination/count after delete if needed
     }, []);
     // --- END State Update Handlers ---
 
     // --- Filter Action Handlers ---
     const handleApplyFilter = (e) => {
-        e.preventDefault(); // Prevent form submission if inside a form
-        const newFilter = tagFilterInput.trim();
-        console.log(`[HomePage] Applying filter: '${newFilter}'`);
-        setActiveTagFilter(newFilter); // Update the active filter
-        setPage(1); // Reset to page 1 when applying a new filter
+        e.preventDefault();
+        const newFilters = {
+            tags: tagInput.trim(),
+            movieGenre: movieGenreInput.trim(),
+            director: directorInput.trim(),
+            actor: actorInput.trim(),
+            bookGenre: bookGenreInput.trim(),
+            author: authorInput.trim(),
+        };
+        // Filter out empty values before setting active filters
+        const filtersToApply = Object.entries(newFilters)
+            .reduce((acc, [key, value]) => {
+                if (value) acc[key] = value;
+                return acc;
+            }, {});
+
+        console.log('[HomePage] Applying Filters:', filtersToApply);
+        setActiveFilters(filtersToApply); // Update the active filters
+        setPage(1); // Reset to page 1 when applying new filters
         // The useEffect will trigger the fetch
     };
 
     const handleClearFilter = () => {
-        console.log('[HomePage] Clearing filter.');
-        setTagFilterInput(''); // Clear the input field
-        setActiveTagFilter(''); // Clear the active filter
+        console.log('[HomePage] Clearing all filters.');
+        // Clear input fields
+        setTagInput('');
+        setMovieGenreInput('');
+        setDirectorInput('');
+        setActorInput('');
+        setBookGenreInput('');
+        setAuthorInput('');
+        // Clear active filters
+        setActiveFilters({});
         setPage(1); // Reset to page 1
         // The useEffect will trigger the fetch
     };
     // --- END Filter Action Handlers ---
 
-     // --- Pagination Handlers ---
-    const goToPreviousPage = () => {
-        setPage(prevPage => Math.max(1, prevPage - 1));
-    };
-
-    const goToNextPage = () => {
-        setPage(prevPage => Math.min(pages, prevPage + 1));
-    };
+    // --- Pagination Handlers --- Unchanged ---
+    const goToPreviousPage = () => setPage(p => Math.max(1, p - 1));
+    const goToNextPage = () => setPage(p => Math.min(pages, p + 1));
     // --- END Pagination Handlers ---
+
+    // Check if the current inputs differ from active filters (for disabling apply button)
+    const filtersChanged = useMemo(() => {
+         const currentInputFilters = {
+            tags: tagInput.trim(), movieGenre: movieGenreInput.trim(),
+            director: directorInput.trim(), actor: actorInput.trim(),
+            bookGenre: bookGenreInput.trim(), author: authorInput.trim(),
+        };
+        // Compare stringified versions for simplicity
+        return JSON.stringify(activeFilters) !== JSON.stringify(Object.entries(currentInputFilters).reduce((acc, [k, v]) => { if(v) acc[k]=v; return acc; }, {}));
+    }, [tagInput, movieGenreInput, directorInput, actorInput, bookGenreInput, authorInput, activeFilters]);
+
 
     return (
         <div className={styles.homePageContainer}>
             <h1>MovieBooks Feed</h1>
 
-            {/* --- Filter UI --- */}
-            <div className={styles.filterContainer}>
-                <Input
-                    id="tagFilter"
-                    label="Filter by Tags"
-                    placeholder="e.g., sci-fi, time travel"
-                    value={tagFilterInput}
-                    onChange={(e) => setTagFilterInput(e.target.value)}
-                    disabled={loading}
-                    className={styles.filterInput} // Add specific class if needed
-                />
-                <Button
-                    variant="secondary"
-                    onClick={handleApplyFilter}
-                    disabled={loading || tagFilterInput.trim() === activeTagFilter.trim()} // Disable if loading or filter unchanged
-                    className={styles.filterButton}
-                >
-                    Apply Filter
-                </Button>
-                <Button
-                    variant="outline"
-                    onClick={handleClearFilter}
-                    disabled={loading || !isFilterApplied} // Disable if loading or no filter applied
-                    className={styles.clearFilterButton}
-                >
-                    Clear Filter
-                </Button>
-            </div>
-            {isFilterApplied && activeTagFilter && (
+            {/* --- UPDATED Filter UI --- */}
+            <form onSubmit={handleApplyFilter} className={styles.filterForm}>
+                <fieldset className={styles.filterFieldset}>
+                    <legend>Filter Connections</legend>
+                    <div className={styles.filterGrid}> {/* Use grid for layout */}
+                        <Input id="tagFilter" label="Tags" placeholder="sci-fi, classic"
+                               value={tagInput} onChange={(e) => setTagInput(e.target.value)} disabled={loading} />
+                        <Input id="movieGenreFilter" label="Movie Genre" placeholder="Thriller"
+                               value={movieGenreInput} onChange={(e) => setMovieGenreInput(e.target.value)} disabled={loading} />
+                        <Input id="directorFilter" label="Director" placeholder="Tarantino"
+                               value={directorInput} onChange={(e) => setDirectorInput(e.target.value)} disabled={loading} />
+                        <Input id="actorFilter" label="Actor" placeholder="Travolta"
+                               value={actorInput} onChange={(e) => setActorInput(e.target.value)} disabled={loading} />
+                        <Input id="bookGenreFilter" label="Book Genre" placeholder="Adventure"
+                               value={bookGenreInput} onChange={(e) => setBookGenreInput(e.target.value)} disabled={loading} />
+                        <Input id="authorFilter" label="Author" placeholder="O'Donnell"
+                               value={authorInput} onChange={(e) => setAuthorInput(e.target.value)} disabled={loading} />
+                    </div>
+                    <div className={styles.filterActions}>
+                        <Button type="submit" variant="secondary"
+                                disabled={loading || !filtersChanged} // Disable if loading or filters haven't changed
+                                className={styles.filterButton}>
+                            Apply Filters
+                        </Button>
+                        <Button type="button" variant="outline" onClick={handleClearFilter}
+                                disabled={loading || !isFilterApplied} // Disable if loading or no filters applied
+                                className={styles.clearFilterButton}>
+                            Clear All Filters
+                        </Button>
+                    </div>
+                </fieldset>
+            </form>
+            {isFilterApplied && (
                 <p className={styles.activeFilterInfo}>
-                    Showing connections tagged with: "{activeTagFilter}"
+                    Filtering by: {formatActiveFilters(activeFilters)}
                 </p>
             )}
             {/* --- END Filter UI --- */}
 
 
-            {/* --- Loading & Error States --- */}
+            {/* --- Loading & Error States --- Unchanged --- */}
             {loading && <div className={styles.centered}><LoadingSpinner /></div>}
             {!loading && error && <ErrorMessage message={error} />}
             {/* --- END Loading & Error --- */}
 
 
-            {/* --- Connection Feed --- */}
+            {/* --- Connection Feed --- Unchanged structure, but receives filtered data --- */}
             {!loading && !error && (
                 <>
                     {connections.length === 0 ? (
@@ -201,21 +244,14 @@ const HomePage = () => {
                         </div>
                     )}
 
-                    {/* --- Pagination Controls --- */}
+                    {/* --- Pagination Controls --- Unchanged --- */}
                     {pages > 1 && (
                         <div className={styles.paginationControls}>
-                            <Button onClick={goToPreviousPage} disabled={page <= 1 || loading}>
-                                Previous
-                            </Button>
-                            <span className={styles.pageInfo}>
-                                Page {page} of {pages}
-                            </span>
-                            <Button onClick={goToNextPage} disabled={page >= pages || loading}>
-                                Next
-                            </Button>
+                            <Button onClick={goToPreviousPage} disabled={page <= 1 || loading}>Previous</Button>
+                            <span className={styles.pageInfo}> Page {page} of {pages} </span>
+                            <Button onClick={goToNextPage} disabled={page >= pages || loading}>Next</Button>
                         </div>
                     )}
-                    {/* --- END Pagination Controls --- */}
                 </>
             )}
              {/* --- END Connection Feed --- */}
