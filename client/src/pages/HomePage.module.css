@@ -1,0 +1,105 @@
+/* client/src/pages/HomePage/HomePage.module.css */
+
+.homePageContainer {
+    padding: 20px;
+    max-width: 900px;
+    /* Or your preferred max width */
+    margin: 0 auto;
+}
+
+.filterContainer {
+    display: flex;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+    align-items: flex-end;
+    /* Align items nicely */
+    gap: 10px;
+    /* Space between elements */
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--color-background-secondary);
+    /* Light background */
+    border-radius: var(--border-radius-medium);
+    border: 1px solid var(--color-border-subtle);
+}
+
+.filterInput {
+    flex-grow: 1;
+    /* Allow input to take available space */
+    min-width: 200px;
+    /* Minimum width before wrapping */
+}
+
+/* Adjust button widths or remove if using standard Button component styling */
+.filterButton,
+.clearFilterButton {
+    /* Add specific styles if needed */
+    white-space: nowrap;
+    /* Prevent button text wrapping */
+}
+
+.activeFilterInfo {
+    margin-top: -10px;
+    /* Pull up slightly below filter box */
+    margin-bottom: 20px;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+}
+
+.feedList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    /* Space between ConnectionCards */
+}
+
+.noResults {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--color-text-secondary);
+    background-color: var(--color-background-secondary);
+    border-radius: var(--border-radius-medium);
+}
+
+.paginationControls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 10px;
+}
+
+.pageInfo {
+    font-weight: bold;
+    color: var(--color-text-primary);
+}
+
+.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    /* Ensure spinner has space */
+}
+
+/* Add media queries for responsiveness as needed */
+@media (max-width: 600px) {
+    .filterContainer {
+        flex-direction: column;
+        align-items: stretch;
+        /* Stretch items full width */
+    }
+
+    .filterInput {
+        min-width: unset;
+        /* Remove min-width */
+    }
+
+    .filterButton,
+    .clearFilterButton {
+        width: 100%;
+        /* Make buttons full width */
+    }
+}
