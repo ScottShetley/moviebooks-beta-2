@@ -103,3 +103,140 @@
         /* Make buttons full width */
     }
 }
+
+/* client/src/pages/HomePage/HomePage.module.css */
+
+.homePageContainer {
+    padding: 20px;
+    max-width: 1100px;
+    /* Increased max-width for more filters */
+    margin: 0 auto;
+}
+
+/* NEW: Styles for the overall filter form/fieldset */
+.filterForm {
+    margin-bottom: 20px;
+}
+
+.filterFieldset {
+    padding: 15px 20px 20px 20px;
+    background-color: var(--color-background-secondary);
+    border-radius: var(--border-radius-medium);
+    border: 1px solid var(--color-border-subtle);
+}
+
+.filterFieldset legend {
+    font-weight: bold;
+    padding: 0 10px;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-medium);
+}
+
+/* NEW: Grid layout for filter inputs */
+.filterGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    /* Responsive columns */
+    gap: 15px;
+    /* Gap between inputs */
+    margin-top: 10px;
+    /* Space below legend */
+    margin-bottom: 20px;
+    /* Space above actions */
+}
+
+/* NEW: Container for filter buttons */
+.filterActions {
+    display: flex;
+    justify-content: flex-start;
+    /* Align buttons to the start */
+    gap: 10px;
+}
+
+/* --- Keep existing styles below, adjusted if needed --- */
+
+/* Remove flex styles from old filterContainer */
+/* .filterContainer { ... } */
+
+/* Style individual input wrappers if needed (optional) */
+/* .filterGrid > div { ... } */
+
+
+/* Adjust button widths if needed */
+.filterButton,
+.clearFilterButton {
+    /* white-space: nowrap; */
+    /* May not be needed */
+}
+
+.activeFilterInfo {
+    /* margin-top: -10px; */
+    /* Removed negative margin */
+    margin-top: 5px;
+    margin-bottom: 20px;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+    word-break: break-word;
+    /* Allow long filter string to wrap */
+}
+
+.feedList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.noResults {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--color-text-secondary);
+    background-color: var(--color-background-secondary);
+    border-radius: var(--border-radius-medium);
+}
+
+.paginationControls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 10px;
+}
+
+.pageInfo {
+    font-weight: bold;
+    color: var(--color-text-primary);
+}
+
+.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+/* --- Media Queries --- */
+@media (max-width: 768px) {
+    .filterGrid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .filterGrid {
+        /* Stack inputs vertically on small screens */
+        grid-template-columns: 1fr;
+    }
+
+    .filterActions {
+        flex-direction: column;
+        /* Stack buttons */
+        align-items: stretch;
+    }
+
+    .filterButton,
+    .clearFilterButton {
+        width: 100%;
+    }
+}
