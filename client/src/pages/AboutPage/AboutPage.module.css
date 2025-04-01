@@ -1,0 +1,22 @@
+/* client/src/pages/AboutPage/AboutPage.module.css */
+.aboutContainer {
+    max-width: 800px;
+    margin: 40px auto; /* Center content */
+    padding: 20px 40px;
+    background-color: var(--color-background-primary); /* Or secondary */
+    border-radius: var(--border-radius-large);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+}
+
+.aboutContainer h1 {
+    color: var(--color-accent);
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.aboutContainer p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+    font-size: var(--font-size-medium);
+}

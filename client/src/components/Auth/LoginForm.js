@@ -19,12 +19,26 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('[LoginForm] handleSubmit triggered.'); // <-- ADD LOG 1
     clearError();
-    const success = await login(email, password);
-    if (success) {
-      const from = location.state?.from?.pathname || "/";
-      console.log(`Login successful, navigating to: ${from}`);
-      navigate(from, { replace: true });
+    console.log('[LoginForm] Attempting login with:', email); // <-- ADD LOG 2
+
+    try {
+        const success = await login(email, password); // Call the login function from context
+        console.log('[LoginForm] login function returned:', success); // <-- ADD LOG 3
+
+        if (success) {
+          const from = location.state?.from?.pathname || "/";
+          console.log(`[LoginForm] Login successful, navigating to: ${from}`); // <-- EXISTING LOG (modified slightly)
+          navigate(from, { replace: true });
+        } else {
+          // Error should be handled by AuthContext setting the error state
+          console.log('[LoginForm] Login function returned false (error likely set in context).'); // <-- ADD LOG 4
+        }
+    } catch (err) {
+        // This catch block might not even be necessary if login() handles its own errors
+        console.error('[LoginForm] Unexpected error during handleSubmit:', err); // <-- ADD LOG 5
+        // Display a generic error? Or rely on AuthContext's error?
     }
   };
 
@@ -33,7 +47,8 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    // Add noValidate to the form tag
+    <form onSubmit={handleSubmit} noValidate> {/* <<<<<<<<<<<<<<< ADD noValidate HERE */}
       <h2 style={{ textAlign: 'center', marginBottom: 'var(--space-lg)' }}>Login</h2>
       <ErrorMessage message={authError} />
 
@@ -49,8 +64,6 @@ const LoginForm = () => {
         disabled={loading}
       />
 
-      {/* Wrap Input and Toggle Button */}
-      {/* The Input component itself now handles margin-bottom via .inputGroup */}
       <div className={styles.passwordWrapper}>
         <Input
           label="Password"
@@ -62,11 +75,8 @@ const LoginForm = () => {
           autoComplete="current-password"
           placeholder="Enter your password"
           disabled={loading}
-          // --- MODIFICATION: Pass specific class to Input component ---
           inputClassName={styles.passwordInputWithIcon}
-          // --- END MODIFICATION ---
         />
-        {/* Toggle Button - positioning adjusted in CSS */}
         <button
           type="button"
           className={styles.passwordToggle}

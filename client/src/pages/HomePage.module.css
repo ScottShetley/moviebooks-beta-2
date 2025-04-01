@@ -1,119 +1,25 @@
 /* client/src/pages/HomePage/HomePage.module.css */
 
-.homePageContainer {
-    padding: 20px;
-    max-width: 900px;
-    /* Or your preferred max width */
-    margin: 0 auto;
-}
-
-.filterContainer {
+/* NEW: Overall layout container */
+.homePageLayoutContainer {
     display: flex;
-    flex-wrap: wrap;
-    /* Allow wrapping on smaller screens */
-    align-items: flex-end;
-    /* Align items nicely */
-    gap: 10px;
-    /* Space between elements */
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: var(--color-background-secondary);
-    /* Light background */
-    border-radius: var(--border-radius-medium);
-    border: 1px solid var(--color-border-subtle);
+    /* Use flexbox for Sidebar + Main Content layout */
 }
 
-.filterInput {
+/* NEW: Styling for the main content area next to the sidebar */
+.mainContentArea {
     flex-grow: 1;
-    /* Allow input to take available space */
-    min-width: 200px;
-    /* Minimum width before wrapping */
-}
-
-/* Adjust button widths or remove if using standard Button component styling */
-.filterButton,
-.clearFilterButton {
-    /* Add specific styles if needed */
-    white-space: nowrap;
-    /* Prevent button text wrapping */
-}
-
-.activeFilterInfo {
-    margin-top: -10px;
-    /* Pull up slightly below filter box */
-    margin-bottom: 20px;
-    font-style: italic;
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-small);
-}
-
-.feedList {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    /* Space between ConnectionCards */
-}
-
-.noResults {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--color-text-secondary);
-    background-color: var(--color-background-secondary);
-    border-radius: var(--border-radius-medium);
-}
-
-.paginationControls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 30px;
-    padding: 10px;
-}
-
-.pageInfo {
-    font-weight: bold;
-    color: var(--color-text-primary);
-}
-
-.centered {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-    /* Ensure spinner has space */
-}
-
-/* Add media queries for responsiveness as needed */
-@media (max-width: 600px) {
-    .filterContainer {
-        flex-direction: column;
-        align-items: stretch;
-        /* Stretch items full width */
-    }
-
-    .filterInput {
-        min-width: unset;
-        /* Remove min-width */
-    }
-
-    .filterButton,
-    .clearFilterButton {
-        width: 100%;
-        /* Make buttons full width */
-    }
-}
-
-/* client/src/pages/HomePage/HomePage.module.css */
-
-.homePageContainer {
+    /* Allow main content to take up remaining space */
     padding: 20px;
-    max-width: 1100px;
-    /* Increased max-width for more filters */
-    margin: 0 auto;
+    /* Padding around the main content */
+    max-width: 900px;
+    /* Optional: Constrain the width of the feed/filter area */
+    margin-left: auto; /* Center the main content if max-width is less than available space */
+    margin-right: auto;
+    min-width: 0; /* Prevent flexbox overflow issues */
 }
 
-/* NEW: Styles for the overall filter form/fieldset */
+/* --- Styles for Filters (within .mainContentArea) --- */
 .filterForm {
     margin-bottom: 20px;
 }
@@ -132,55 +38,32 @@
     font-size: var(--font-size-medium);
 }
 
-/* NEW: Grid layout for filter inputs */
 .filterGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    /* Responsive columns */
     gap: 15px;
-    /* Gap between inputs */
     margin-top: 10px;
-    /* Space below legend */
     margin-bottom: 20px;
-    /* Space above actions */
 }
 
-/* NEW: Container for filter buttons */
 .filterActions {
     display: flex;
     justify-content: flex-start;
-    /* Align buttons to the start */
     gap: 10px;
 }
 
-/* --- Keep existing styles below, adjusted if needed --- */
-
-/* Remove flex styles from old filterContainer */
-/* .filterContainer { ... } */
-
-/* Style individual input wrappers if needed (optional) */
-/* .filterGrid > div { ... } */
-
-
-/* Adjust button widths if needed */
-.filterButton,
-.clearFilterButton {
-    /* white-space: nowrap; */
-    /* May not be needed */
-}
+/* Removed empty .filterButton, .clearFilterButton rule */
 
 .activeFilterInfo {
-    /* margin-top: -10px; */
-    /* Removed negative margin */
     margin-top: 5px;
     margin-bottom: 20px;
     font-style: italic;
     color: var(--color-text-secondary);
     font-size: var(--font-size-small);
     word-break: break-word;
-    /* Allow long filter string to wrap */
 }
 
+/* --- Styles for Feed List & Items (within .mainContentArea) --- */
 .feedList {
     display: flex;
     flex-direction: column;
@@ -195,6 +78,7 @@
     border-radius: var(--border-radius-medium);
 }
 
+/* --- Styles for Pagination (within .mainContentArea) --- */
 .paginationControls {
     display: flex;
     justify-content: center;
@@ -209,6 +93,7 @@
     color: var(--color-text-primary);
 }
 
+/* --- Styles for Loading/Centered Content (within .mainContentArea) --- */
 .centered {
     display: flex;
     justify-content: center;
@@ -217,26 +102,111 @@
 }
 
 /* --- Media Queries --- */
+/* Adjust layout for smaller screens */
 @media (max-width: 768px) {
-    .filterGrid {
+    /* Removed empty .homePageLayoutContainer rule */
+
+
+     .filterGrid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
 }
 
 @media (max-width: 600px) {
     .filterGrid {
-        /* Stack inputs vertically on small screens */
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Stack inputs */
     }
 
     .filterActions {
-        flex-direction: column;
-        /* Stack buttons */
+        flex-direction: column; /* Stack buttons */
         align-items: stretch;
     }
 
     .filterButton,
     .clearFilterButton {
         width: 100%;
+    }
+}
+/* client/src/pages/HomePage/HomePage.module.css */
+
+/* ... Keep all existing styles above ... */
+
+
+/* --- Media Queries --- */
+
+/* Styles for when the sidebar is HIDDEN */
+@media (max-width: 992px) { /* Matches the sidebar hiding breakpoint */
+    .homePageLayoutContainer {
+        /* Sidebar is now fixed/overlay, so main content takes full width */
+        display: block; /* Revert from flex */
+    }
+
+    .mainContentArea {
+        /* Take full width, adjust padding */
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
+    /* Other adjustments from previous media queries might apply here too if needed */
+}
+
+
+/* Adjust filter layout for tablets and smaller */
+@media (max-width: 768px) {
+    /* No changes needed here unless overriding the 992px styles */
+     .filterGrid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+/* Adjust filter layout for mobile phones */
+@media (max-width: 600px) {
+    .filterGrid {
+        grid-template-columns: 1fr; /* Stack inputs */
+    }
+
+    .filterActions {
+        flex-direction: column; /* Stack buttons */
+        align-items: stretch;
+    }
+
+    .filterButton,
+    .clearFilterButton {
+        width: 100%;
+    }
+     .mainContentArea {
+         padding: 10px; /* Further reduce padding */
+     }
+}
+/* client/src/pages/HomePage/HomePage.module.css */
+
+/* ... Keep all existing styles above ... */
+
+
+/* --- NEW: Sidebar Overlay (for mobile) --- */
+.sidebarOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: calc(var(--z-index-sidebar, 1040) - 1); /* Below sidebar, above content */
+    display: none; /* Hidden by default */
+    cursor: pointer;
+    /* Add transitions if desired */
+    /* transition: opacity 0.3s ease-in-out; */
+    /* opacity: 0; */
+}
+
+/* Show overlay only when sidebar is open (controlled by React rendering) */
+/* This media query ensures the overlay logic *only* applies on smaller screens */
+/* where the sidebar actually becomes an overlay */
+@media (max-width: 992px) {
+    /* When rendered by React because sidebar is open, make it visible */
+     .sidebarOverlay {
+        display: block;
+        /* opacity: 1; */ /* Use with transition if added */
     }
 }
