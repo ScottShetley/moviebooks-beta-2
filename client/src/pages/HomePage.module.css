@@ -1,25 +1,62 @@
-/* client/src/pages/HomePage/HomePage.module.css */
+/* client/src/pages/HomePage.module.css */
+/* Styles applied primarily within the component rendered by HomePage.js */
 
-/* NEW: Overall layout container */
-.homePageLayoutContainer {
-    display: flex;
-    /* Use flexbox for Sidebar + Main Content layout */
-}
-
-/* NEW: Styling for the main content area next to the sidebar */
+/* Define the main content area properties */
 .mainContentArea {
-    flex-grow: 1;
-    /* Allow main content to take up remaining space */
-    padding: 20px;
-    /* Padding around the main content */
-    max-width: 900px;
-    /* Optional: Constrain the width of the feed/filter area */
+    flex-grow: 1; /* Ensure it tries to grow if inside a flex container (like AppLayout) */
+    padding: 20px; /* Padding around the main content */
+    max-width: 900px; /* Optional: Constrain the width of the feed/filter area */
     margin-left: auto; /* Center the main content if max-width is less than available space */
     margin-right: auto;
     min-width: 0; /* Prevent flexbox overflow issues */
 }
 
-/* --- Styles for Filters (within .mainContentArea) --- */
+/* --- Styles for Global Tag Filter Status --- */
+.filterStatus {
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-background-muted); /* Default background */
+  border-radius: var(--border-radius-medium);
+  font-size: var(--font-size-small);
+  display: flex; /* Use flex for alignment */
+  gap: var(--space-md);
+  align-items: center;
+  flex-wrap: wrap; /* Allow wrapping */
+}
+
+/* Specific style for the global tag filter display */
+.activeTagFilter {
+  /* Inherits background from .filterStatus by default, but override for emphasis */
+  background-color: var(--color-accent-subtle);
+  color: var(--color-accent-dark); /* Adjust color for readability */
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--border-radius-small);
+  display: inline-flex; /* Align button nicely */
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.activeTagFilter strong {
+    color: var(--color-accent-darker); /* Adjust color */
+}
+
+/* Style for the clear button (used for both global tag and local filters potentially) */
+.clearFilterButton {
+  background: none;
+  border: none;
+  color: var(--color-accent-dark); /* Match the filter text color */
+  font-size: 1.2em; /* Make cross slightly larger */
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0 0 2px; /* Fine-tune padding */
+  /* margin-left: var(--space-xs); */ /* Added dynamically via inline style or specific class if needed */
+}
+.clearFilterButton:hover {
+  color: var(--color-error); /* Indicate removal action */
+}
+
+
+/* --- Styles for Local Filters (Advanced) --- */
 .filterForm {
     margin-bottom: 20px;
 }
@@ -50,24 +87,32 @@
     display: flex;
     justify-content: flex-start;
     gap: 10px;
+    flex-wrap: wrap; /* Allow buttons to wrap on small screens */
 }
 
-/* Removed empty .filterButton, .clearFilterButton rule */
+/* Specific styles for filter buttons if needed, inherit from Button component otherwise */
+.filterButton {
+    /* Add specific styles if Button component isn't sufficient */
+}
+/* Reusing .clearFilterButton style defined above for the 'Clear Advanced Filters' button */
 
+
+/* Info text for active LOCAL filters */
 .activeFilterInfo {
-    margin-top: 5px;
+    margin-top: -10px; /* Pull up slightly below the fieldset */
     margin-bottom: 20px;
     font-style: italic;
     color: var(--color-text-secondary);
     font-size: var(--font-size-small);
-    word-break: break-word;
+    word-break: break-word; /* Prevent long filter strings from overflowing */
+    padding: 0 5px; /* Align slightly with fieldset padding */
 }
 
-/* --- Styles for Feed List & Items (within .mainContentArea) --- */
+/* --- Styles for Feed List & Items --- */
 .feedList {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 20px; /* Space between ConnectionCards */
 }
 
 .noResults {
@@ -76,9 +121,10 @@
     color: var(--color-text-secondary);
     background-color: var(--color-background-secondary);
     border-radius: var(--border-radius-medium);
+    margin-top: 20px; /* Add some space if filters are present */
 }
 
-/* --- Styles for Pagination (within .mainContentArea) --- */
+/* --- Styles for Pagination --- */
 .paginationControls {
     display: flex;
     justify-content: center;
@@ -93,120 +139,48 @@
     color: var(--color-text-primary);
 }
 
-/* --- Styles for Loading/Centered Content (within .mainContentArea) --- */
+/* --- Styles for Loading/Centered Content --- */
 .centered {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;
+    min-height: 200px; /* Ensure loading spinner has space */
+    width: 100%;
 }
 
 /* --- Media Queries --- */
-/* Adjust layout for smaller screens */
-@media (max-width: 768px) {
-    /* Removed empty .homePageLayoutContainer rule */
+/* Adjustments primarily for filter layout and padding within the main content area */
 
-
-     .filterGrid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-}
-
-@media (max-width: 600px) {
-    .filterGrid {
-        grid-template-columns: 1fr; /* Stack inputs */
-    }
-
-    .filterActions {
-        flex-direction: column; /* Stack buttons */
-        align-items: stretch;
-    }
-
-    .filterButton,
-    .clearFilterButton {
-        width: 100%;
-    }
-}
-/* client/src/pages/HomePage/HomePage.module.css */
-
-/* ... Keep all existing styles above ... */
-
-
-/* --- Media Queries --- */
-
-/* Styles for when the sidebar is HIDDEN */
-@media (max-width: 992px) { /* Matches the sidebar hiding breakpoint */
-    .homePageLayoutContainer {
-        /* Sidebar is now fixed/overlay, so main content takes full width */
-        display: block; /* Revert from flex */
-    }
-
-    .mainContentArea {
-        /* Take full width, adjust padding */
-        max-width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        padding: 15px; /* Adjust padding for smaller screens */
-    }
-    /* Other adjustments from previous media queries might apply here too if needed */
-}
-
-
-/* Adjust filter layout for tablets and smaller */
-@media (max-width: 768px) {
-    /* No changes needed here unless overriding the 992px styles */
-     .filterGrid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-}
-
-/* Adjust filter layout for mobile phones */
-@media (max-width: 600px) {
-    .filterGrid {
-        grid-template-columns: 1fr; /* Stack inputs */
-    }
-
-    .filterActions {
-        flex-direction: column; /* Stack buttons */
-        align-items: stretch;
-    }
-
-    .filterButton,
-    .clearFilterButton {
-        width: 100%;
-    }
-     .mainContentArea {
-         padding: 10px; /* Further reduce padding */
-     }
-}
-/* client/src/pages/HomePage/HomePage.module.css */
-
-/* ... Keep all existing styles above ... */
-
-
-/* --- NEW: Sidebar Overlay (for mobile) --- */
-.sidebarOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-    z-index: calc(var(--z-index-sidebar, 1040) - 1); /* Below sidebar, above content */
-    display: none; /* Hidden by default */
-    cursor: pointer;
-    /* Add transitions if desired */
-    /* transition: opacity 0.3s ease-in-out; */
-    /* opacity: 0; */
-}
-
-/* Show overlay only when sidebar is open (controlled by React rendering) */
-/* This media query ensures the overlay logic *only* applies on smaller screens */
-/* where the sidebar actually becomes an overlay */
 @media (max-width: 992px) {
-    /* When rendered by React because sidebar is open, make it visible */
-     .sidebarOverlay {
-        display: block;
-        /* opacity: 1; */ /* Use with transition if added */
+    /* On screens where sidebar might be overlaid, adjust padding */
+    .mainContentArea {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+     .filterGrid {
+        /* Make filter grid adapt sooner */
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .mainContentArea {
+         padding: 10px; /* Further reduce padding on small mobile */
+     }
+
+    .filterGrid {
+        grid-template-columns: 1fr; /* Stack inputs fully */
+    }
+
+    .filterActions {
+        flex-direction: column; /* Stack buttons */
+        align-items: stretch; /* Make buttons full width */
+    }
+
+    /* Ensure buttons within stacked actions take full width */
+    .filterActions > * { /* Target direct children */
+        width: 100%;
     }
 }

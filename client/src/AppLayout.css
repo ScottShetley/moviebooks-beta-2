@@ -1,0 +1,32 @@
+/* client/src/AppLayout.css */
+
+.appLayout {
+    display: flex;
+    /* Ensure it takes up space between header and footer */
+    min-height: calc(100vh - 120px); /* Adjust 120px if header/footer height changes */
+  }
+  
+  .mainContent {
+    flex-grow: 1; /* Allows the main content to take up the remaining space */
+    overflow-y: auto; /* Allow content scrolling if needed */
+    /* Add padding if needed, e.g., to match container padding */
+    /* padding: var(--space-md); */
+    /* This might need adjustment based on specific page content */
+    /* On mobile, when sidebar is fixed/overlay, this element naturally flows underneath */
+  }
+  
+  /* Media query to handle layout adjustments when sidebar is hidden on desktop */
+  /* This matches the breakpoint where the sidebar *starts* being fixed/hidden */
+  @media (max-width: 992px) {
+    .appLayout {
+      /* On smaller screens, the sidebar is fixed/overlayed, */
+      /* so the flex container logic isn't strictly needed */
+      /* We can revert to block or keep flex, but mainContent takes full width */
+      display: block; /* Or keep flex, doesn't matter much here */
+    }
+  
+    .mainContent {
+      /* Ensure main content takes full width when sidebar is overlaid */
+      width: 100%;
+    }
+  }
