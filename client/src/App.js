@@ -1,16 +1,14 @@
 // client/src/App.js
 import React, { useState, useCallback } from 'react';
-// *** Ensure Navigate is imported from react-router-dom ***
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'; // Added useNavigate, useLocation
 import { useAuth } from './contexts/AuthContext';
 import Header from './components/Layout/Header/Header';
 import Footer from './components/Layout/Footer/Footer';
+import Sidebar from './components/Sidebar/Sidebar'; // Import Sidebar
 import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage/LandingPage';
-// *** Ensure LoginPage and SignupPage components are imported ***
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-// *** --- ***
 import CreateConnectionPage from './pages/CreateConnectionPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import BookDetailPage from './pages/BookDetailPage';
@@ -22,127 +20,156 @@ import HelpPage from './pages/HelpPage/HelpPage';
 // Optional: Import LoadingSpinner if you want a visual indicator
 // import LoadingSpinner from './components/Common/LoadingSpinner/LoadingSpinner';
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { user, loading: authLoading } = useAuth(); // Use loading state from auth context
+import './AppLayout.css'; // Import layout CSS (we will create this)
 
-  // Show loading indicator while checking auth status
+// Protected Route Component (remains the same)
+const ProtectedRoute = ({ children }) => {
+  const { user, loading: authLoading } = useAuth();
   if (authLoading) {
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-            {/* Optional: <LoadingSpinner /> */}
-            Checking authentication...
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        Checking authentication...
+      </div>
     );
   }
-
-  // If not loading, redirect to login if no user exists
-  // Using 'replace' prevents the login page from ending up in the history stack
   return user ? children : <Navigate to="/login" replace />;
 };
 
 
 // Main App Component
 function App() {
-  // Get user and loading status from AuthContext
-  // Renamed loading to authLoading to avoid naming conflicts if other loading states are added later
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate(); // Hook for navigation
+  const location = useLocation(); // Hook to get current path
 
-  // State for controlling sidebar visibility (moved from HomePage)
+  // State for controlling sidebar visibility
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // State for the active tag filter (lifted from HomePage)
+  const [currentFilterTag, setCurrentFilterTag] = useState(null);
 
-  // Callback to toggle sidebar state, stable due to empty dependency array
+  // Callback to toggle sidebar state
   const toggleSidebar = useCallback((forceState) => {
-      setIsSidebarOpen(prev => typeof forceState === 'boolean' ? forceState : !prev);
+    setIsSidebarOpen(prev => typeof forceState === 'boolean' ? forceState : !prev);
   }, []);
 
-  // Display a global loading state only during the initial authentication check
-  // This prevents the entire UI from flashing or rendering prematurely
+  // Callback function to handle clicks on tags in the Sidebar
+  const handleTagClick = useCallback((tag) => {
+    console.log('Tag clicked in App:', tag);
+    setCurrentFilterTag(tag); // Set the filter state
+    // If not already on HomePage, navigate there
+    if (location.pathname !== '/') {
+      navigate('/');
+    }
+    // Close sidebar after tag click (especially needed on mobile)
+    toggleSidebar(false);
+  }, [navigate, toggleSidebar, location.pathname]); // Dependencies
+
+  // Function to clear the tag filter (will be passed down)
+  const clearTagFilter = useCallback(() => {
+      setCurrentFilterTag(null);
+  }, []);
+
+  // Global loading state during initial auth check (remains the same)
   if (authLoading) {
-      return (
-        <>
-          {/* Render a minimal layout during this initial check */}
-          <Header isSidebarOpen={false} onSidebarToggle={() => {}} />
-          <main className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: ' calc(100vh - 120px)' }}>
-             {/* Optional: <LoadingSpinner /> */}
-             Initializing Application...
-          </main>
-          <Footer />
-        </>
-      );
+    return (
+      <>
+        <Header isSidebarOpen={false} onSidebarToggle={() => {}} />
+        <main className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: ' calc(100vh - 120px)' }}>
+           Initializing Application...
+        </main>
+        <Footer />
+      </>
+    );
   }
 
-  // Once initial auth check is done, render the main application layout
+  // Main application layout
   return (
     <>
-      {/* Header receives sidebar state and toggle function */}
+      {/* Header still receives toggle controls */}
       <Header
         isSidebarOpen={isSidebarOpen}
         onSidebarToggle={toggleSidebar}
       />
-      {/* Main content area where routes are rendered */}
-      <main>
-        <Routes>
-          {/* --- Public Routes --- */}
 
-          {/* Root Route: Shows LandingPage if logged out, HomePage if logged in */}
-          <Route
-            path="/"
-            element={
-                user
-                ? <HomePage isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-                : <LandingPage />
-            }
-          />
+      {/* NEW: Layout container for Sidebar and Main Content */}
+      <div className="appLayout">
+        {/* Render Sidebar globally if user is logged in */}
+        {user && (
+           <Sidebar
+             isOpen={isSidebarOpen}
+             closeSidebar={() => toggleSidebar(false)} // Pass explicit close function
+             onTagClick={handleTagClick} // Pass the new handler
+             currentFilterTag={currentFilterTag} // Pass the current filter state
+           />
+         )}
 
-          {/* Login Route: Shows LoginPage if logged out, redirects to Home if logged in */}
-          <Route
-             path="/login"
-             element={!user ? <LoginPage /> : <Navigate to="/" replace />}
-          />
+        {/* Main content area where routes are rendered */}
+        {/* The 'main' tag now takes the remaining space */}
+        <main className="mainContent">
+          <Routes>
+            {/* --- Public Routes --- */}
 
-          {/* Signup Route: Shows SignupPage if logged out, redirects to Home if logged in */}
-          <Route
-             path="/signup"
-             element={!user ? <SignupPage /> : <Navigate to="/" replace />}
-          />
+            {/* Root Route: Always render HomePage if logged in, pass filter state */}
+            <Route
+              path="/"
+              element={
+                  user
+                  ? <HomePage
+                      currentFilterTag={currentFilterTag}
+                      clearTagFilter={clearTagFilter} // Pass function to clear filter
+                    />
+                  : <LandingPage />
+              }
+            />
 
-          {/* Other public routes accessible whether logged in or not */}
-          {MovieDetailPage && <Route path="/movies/:movieId" element={<MovieDetailPage />} />}
-          {BookDetailPage && <Route path="/books/:bookId" element={<BookDetailPage />} />}
-          <Route path="/users/:userId" element={<ProfilePage />} /> {/* Public view of user profiles */}
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/help" element={<HelpPage />} />
+            {/* Login Route (no changes needed here) */}
+            <Route
+               path="/login"
+               element={!user ? <LoginPage /> : <Navigate to="/" replace />}
+            />
 
+            {/* Signup Route (no changes needed here) */}
+            <Route
+               path="/signup"
+               element={!user ? <SignupPage /> : <Navigate to="/" replace />}
+            />
 
-          {/* --- Protected Routes (Require Login) --- */}
-
-          {/* Create Connection Route */}
-          <Route
-             path="/create"
-             element={<ProtectedRoute><CreateConnectionPage /></ProtectedRoute>}
-          />
-
-          {/* Logged-in User's Profile Route (assuming /profile means 'my profile') */}
-          {/* ProfilePage component might need logic to fetch logged-in user's data if no ID is provided */}
-          <Route
-            path="/profile"
-            element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
-          />
-
-          {/* Notifications Route */}
-          <Route
-             path="/notifications"
-             element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}
-          />
-          {/* Add other protected routes here using the <ProtectedRoute> wrapper */}
+            {/* Other public routes (no changes needed here) */}
+            {MovieDetailPage && <Route path="/movies/:movieId" element={<MovieDetailPage />} />}
+            {BookDetailPage && <Route path="/books/:bookId" element={<BookDetailPage />} />}
+            <Route path="/users/:userId" element={<ProfilePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/help" element={<HelpPage />} />
 
 
-          {/* --- Not Found Route (Catch-all) --- */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </main>
-      {/* Footer is rendered outside the main content area */}
+            {/* --- Protected Routes (Require Login) --- */}
+
+            {/* Create Connection Route (no changes needed here) */}
+            <Route
+               path="/create"
+               element={<ProtectedRoute><CreateConnectionPage /></ProtectedRoute>}
+            />
+
+            {/* Profile Route (no changes needed here) */}
+            <Route
+              path="/profile"
+              element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
+            />
+
+            {/* Notifications Route (no changes needed here) */}
+            <Route
+               path="/notifications"
+               element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}
+            />
+
+
+            {/* --- Not Found Route (Catch-all) --- */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </main>
+      </div>
+
+      {/* Footer remains outside the main layout flex container */}
       <Footer />
     </>
   );
