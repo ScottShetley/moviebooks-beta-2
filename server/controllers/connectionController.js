@@ -47,13 +47,13 @@ const findOrCreate = async (model, query, data) => {
       }
   }
 
-  console.log(`[findOrCreate] Model: ${model.modelName}, Query: ${JSON.stringify(query)}, Update Data: ${JSON.stringify(updateData)}`);
+  // console.log(`[findOrCreate] Model: ${model.modelName}, Query: ${JSON.stringify(query)}, Update Data: ${JSON.stringify(updateData)}`);
 
   // Find existing first (case-insensitive title)
   let doc = await model.findOne(query).collation(collation);
 
   if (doc) {
-      console.log(`[findOrCreate] Found existing ${model.modelName} ID: ${doc._id}`);
+      // console.log(`[findOrCreate] Found existing ${model.modelName} ID: ${doc._id}`);
       // Update existing document if new data is provided
       let needsUpdate = false;
       for (const key in updateData) {
@@ -65,13 +65,13 @@ const findOrCreate = async (model, query, data) => {
            }
       }
        if (needsUpdate) {
-            console.log(`[findOrCreate] Updating existing ${model.modelName}...`);
+            // console.log(`[findOrCreate] Updating existing ${model.modelName}...`);
             doc = await doc.save(); // Save changes to the found document
        }
        return doc;
   } else {
       // Create new document if not found
-      console.log(`[findOrCreate] Creating new ${model.modelName}...`);
+      // console.log(`[findOrCreate] Creating new ${model.modelName}...`);
       // Merge query fields (like title) into the data to ensure they are set on creation
       const createData = { ...query, ...updateData };
       return await model.create(createData);
@@ -98,7 +98,7 @@ export const createConnection = asyncHandler(async (req, res, next) => {
   const userId = req.user._id;
 
   console.log('[createConnection] Starting process...');
-  console.log('[createConnection] Request Body (Text Fields):', JSON.stringify(req.body, null, 2));
+  // console.log('[createConnection] Request Body (Text Fields):', JSON.stringify(req.body, null, 2));
   console.log('[createConnection] Authenticated User ID:', userId);
 
   if (!movieTitle || !bookTitle) {
@@ -110,10 +110,6 @@ export const createConnection = asyncHandler(async (req, res, next) => {
   const processedMovieGenres = processStringToArray(movieGenres);
   const processedMovieActors = processStringToArray(movieActors);
   const processedBookGenres = processStringToArray(bookGenres);
-  console.log('[createConnection] Processed Tags:', processedTags);
-  console.log('[createConnection] Processed Movie Genres:', processedMovieGenres);
-  console.log('[createConnection] Processed Movie Actors:', processedMovieActors);
-  console.log('[createConnection] Processed Book Genres:', processedBookGenres);
   // --- End Array Processing ---
 
   // --- Find or Create Movie and Book with new details ---
@@ -208,6 +204,9 @@ export const getConnections = asyncHandler(async (req, res, next) => {
   if (tags && typeof tags === 'string' && tags.trim() !== '') {
       const tagsArray = processStringToArray(tags);
       if (tagsArray.length > 0) {
+          // IMPORTANT: Match needs to happen *after* lookups if filtering by Movie/Book properties
+          // If filtering *only* by connection tags, it could potentially go earlier
+          // But for consistency, we'll apply the full match stage after all lookups
           matchStage.tags = { $in: tagsArray }; // Match if connection has ANY of the tags
           console.log(`[getConnections] Adding filter: tags IN [${tagsArray.join(', ')}]`);
       }
@@ -356,6 +355,66 @@ export const getConnections = asyncHandler(async (req, res, next) => {
   });
 }); // End getConnections
 
+
+/**
+ * @desc    Get popular tags based on frequency in Connections
+ * @route   GET /api/connections/popular-tags
+ * @access  Public
+ */
+export const getPopularTags = asyncHandler(async (req, res) => {
+    console.log('[getPopularTags] Fetching popular tags...');
+    const tagLimit = 15; // Limit the number of tags returned
+
+    try {
+        const popularTags = await Connection.aggregate([
+            // Stage 1: Filter out connections with empty or no tags array (optional optimization)
+            { $match: { tags: { $exists: true, $ne: [] } } },
+
+            // Stage 2: Unwind the tags array to create a doc per tag per connection
+            { $unwind: '$tags' },
+
+             // Stage 3: Convert tags to lowercase for case-insensitive grouping (optional but recommended)
+            {
+                $project: {
+                    tagLower: { $toLower: '$tags' }
+                }
+            },
+
+            // Stage 4: Group by the lowercase tag and count occurrences
+            {
+                $group: {
+                    _id: '$tagLower', // Group by the lowercase tag name
+                    count: { $sum: 1 } // Count how many times each tag appears
+                }
+            },
+
+            // Stage 5: Sort by count descending
+            { $sort: { count: -1 } },
+
+            // Stage 6: Limit the results
+            { $limit: tagLimit },
+
+            // Stage 7: Project to rename _id to 'tag' for clarity (optional)
+             {
+                 $project: {
+                     _id: 0, // Exclude the default _id
+                     tag: '$_id', // Rename _id to tag
+                     count: 1 // Include the count
+                 }
+             }
+        ]);
+
+        console.log(`[getPopularTags] Found ${popularTags.length} popular tags.`);
+        res.json(popularTags);
+
+    } catch (error) {
+        console.error('[getPopularTags] Error fetching popular tags:', error);
+        res.status(500);
+        throw new Error('Server error fetching popular tags');
+    }
+}); // End getPopularTags
+
+
 // --- LIKE / FAVORITE / DELETE / GET BY USER ID ---
 // These functions remain largely the same for now, using findById/find and populate.
 // They could be converted to aggregation later if complex filtering/joining is needed
@@ -404,7 +463,7 @@ export const likeConnection = asyncHandler(async (req, res, next) => {
      .populate('movieRef') // Populate full movie doc
      .populate('bookRef');  // Populate full book doc
 
-   console.log(`[likeConnection] Updated. Likes: ${updatedConnection.likes.length}`);
+   // console.log(`[likeConnection] Updated. Likes: ${updatedConnection.likes.length}`);
   res.json({ connection: updatedConnection, notificationId });
 });
 
@@ -431,7 +490,7 @@ export const favoriteConnection = asyncHandler(async (req, res, next) => {
      .populate('movieRef')
      .populate('bookRef');
 
-   console.log(`[favoriteConnection] Updated. Favorites: ${updatedConnection.favorites.length}`);
+   // console.log(`[favoriteConnection] Updated. Favorites: ${updatedConnection.favorites.length}`);
   res.json(updatedConnection);
 });
 
@@ -467,6 +526,8 @@ export const deleteConnection = asyncHandler(async (req, res, next) => {
     res.status(200).json({ message: 'Connection deleted successfully', connectionId: connectionId });
 });
 
+// Make sure getConnectionsByUserId is also exported if it's used elsewhere (e.g., ProfilePage)
+// Currently, it's defined but not exported. Let's export it for consistency.
 export const getConnectionsByUserId = asyncHandler(async (req, res) => {
   const targetUserId = req.params.userId;
   // TODO: Add pagination similar to getConnections (would likely require aggregation here too)
@@ -485,3 +546,6 @@ export const getConnectionsByUserId = asyncHandler(async (req, res) => {
 
   res.json(connections || []);
 });
+
+// Make sure all needed functions are exported correctly
+// Already done via 'export const' for each function.

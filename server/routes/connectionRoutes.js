@@ -7,7 +7,8 @@ import {
     getConnections,
     likeConnection,
     favoriteConnection,
-    deleteConnection
+    deleteConnection,
+    getPopularTags // <-- Import the new controller function
 } from '../controllers/connectionController.js'; // Add .js extension
 
 // Import middleware (assuming named export for protect, default for upload)
@@ -24,6 +25,10 @@ router.route('/')
     .get(getConnections)
     // Apply middleware and controller function correctly
     .post(protect, uploadConnectionImages, createConnection);
+
+// --- Route for Popular Tags ---
+// GET /api/connections/popular-tags: Get most frequent tags (Public)
+router.route('/popular-tags').get(getPopularTags); // <-- Add the new route
 
 // --- Routes for specific connections '/api/connections/:id' ---
 

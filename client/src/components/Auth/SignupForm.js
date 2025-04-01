@@ -50,7 +50,7 @@ const SignupForm = () => {
         return;
     }
     // Basic email check (optional, backend validates more thoroughly)
-    if (!/.+\@.+\..+/.test(email)) {
+    if (!/.+@.+\..+/.test(email)) {
         setLocalError('Please enter a valid email address.');
         return;
     }

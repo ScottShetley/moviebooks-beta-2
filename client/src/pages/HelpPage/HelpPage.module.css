@@ -1,0 +1,38 @@
+/* client/src/pages/HelpPage/HelpPage.module.css */
+.helpContainer {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px 40px;
+    background-color: var(--color-background-primary);
+    border-radius: var(--border-radius-large);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+}
+
+.helpContainer h1 {
+    color: var(--color-accent);
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.helpContainer section {
+    margin-bottom: 30px;
+}
+
+.helpContainer h2 {
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-size: var(--font-size-large);
+}
+
+.helpContainer p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+    font-size: var(--font-size-medium);
+}
+
+.helpContainer strong {
+    color: var(--color-text-primary); /* Make questions stand out slightly */
+}
