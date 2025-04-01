@@ -1,76 +1,75 @@
 /* client/src/styles/tokens.css */
 :root {
   /* Colors */
-  --color-primary: #8B1E3F;
-  /* Burgundy */
-  --color-primary-rgb: 139, 30, 63;
-  /* RGB version for box-shadow */
-  --color-secondary: #0A1929;
-  /* Dark blue */
-  --color-accent: #E3B23C;
-  /* Gold */
-  --color-background: #F4F4F4;
-  --color-card: #FFFFFF;
-  --color-text: #333333;
-  --color-text-light: #666666;
-  --color-text-on-primary: #FFFFFF;
-  --color-text-on-secondary: #FFFFFF;
-  --color-border: #DDDDDD;
-  --color-error: #D32F2F;
-  --color-error-rgb: 211, 47, 47;
-  /* RGB version for box-shadow */
-  --color-success: #388E3C;
-  --color-notification-bg: #FFFDE7;
-  /* Light yellow for notifications */
-  --color-notification-border: #FFEE58;
-  /* Slightly darker yellow border */
-  --color-unread-indicator: var(--color-primary);
+  --color-primary: #8B1E3F;                /* Burgundy */
+  --color-primary-rgb: 139, 30, 63;          /* RGB version for box-shadow */
+  --color-primary-dark: #6d1732;            /* Darker Burgundy */
+  --color-secondary: #0A1929;               /* Dark blue */
+  --color-accent: #E3B23C;                 /* Gold */
+
+  --color-background: #F4F4F4;             /* Main page background */
+  --color-card: #FFFFFF;                   /* Card/Surface background */
+  --color-background-secondary: var(--color-card); /* Sidebar Background - White */ /* << ADDED */
+
+  --color-text: #333333;                   /* Primary text */
+  --color-text-light: #666666;             /* Secondary/Subtle text */
+  --color-text-on-primary: #FFFFFF;        /* Text on primary background */
+  --color-text-on-secondary: #FFFFFF;       /* Text on secondary background */
+
+  --color-border: #DDDDDD;                 /* Default border */
+  --color-border-subtle: #EEEEEE;          /* Lighter border (adjust if needed) */
+
+  --color-background-hover: #f0f0f0;        /* Subtle hover background */
+  --color-background-muted: #f8f9fa;        /* Muted background (e.g., for tags count) */
+  --color-accent-hover: #d4a130;            /* Darker gold for hover */
+  --color-accent-subtle: #fff8e1;           /* Very light gold background */
+
+  --color-text-secondary: #555555;         /* Adjusted from text-light, maybe slightly darker */
+  --color-text-disabled: #aaaaaa;          /* Disabled text color */
+  --color-button-text-primary: #FFFFFF;    /* Text on solid buttons (e.g., accent) */
+
+
+  --color-error: #D32F2F;                  /* Error red */
+  --color-error-rgb: 211, 47, 47;           /* RGB version for box-shadow */
+  --color-success: #388E3C;                /* Success green */
+  --color-notification-bg: #FFFDE7;         /* Light yellow for notifications */
+  --color-notification-border: #FFEE58;     /* Slightly darker yellow border */
+  --color-unread-indicator: var(--color-primary); /* Unread notification dot color */
+
 
   /* Typography */
   --font-heading: 'Playfair Display', Georgia, serif;
   --font-body: 'Source Sans Pro', Arial, sans-serif;
 
-  --font-size-xs: 0.75rem;
-  /* 12px */
-  --font-size-sm: 0.875rem;
-  /* 14px */
-  --font-size-md: 1rem;
-  /* 16px */
-  --font-size-lg: 1.125rem;
-  /* 18px */
-  --font-size-xl: 1.5rem;
-  /* 24px */
-  --font-size-xxl: 2rem;
-  /* 32px */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-md: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.5rem;     /* 24px */
+  --font-size-xxl: 2rem;      /* 32px */
+  --font-size-extra-small: 0.7rem; /* For tag counts */
 
   --line-height-heading: 1.3;
   --line-height-body: 1.6;
 
   /* Spacing */
-  --space-xxs: 0.25rem;
-  /* 4px */
-  --space-xs: 0.5rem;
-  /* 8px */
-  --space-sm: 0.75rem;
-  /* 12px */
-  --space-md: 1rem;
-  /* 16px */
-  --space-lg: 1.5rem;
-  /* 24px */
-  --space-xl: 2rem;
-  /* 32px */
-  --space-xxl: 3rem;
-  /* 48px */
+  --space-xxs: 0.25rem;   /* 4px */
+  --space-xs: 0.5rem;     /* 8px */
+  --space-sm: 0.75rem;    /* 12px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-xxl: 3rem;      /* 48px */
 
   /* Borders */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
+  --border-radius-small: 3px; /* Adjusted for tag counts */
+  --border-radius-medium: 6px; /* Adjusted from 8px for consistency */
   --border-width: 1px;
 
   /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtler shadows */
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
 
   /* Transitions */
   --transition-fast: all 0.2s ease-in-out;
@@ -78,33 +77,15 @@
 
   /* Z-index */
   --z-index-dropdown: 1000;
+  --z-index-overlay: 1030;  /* Ensure overlay is below sidebar */
+  --z-index-sidebar: 1040;  /* Ensure sidebar is above overlay */
   --z-index-modal: 1100;
   --z-index-tooltip: 1200;
-  --z-index-header: 900;
-  /* Z-index */
-  --z-index-dropdown: 1000;
-  --z-index-modal: 1100;
-  --z-index-tooltip: 1200;
-  --z-index-header: 900;
-  --z-index-mobile-nav: 950;
-  /* Added: Ensure mobile nav is above header content but potentially below modals */
+  --z-index-header: 900;    /* Below dropdowns etc. */
 
-  /* Breakpoints */
+  /* Breakpoints (Align with CSS Module logic) */
+  --breakpoint-lg: 992px;  /* Breakpoint where sidebar hides */
   --breakpoint-md: 768px;
-  /* Added: Breakpoint for switching to mobile nav */
-}
-/* client/src/styles/tokens.css */
-:root {
-  /* Colors */
-  --color-primary: #8B1E3F;
-  /* Burgundy */
-  --color-primary-rgb: 139, 30, 63;
-  /* RGB version for box-shadow */
+  --breakpoint-sm: 576px;
 
-  /* --- ADD THIS LINE (Choose your preferred dark shade) --- */
-  --color-primary-dark: #6d1732; /* Example: Darker Burgundy */
-  /* --- END ADD --- */
-
-  --color-secondary: #0A1929;
-  /* ... rest of your tokens ... */
 }

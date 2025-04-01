@@ -1,0 +1,250 @@
+/* client/src/components/Sidebar/Sidebar.module.css */
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    height: calc(100vh - 60px); /* Adjust 60px if header height differs */
+    position: sticky;
+    top: 60px; /* Adjust 60px if header height differs */
+    background-color: var(--color-background-secondary);
+    border-right: 1px solid var(--color-border-subtle);
+    padding: 15px 0; /* Vertical padding, no horizontal */
+    overflow-y: auto;
+    color: var(--color-text-primary);
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+    display: flex; /* Use flex column */
+    flex-direction: column;
+}
+
+/* --- Sections --- */
+.sidebarSection {
+    padding: 10px 20px; /* Padding within sections (horizontal only now) */
+    margin-bottom: 10px; /* Space between sections */
+}
+.sidebarSection:first-child {
+    padding-top: 0; /* Less padding above the profile */
+}
+.sidebarSection:last-child {
+    margin-bottom: 0;
+}
+/* Push Site section towards bottom */
+.siteSection {
+    margin-top: auto; /* Pushes this section down */
+    padding-top: 15px; /* Space above site links */
+    border-top: 1px solid var(--color-border-subtle); /* Add top border */
+}
+
+.sectionTitle {
+    font-size: var(--font-size-small);
+    font-weight: bold;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding: 0 10px; /* Add padding to align with list items */
+}
+
+/* --- Profile Link --- */
+.profileLink {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px; /* Consistent padding */
+    text-decoration: none;
+    color: var(--color-text-primary);
+    border-radius: var(--border-radius-medium);
+    transition: background-color 0.2s ease;
+    margin: 0 -10px; /* Counteract padding on list items for full-width hover */
+}
+.profileLink:hover {
+    background-color: var(--color-background-hover);
+}
+.profileLink .username {
+    font-weight: bold;
+    margin-left: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--font-size-medium);
+}
+
+/* --- Navigation List --- */
+.navList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.navList li {
+    margin-bottom: 2px; /* Tighter spacing between nav items */
+}
+
+/* --- NavLink Styling --- */
+.navLink {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px; /* Padding inside links */
+    margin: 0 -10px; /* Negative margin to allow full width background on hover/active */
+    text-decoration: none;
+    color: var(--color-text-secondary); /* Default color */
+    border-radius: var(--border-radius-medium);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: var(--font-size-medium);
+}
+.navLink:hover {
+    background-color: var(--color-background-hover);
+    color: var(--color-text-primary); /* Darken text on hover */
+}
+.navLink.active { /* Style for the active route */
+    background-color: var(--color-accent-hover); /* Use accent color variation */
+    color: var(--color-button-text-primary); /* White or contrasting text */
+    font-weight: 500; /* Slightly bolder */
+}
+.navLink .icon { /* Style for icons within links */
+    margin-right: 12px; /* Space between icon and text */
+    flex-shrink: 0; /* Prevent icon shrinking */
+    width: 16px; /* Ensure icons have consistent space */
+    text-align: center; /* Center icon if needed */
+}
+
+/* --- Placeholder Styling --- */
+.placeholderItem {
+    display: flex; /* Align icon */
+    align-items: center; /* Align icon */
+    padding: 8px 10px;
+    margin: 0 -10px;
+    color: var(--color-text-disabled);
+    font-style: italic;
+    font-size: var(--font-size-medium);
+}
+.placeholderItem .icon {
+     margin-right: 12px;
+     flex-shrink: 0;
+     width: 16px;
+     text-align: center;
+}
+
+
+/* --- Icons (Common) --- */
+.icon {
+    vertical-align: middle; /* Helps alignment sometimes */
+    /* Size is often set directly on the component */
+}
+/* client/src/components/Sidebar/Sidebar.module.css */
+
+/* ... Keep all existing styles above ... */
+
+
+/* --- Popular Tags Styling --- */
+.titleIcon {
+    margin-right: 8px; /* Space between icon and title text */
+    vertical-align: middle;
+    color: var(--color-text-secondary); /* Match title color */
+}
+
+.tagsLoading {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.tagList {
+    list-style: none;
+    padding: 5px 0 0 0; /* Add some space above the list */
+    margin: 0;
+    max-height: 250px; /* Example max height */
+    overflow-y: auto; /* Enable scroll if list is long */
+    /* Optional: Add scrollbar styling if desired */
+}
+
+.tagList li {
+    margin-bottom: 4px; /* Space between tag items */
+}
+
+.tagButton {
+    display: flex; /* Use flex to align text and count */
+    justify-content: space-between; /* Push count to the right */
+    align-items: center;
+    width: 100%; /* Make button fill container */
+    padding: 6px 10px; /* Padding inside the tag button */
+    margin: 0 -10px; /* Negative margin like navLink for full width bg */
+    background-color: transparent; /* Default transparent background */
+    border: none; /* Remove default button border */
+    border-radius: var(--border-radius-medium);
+    color: var(--color-text-secondary); /* Default text color */
+    font-size: var(--font-size-small); /* Slightly smaller font */
+    text-align: left; /* Align text to the left */
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    line-height: 1.4;
+}
+
+.tagButton:hover {
+    background-color: var(--color-background-hover);
+    color: var(--color-text-primary);
+}
+
+.tagButton.activeTag { /* Style for the currently selected tag filter */
+    background-color: var(--color-accent-subtle); /* Use a subtle accent variant */
+    color: var(--color-accent); /* Use accent color for text */
+    font-weight: bold;
+}
+
+.tagCount {
+    font-size: var(--font-size-extra-small);
+    color: var(--color-text-disabled);
+    background-color: var(--color-background-muted); /* Subtle background for count */
+    padding: 1px 5px;
+    border-radius: var(--border-radius-small);
+    margin-left: 8px; /* Space between tag name and count */
+}
+
+.tagButton:hover .tagCount,
+.tagButton.activeTag .tagCount {
+    /* Adjust count style on hover/active if needed */
+    color: var(--color-text-secondary);
+    background-color: var(--color-background-hover);
+}
+.tagButton.activeTag .tagCount {
+     color: var(--color-accent);
+     background-color: var(--color-background-primary); /* Or another contrasting bg */
+}
+
+.noTags {
+    padding: 8px 10px;
+    margin: 0 -10px;
+    color: var(--color-text-disabled);
+    font-style: italic;
+    font-size: var(--font-size-small);
+}
+/* client/src/components/Sidebar/Sidebar.module.css */
+
+/* ... Keep all existing styles above ... */
+
+
+/* --- Media Query for Responsiveness --- */
+@media (max-width: 992px) { /* Breakpoint for hiding sidebar */
+
+    .sidebar {
+        position: fixed; /* Change from sticky to fixed */
+        top: 0; /* Align to top of viewport */
+        left: 0;
+        height: 100vh; /* Full viewport height */
+        width: 280px; /* Slightly wider for mobile touch */
+        z-index: var(--z-index-sidebar, 1040); /* Ensure it's above content, provide fallback */
+        border-right: 1px solid var(--color-border-subtle); /* Keep border */
+        transform: translateX(-100%); /* Initially hidden off-screen to the left */
+        transition: transform 0.3s ease-in-out; /* Animate the slide */
+        /* Remove top margin/sticky behavior */
+        margin-top: 0;
+        overflow-y: auto; /* Keep scroll */
+        background-color: var(--color-background-secondary); /* Ensure background covers content */
+    }
+
+    /* Class to apply when sidebar should be open on mobile */
+    .sidebarOpen {
+        transform: translateX(0); /* Slide into view */
+        box-shadow: var(--shadow-lg); /* Add shadow when overlaid */
+    }
+
+     /* Adjust padding slightly if needed */
+    .sidebarSection {
+        padding: 15px 25px; /* Slightly more horizontal padding */
+    }
+}
