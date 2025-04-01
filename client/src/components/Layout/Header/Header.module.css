@@ -74,7 +74,7 @@
   font-weight: 700;
 }
 
-/* Notification Badge Styles (No change needed) */
+/* Notification Badge Styles */
 .notificationLink {
   position: relative; /* Keep for badge positioning */
 }
@@ -95,7 +95,27 @@
   border: 1px solid var(--color-secondary);
 }
 
-/* --- Hamburger Button Styles --- */
+/* --- Sidebar Toggle Button --- */
+.sidebarToggleButton {
+    display: none; /* Hidden on desktop by default */
+    background: none;
+    border: none;
+    color: var(--color-text-on-secondary);
+    font-size: 1.5rem; /* Adjust icon size */
+    padding: var(--space-xs);
+    margin-right: var(--space-sm); /* Space between toggle and logo */
+    cursor: pointer;
+    transition: color var(--transition-fast);
+    line-height: 1; /* Ensure icon aligns vertically */
+    vertical-align: middle; /* Align icon with logo text */
+}
+.sidebarToggleButton:hover,
+.sidebarToggleButton:focus {
+    color: var(--color-accent);
+}
+
+
+/* --- Hamburger Button Styles (Main Mobile Nav) --- */
 .hamburgerButton {
   display: none; /* Hidden by default */
   background: none;
@@ -104,6 +124,7 @@
   cursor: pointer;
   z-index: calc(var(--z-index-mobile-nav) + 1); /* Ensure button is above mobile nav background */
   position: relative; /* Needed for icon absolute positioning */
+  margin-left: auto; /* Push hamburger to the far right */
 }
 
 .hamburgerIcon {
@@ -136,7 +157,7 @@
 }
 
 
-/* --- Mobile Navigation Styles --- */
+/* --- Mobile Navigation Styles (Main Nav) --- */
 .mobileNav {
   display: none; /* Hidden by default until activated by JS */
   position: fixed;
@@ -226,45 +247,39 @@
   font-weight: 700;
 }
 
-/* Mobile logout button needs specific styling if it's a button */
-.mobileNavLink.logoutButton {
-   /* Inherits most styles from .mobileNavLink */
+/* --- Responsive Media Queries --- */
+
+/* BREAKPOINT FOR SIDEBAR TOGGLE */
+@media (max-width: 992px) { /* Matches sidebar hiding breakpoint */
+    .sidebarToggleButton {
+        display: block; /* Show sidebar toggle button */
+        order: -1; /* Place it visually before the logo in flex container */
+    }
+
+    /* Optional: Adjust overall container padding */
+    /* .navContainer { padding: 0 var(--space-sm); } */
 }
 
-
-/* --- Responsive Media Query --- */
-@media (max-width: 768px) { /* Use --breakpoint-md if defined in :root, otherwise use px */
-/* @media (max-width: var(--breakpoint-md)) { */
+/* BREAKPOINT FOR MAIN NAV HAMBURGER */
+@media (max-width: 768px) { /* Main nav switches to hamburger */
 
   .desktopNav {
       display: none; /* Hide desktop nav */
   }
 
   .hamburgerButton {
-      display: flex; /* Show hamburger button */
+      display: flex; /* Show main nav hamburger button */
       align-items: center;
       justify-content: center;
+      /* margin-left: auto; Should be set above */
   }
 
-  /* Optional: Adjust logo size or padding on mobile */
-  .logo a {
-      /* font-size: var(--font-size-md); */
-  }
-
-  /* Original basic responsive rules (can likely be removed or adjusted) */
-  /*
-  .navLinks {
-      gap: var(--space-md);
-  }
-   .navLinks a,
-   .navLinks button {
-      font-size: var(--font-size-sm);
-   }
-   */
+  /* Optional: Adjust logo size or padding */
+  /* .logo a { font-size: var(--font-size-md); } */
 }
 
 /* Body class to prevent scrolling when mobile menu is open */
-/* This should ideally be in a global CSS file if used elsewhere, but placing here for simplicity */
+/* This is used by the main mobile nav logic in Header.js */
 body.noScroll {
   overflow: hidden;
 }
