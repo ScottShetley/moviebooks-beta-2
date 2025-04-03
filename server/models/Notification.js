@@ -29,6 +29,12 @@ const notificationSchema = mongoose.Schema (
         return ['LIKE', 'FAVORITE', 'NEW_CONNECTION'].includes (this.type);
       },
     },
+    // --- NEW FIELD ---
+    message: {
+        type: String,
+        required: true, // Make the message required
+    },
+    // --- END NEW FIELD ---
     read: {
       // Has the recipient seen this notification?
       type: Boolean,
