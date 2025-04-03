@@ -7,10 +7,10 @@ const AuthContext = createContext();
 
 // Create the provider component
 export const AuthProvider = ({ children }) => {
-  // Holds user info { _id, username, email, token, createdAt } or null
+  // Holds user info { _id, username, email, token, createdAt, favorites } or null
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Tracks initial loading and auth operations
-  const [error, setError] = useState(null); // Holds login/signup error messages
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Effect to check localStorage for existing user session on initial app load
   useEffect(() => {
@@ -21,62 +21,60 @@ export const AuthProvider = ({ children }) => {
         const storedUserInfo = localStorage.getItem('userInfo');
         if (storedUserInfo) {
             const userInfo = JSON.parse(storedUserInfo);
+            // --- Ensure favorites array exists, default to empty if missing (for older stored data) ---
+            if (!userInfo.favorites) {
+                userInfo.favorites = [];
+            }
+            // --- End favorites check ---
             if (isMounted && userInfo && userInfo.token) {
                  console.log('[AuthContext] Found user info in storage, setting user and API header.');
-                 setUser(userInfo);
+                 setUser(userInfo); // Store the full user info, including favorites
                  api.defaults.headers.common['Authorization'] = `Bearer ${userInfo.token}`;
             } else if (isMounted) {
                 console.log('[AuthContext] Invalid user info found in storage, clearing.');
-                localStorage.removeItem('userInfo'); // Clear invalid stored info
+                localStorage.removeItem('userInfo');
             }
         } else {
             console.log('[AuthContext] No user info found in storage.');
         }
     } catch(e) {
         console.error("[AuthContext] Error reading user info from localStorage", e);
-        localStorage.removeItem('userInfo'); // Clear potentially corrupted data
+        localStorage.removeItem('userInfo');
     } finally {
          if (isMounted) {
-            setLoading(false); // Finished initial check
+            setLoading(false);
             console.log('[AuthContext] Initial user check complete.');
          }
     }
     return () => { isMounted = false; };
-  }, []); // Runs only once on mount
+  }, []);
 
   // --- Login Function ---
   const login = useCallback(async (email, password) => {
-    console.log('[AuthContext] login function initiated.'); // <-- ADDED LOG
+    console.log('[AuthContext] login function initiated.');
     setLoading(true);
     setError(null);
     try {
-      // Check if email or password are empty strings before sending
       if (!email || !password) {
          console.error("[AuthContext] Email or password is empty.");
-         setError("Please enter both email and password.");
-         setLoading(false);
-         return false; // Prevent API call if fields are empty
+         setError("Please enter both email and password."); setLoading(false); return false;
       }
-
-      console.log('[AuthContext] Making API call to /auth/login...'); // <-- ADDED LOG
+      console.log('[AuthContext] Making API call to /auth/login...');
       const { data } = await api.post('/auth/login', { email, password });
-      console.log('[AuthContext] API call successful. Response data:', data); // <-- ADDED LOG
+      console.log('[AuthContext] API call successful. Response data:', data);
 
-      // Backend now returns username, _id, email, token, createdAt
-      localStorage.setItem('userInfo', JSON.stringify(data));
-      // Set default auth header for subsequent requests in this session
-      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      setUser(data); // User state now includes username
+      // Ensure data includes favorites (backend should provide it now)
+      const userData = { ...data, favorites: data.favorites || [] };
+
+      localStorage.setItem('userInfo', JSON.stringify(userData));
+      api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+      setUser(userData); // Set the full user object including favorites
       setLoading(false);
-      return true; // Indicate success
+      return true;
     } catch (err) {
-      // Extract message more reliably
       const message = err.response?.data?.message || err.message || 'Login failed. Please try again.';
-      // Enhanced Error Logging
-      console.error("[AuthContext] Login API error:", message, err.response || err); // <-- ENHANCED ERROR LOG
+      console.error("[AuthContext] Login API error:", message, err.response || err);
       setError(message);
-
-      // Clear invalid token/user info if login fails due to auth issue
       if (err.response?.status === 401) {
         console.log('[AuthContext] Clearing auth state due to 401 error.');
         delete api.defaults.headers.common['Authorization'];
@@ -84,9 +82,9 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
       setLoading(false);
-      return false; // Indicate failure
+      return false;
     }
-  }, []); // useCallback dependency array is empty, function is stable
+  }, []);
 
   // --- Signup Function ---
   const signup = useCallback(async (username, email, password) => {
@@ -94,35 +92,33 @@ export const AuthProvider = ({ children }) => {
      setLoading(true);
      setError(null);
      try {
-       // Basic check
        if (!username || !email || !password) {
            console.error("[AuthContext] Username, email, or password missing for signup.");
-           setError("Please fill all required fields for signup.");
-           setLoading(false);
-           return false;
+           setError("Please fill all required fields for signup."); setLoading(false); return false;
        }
        console.log('[AuthContext] Making API call to /auth/register...');
        const { data } = await api.post('/auth/register', { username, email, password });
        console.log('[AuthContext] Signup API call successful. Response data:', data);
 
-       localStorage.setItem('userInfo', JSON.stringify(data));
-       api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-       setUser(data);
+       // Ensure data includes favorites (backend should provide it now)
+       const userData = { ...data, favorites: data.favorites || [] };
+
+       localStorage.setItem('userInfo', JSON.stringify(userData));
+       api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+       setUser(userData); // Set the full user object including favorites
        setLoading(false);
-       return true; // Indicate success
+       return true;
      } catch (err) {
        const message = err.response?.data?.message || err.message || 'Signup failed. Please try again.';
        console.error("[AuthContext] Signup API error:", message, err.response || err);
        setError(message);
-
-       // Ensure no stale auth state if signup fails
        delete api.defaults.headers.common['Authorization'];
        localStorage.removeItem('userInfo');
        setUser(null);
        setLoading(false);
-       return false; // Indicate failure
+       return false;
      }
-  }, []); // useCallback dependency array is empty, function is stable
+  }, []);
 
   // --- Logout Function ---
   const logout = useCallback(() => {
@@ -136,28 +132,56 @@ export const AuthProvider = ({ children }) => {
 
   // Function to manually clear errors
   const clearError = useCallback(() => {
-      if (error) { // Only log if there was an error to clear
+      if (error) {
         console.log('[AuthContext] Clearing error state.');
         setError(null);
       }
-  }, [error]); // Depend on error state
+  }, [error]);
+
+  // --- NEW: Function to update user's favorites list in context and localStorage ---
+  const updateUserFavorites = useCallback((connectionId) => {
+    setUser(currentUser => {
+        if (!currentUser) return null; // Should not happen if called when logged in
+
+        const currentFavorites = currentUser.favorites || [];
+        let updatedFavorites;
+        const isCurrentlyFavorite = currentFavorites.includes(connectionId);
+
+        if (isCurrentlyFavorite) {
+            // Remove from favorites
+            updatedFavorites = currentFavorites.filter(id => id !== connectionId);
+            console.log(`[AuthContext] Removing favorite: ${connectionId}`);
+        } else {
+            // Add to favorites
+            updatedFavorites = [...currentFavorites, connectionId];
+            console.log(`[AuthContext] Adding favorite: ${connectionId}`);
+        }
+
+        // Create the new user object with updated favorites
+        const updatedUser = { ...currentUser, favorites: updatedFavorites };
+
+        // Update localStorage
+        localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+
+        // Return the updated user state
+        return updatedUser;
+    });
+  }, []); // No dependencies needed as it uses the functional update form of setUser
 
   // Value provided by the context
   const contextValue = {
-      user,           // Current user object { _id, username, email, token, createdAt } or null
-      loading,        // Boolean indicating if an auth operation is in progress
-      error,          // String containing the last auth error message, or null
-      login,          // Async function (email, password) => Promise<boolean>
-      signup,         // Async function (username, email, password) => Promise<boolean>
-      logout,         // Function () => void
-      clearError      // Function () => void
+      user,           // NOW includes { ..., favorites: [] }
+      loading,
+      error,
+      login,
+      signup,
+      logout,
+      clearError,
+      updateUserFavorites // <-- Expose the new function
   };
 
   return (
     <AuthContext.Provider value={contextValue}>
-      {/* Render children only after initial loading check is complete? Optional, depends on UX needs */}
-      {/* {loading ? <p>Loading application...</p> : children} */}
-      {/* Or just always render children: */}
       {children}
     </AuthContext.Provider>
   );

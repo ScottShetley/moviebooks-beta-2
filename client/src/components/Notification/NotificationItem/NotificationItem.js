@@ -1,10 +1,10 @@
-// client/src/components/Notification/NotificationItem/NotificationItem.js
+// client/src/components/Notification/NotificationItem.js
 import React from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom'; // Link might not be needed directly in the message anymore
 import { useNotifications } from '../../../contexts/NotificationContext'; // To mark as read
 import styles from './NotificationItem.module.css';
 
-// Helper function to format time difference (simple version)
+// Helper function to format time difference (simple version) - remains the same
 const timeSince = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
     let interval = seconds / 31536000; // years
@@ -35,51 +35,21 @@ const NotificationItem = ({ notification }) => {
   };
 
   // --- Generate Notification Text ---
-  let notificationText = null;
-  const sender = notification.senderRef; // User who triggered it
-  const connection = notification.connectionRef; // Associated connection
-  const movieTitle = connection?.movieRef?.title || 'a movie';
-  const bookTitle = connection?.bookRef?.title || 'a book';
-
-  switch (notification.type) {
-    case 'LIKE':
-      notificationText = (
-        <>
-          <Link to={`/users/${sender?._id}`}>{sender?.email || 'Someone'}</Link>
-          {' liked your connection for '}
-          {/* Link to the connection's movie/book - needs a connection detail page ideally */}
-          {/* For now, link to movie page */}
-          <Link to={`/movies/${connection?.movieRef?._id}`}>{movieTitle}</Link>
-          {' & '}
-          <Link to={`/books/${connection?.bookRef?._id}`}>{bookTitle}</Link>
-          .
-        </>
-      );
-      break;
-    case 'FAVORITE':
-       notificationText = (
-        <>
-          <Link to={`/users/${sender?._id}`}>{sender?.email || 'Someone'}</Link>
-          {' favorited your connection for '}
-          <Link to={`/movies/${connection?.movieRef?._id}`}>{movieTitle}</Link>
-          {' & '}
-          <Link to={`/books/${connection?.bookRef?._id}`}>{bookTitle}</Link>
-          .
-        </>
-      );
-      break;
-    // Add case for 'NEW_CONNECTION' if you implement follower notifications later
-    default:
-      notificationText = 'You have a new notification.';
-  }
+  // REMOVED: All the previous logic using senderRef, connectionRef, and switch(notification.type)
+  // The message now comes directly from the backend.
 
   // Combine base class with unread class if applicable
-   const itemClasses = `${styles.item} ${notification.read ? '' : styles.unread}`;
+  const itemClasses = `${styles.item} ${notification.read ? '' : styles.unread}`;
+
+  // Basic check in case message is missing for older notifications or errors
+  const displayMessage = notification.message || 'Notification details unavailable.';
 
   return (
     <div className={itemClasses}>
         <div className={styles.content}>
-            {notificationText}
+            {/* --- MODIFIED: Display the message directly from the notification object --- */}
+            {displayMessage}
+            {/* --- END MODIFICATION --- */}
             <span className={styles.timestamp}>{timeSince(notification.createdAt)}</span>
         </div>
         {!notification.read && (
