@@ -1,6 +1,4 @@
 /* client/src/pages/HomePage.module.css */
-/* Styles applied primarily within the component rendered by HomePage.js */
-
 /* Define the main content area properties */
 .mainContentArea {
     flex-grow: 1; /* Ensure it tries to grow if inside a flex container (like AppLayout) */
@@ -10,6 +8,70 @@
     margin-right: auto;
     min-width: 0; /* Prevent flexbox overflow issues */
 }
+
+/* --- NEW: Filter Tab Styles --- */
+.filterTabContainer {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.filterTab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--color-background-secondary);
+    border: 1px solid var(--color-border-subtle);
+    border-top: none; /* Remove top border to connect with navbar */
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: var(--border-radius-medium);
+    border-bottom-right-radius: var(--border-radius-medium);
+    padding: 8px 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filterTab:hover {
+    background-color: var(--color-background-hover);
+}
+
+.filterTabActive {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.filterActiveIndicator {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-primary);
+    border-radius: 50%;
+    margin-left: 8px;
+}
+
+.filterPanel {
+    margin-top: 10px;
+    width: 100%;
+    background-color: var(--color-background-secondary);
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease-in-out;
+    animation: slideDown 0.3s ease-in-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* --- END NEW Filter Tab Styles --- */
 
 /* --- Styles for Global Tag Filter Status --- */
 .filterStatus {
