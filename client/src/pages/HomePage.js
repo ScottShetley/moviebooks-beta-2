@@ -1,12 +1,10 @@
 // client/src/pages/HomePage.js
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-// Removed useLocation as it's no longer needed here for sidebar logic
 import ConnectionCard from '../components/Connection/ConnectionCard/ConnectionCard';
 import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage';
 import Input from '../components/Common/Input/Input';
 import Button from '../components/Common/Button/Button';
-// Removed Sidebar import
 import styles from './HomePage.module.css';
 import api from '../services/api';
 
@@ -37,8 +35,8 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
+    
     // --- Local Filter Input States ---
-    // REMOVED tagInput state
     const [movieGenreInput, setMovieGenreInput] = useState('');
     const [directorInput, setDirectorInput] = useState('');
     const [actorInput, setActorInput] = useState('');
@@ -46,12 +44,18 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     const [authorInput, setAuthorInput] = useState('');
     // --- Active Local Filters State (tags excluded) ---
     const [activeFilters, setActiveFilters] = useState({});
+    
+    // --- NEW: Filter Tab UI State ---
+    const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
     // Memoized boolean indicating if any LOCAL filters are currently active
     const isLocalFilterApplied = useMemo(() => hasActiveLocalFilters(activeFilters), [activeFilters]);
     const isInitialMount = useRef(true); // Tracks initial render
 
-    // *** REMOVED useEffect hooks related to isSidebarOpen (scroll lock, close on navigate) ***
+    // --- NEW: Toggle filter panel visibility ---
+    const toggleFilterPanel = () => {
+        setIsFilterExpanded(prev => !prev);
+    };
 
     // --- Fetch Connections Function ---
     const fetchConnections = useCallback(async (currentPage, currentLocalFilters, globalTagFilter) => {
@@ -135,6 +139,9 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
             setActiveFilters(filtersToApply);
             setPage(1); // Reset to first page when filters change
         }
+        
+        // Collapse filter panel when filters are applied
+        setIsFilterExpanded(false);
     }, [movieGenreInput, directorInput, actorInput, bookGenreInput, authorInput, activeFilters]);
 
     // Clears LOCAL filters and resets their input fields
@@ -148,9 +155,6 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
             setPage(1); // Reset to first page
         }
     }, [activeFilters]);
-
-    // *** REMOVED handleTagFilterClick - Handled globally in App.js ***
-
 
     // --- Pagination Handlers (No change needed) ---
     const goToPreviousPage = () => setPage(p => Math.max(1, p - 1));
@@ -173,11 +177,8 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     }, [movieGenreInput, directorInput, actorInput, bookGenreInput, authorInput, activeFilters]);
 
 
-    // *** JSX STRUCTURE UPDATED ***
-    // Removed outer layout container, sidebar, overlay
-    // Assumes parent component provides necessary width constraints/container
     return (
-         <div className={styles.mainContentArea}> {/* Use the main area style directly */}
+         <div className={styles.mainContentArea}>
              <h1>MovieBooks Feed</h1>
 
              {/* NEW: Display Global Tag Filter Status */}
@@ -197,24 +198,42 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
                  </div>
              )}
 
-             {/* Local Filters Form */}
-             <form onSubmit={handleApplyFilter} className={styles.filterForm}>
-                 <fieldset className={styles.filterFieldset}>
-                     <legend>Filter Connections (Advanced)</legend>
-                     <div className={styles.filterGrid}>
-                         {/* REMOVED Tag Input */}
-                         <Input id="movieGenreFilter" label="Movie Genre" placeholder="Thriller" value={movieGenreInput} onChange={(e) => setMovieGenreInput(e.target.value)} disabled={loading} />
-                         <Input id="directorFilter" label="Director" placeholder="Tarantino" value={directorInput} onChange={(e) => setDirectorInput(e.target.value)} disabled={loading} />
-                         <Input id="actorFilter" label="Actor" placeholder="Travolta" value={actorInput} onChange={(e) => setActorInput(e.target.value)} disabled={loading} />
-                         <Input id="bookGenreFilter" label="Book Genre" placeholder="Adventure" value={bookGenreInput} onChange={(e) => setBookGenreInput(e.target.value)} disabled={loading} />
-                         <Input id="authorFilter" label="Author" placeholder="O'Donnell" value={authorInput} onChange={(e) => setAuthorInput(e.target.value)} disabled={loading} />
-                     </div>
-                     <div className={styles.filterActions}>
-                         <Button type="submit" variant="secondary" disabled={loading || !localFiltersChanged} className={styles.filterButton}> Apply Filters </Button>
-                         <Button type="button" variant="outline" onClick={handleClearLocalFilter} disabled={loading || !isLocalFilterApplied} className={styles.clearFilterButton}> Clear Advanced Filters </Button>
-                     </div>
-                 </fieldset>
-             </form>
+             {/* NEW: Filter Tab UI */}
+             <div className={styles.filterTabContainer}>
+                <button 
+                    className={`${styles.filterTab} ${isLocalFilterApplied ? styles.filterTabActive : ''}`}
+                    onClick={toggleFilterPanel}
+                    aria-expanded={isFilterExpanded}
+                    aria-controls="filter-panel"
+                >
+                    <span>Filters</span>
+                    {isLocalFilterApplied && (
+                        <span className={styles.filterActiveIndicator}></span>
+                    )}
+                </button>
+                
+                {/* Filter Panel - Conditionally rendered based on expanded state */}
+                {isFilterExpanded && (
+                    <div id="filter-panel" className={styles.filterPanel}>
+                        <form onSubmit={handleApplyFilter} className={styles.filterForm}>
+                            <fieldset className={styles.filterFieldset}>
+                                <legend>Filter Connections (Advanced)</legend>
+                                <div className={styles.filterGrid}>
+                                    <Input id="movieGenreFilter" label="Movie Genre" placeholder="Thriller" value={movieGenreInput} onChange={(e) => setMovieGenreInput(e.target.value)} disabled={loading} />
+                                    <Input id="directorFilter" label="Director" placeholder="Tarantino" value={directorInput} onChange={(e) => setDirectorInput(e.target.value)} disabled={loading} />
+                                    <Input id="actorFilter" label="Actor" placeholder="Travolta" value={actorInput} onChange={(e) => setActorInput(e.target.value)} disabled={loading} />
+                                    <Input id="bookGenreFilter" label="Book Genre" placeholder="Adventure" value={bookGenreInput} onChange={(e) => setBookGenreInput(e.target.value)} disabled={loading} />
+                                    <Input id="authorFilter" label="Author" placeholder="O'Donnell" value={authorInput} onChange={(e) => setAuthorInput(e.target.value)} disabled={loading} />
+                                </div>
+                                <div className={styles.filterActions}>
+                                    <Button type="submit" variant="secondary" disabled={loading || !localFiltersChanged} className={styles.filterButton}> Apply Filters </Button>
+                                    <Button type="button" variant="outline" onClick={handleClearLocalFilter} disabled={loading || !isLocalFilterApplied} className={styles.clearFilterButton}> Clear Advanced Filters </Button>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                )}
+             </div>
 
              {/* Display active LOCAL filters */}
              {isLocalFilterApplied && (
