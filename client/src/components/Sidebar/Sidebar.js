@@ -1,15 +1,18 @@
 // client/src/components/Sidebar/Sidebar.js
 import React, { useState, useEffect } from 'react';
-// *** Import Link alongside NavLink ***
+// *** Link and NavLink are both needed ***
 import { Link, NavLink } from 'react-router-dom';
-import { FaUserCircle, FaRegListAlt, FaRegStar, FaInfoCircle, FaQuestionCircle, FaTags } from 'react-icons/fa';
+import {
+    FaUserCircle, FaRegListAlt, FaRegStar, FaInfoCircle, FaQuestionCircle, FaTags,
+    FaChevronDown, FaChevronUp
+} from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api'; // Import the api instance
-import LoadingSpinner from '../Common/LoadingSpinner/LoadingSpinner'; // Import spinner
-import ErrorMessage from '../Common/ErrorMessage/ErrorMessage'; // Import error message
+import api from '../../services/api';
+import LoadingSpinner from '../Common/LoadingSpinner/LoadingSpinner';
+import ErrorMessage from '../Common/ErrorMessage/ErrorMessage';
 import styles from './Sidebar.module.css';
 
-// PopularTagsList component (no changes)
+// PopularTagsList component (no changes needed)
 const PopularTagsList = ({ tags, onTagClick, currentFilterTag }) => {
     if (!tags || tags.length === 0) {
         return <p className={styles.noTags}>No popular tags found yet.</p>;
@@ -21,7 +24,7 @@ const PopularTagsList = ({ tags, onTagClick, currentFilterTag }) => {
                 return (
                     <li key={tag}>
                         <button
-                            onClick={() => onTagClick(tag)} // Ensure onTagClick handles the tag value
+                            onClick={() => onTagClick(tag)}
                             className={`${styles.tagButton} ${isActive ? styles.activeTag : ''}`}
                             title={`Filter by tag: ${tag} (${count} connections)`}
                             aria-pressed={isActive}
@@ -37,17 +40,20 @@ const PopularTagsList = ({ tags, onTagClick, currentFilterTag }) => {
 };
 
 
-// Main Sidebar component updated
+// Main Sidebar component updated to revert My Favorites to Link
 const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar }) => {
     const { user } = useAuth();
     const sidebarClasses = `${styles.sidebar} ${className || ''} ${isOpen ? styles.sidebarOpen : ''}`;
 
-    // State for popular tags
+    // State for popular tags data
     const [popularTags, setPopularTags] = useState([]);
     const [tagsLoading, setTagsLoading] = useState(false);
     const [tagsError, setTagsError] = useState(null);
 
-    // Define NavLink active style logic (still needed for About/Help)
+    // State for controlling tags section visibility
+    const [isTagsExpanded, setIsTagsExpanded] = useState(true);
+
+    // Define NavLink active style logic (Only needed for Connections, About, Help now)
     const getNavLinkClass = ({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink;
 
     // Fetch tags logic (no changes)
@@ -72,13 +78,26 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
         fetchTags();
     }, []);
 
-
-    // Wrapper for ALL link clicks (Link or NavLink) inside sidebar to close it
+    // Wrapper for ALL link clicks
     const handleLinkClick = () => {
-        if (isOpen && typeof closeSidebar === 'function') { // Check if closeSidebar is a function
+        if (isOpen && typeof closeSidebar === 'function') {
             closeSidebar();
         }
     };
+
+    // Function to toggle the tags section
+    const toggleTagsSection = () => {
+        setIsTagsExpanded(prev => !prev);
+    };
+
+    // Keyboard handler for collapsible title accessibility
+    const handleTagsToggleKeyDown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleTagsSection();
+      }
+    };
+
 
     return (
         <aside id="app-sidebar" className={sidebarClasses}>
@@ -86,7 +105,6 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
                 <>
                     {/* User Profile Section */}
                     <div className={styles.sidebarSection}>
-                        {/* Use Link and apply base style, trigger close */}
                         <Link to="/profile" className={styles.profileLink} onClick={handleLinkClick}>
                             <FaUserCircle size={24} className={styles.icon} />
                             <span className={styles.username}>{user.username}</span>
@@ -98,15 +116,14 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
                         <h3 className={styles.sectionTitle}>Your Content</h3>
                         <ul className={styles.navList}>
                             <li>
-                                {/* *** CHANGED NavLink to Link *** */}
-                                {/* Removed getNavLinkClass/end, added base style, use handleLinkClick */}
-                                <Link to="/profile" className={styles.navLink} onClick={handleLinkClick}>
+                                {/* My Connections remains a NavLink */}
+                                <NavLink to="/profile" className={getNavLinkClass} onClick={handleLinkClick} end>
                                     <FaRegListAlt className={styles.icon} /> My Connections
-                                </Link>
+                                </NavLink>
                             </li>
                             <li>
-                                {/* *** CHANGED NavLink to Link *** */}
-                                {/* Removed getNavLinkClass, added base style, use handleLinkClick */}
+                                {/* *** CHANGED NavLink back to Link *** */}
+                                {/* Use basic styles.navLink, no 'end' prop, no getNavLinkClass */}
                                 <Link to="/profile" className={styles.navLink} onClick={handleLinkClick}>
                                     <FaRegStar className={styles.icon} /> My Favorites
                                 </Link>
@@ -116,32 +133,53 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
                 </>
             )}
 
-            {/* Discovery Section (Popular Tags) */}
+            {/* Discovery Section (Popular Tags) - Collapsible */}
             <div className={styles.sidebarSection}>
-                <h3 className={styles.sectionTitle}>
-                    <FaTags className={styles.titleIcon} /> Popular Tags
+                 <h3
+                    className={styles.collapsibleTitle}
+                    onClick={toggleTagsSection}
+                    onKeyDown={handleTagsToggleKeyDown}
+                    role="button"
+                    aria-expanded={isTagsExpanded}
+                    aria-controls="popular-tags-content"
+                    tabIndex="0"
+                 >
+                    <span className={styles.collapsibleTitleText}>
+                        <FaTags className={styles.titleIcon} /> Popular Tags
+                    </span>
+                    {isTagsExpanded
+                        ? <FaChevronUp className={styles.collapseIcon} aria-hidden="true" />
+                        : <FaChevronDown className={styles.collapseIcon} aria-hidden="true" />
+                    }
                 </h3>
-                {tagsLoading && <div className={styles.tagsLoading}><LoadingSpinner size="small" /></div>}
-                {tagsError && <ErrorMessage message={tagsError} variant="inline" />}
-                {!tagsLoading && !tagsError && (
-                    <PopularTagsList
-                        tags={popularTags}
-                        onTagClick={onTagClick} // Pass prop directly
-                        currentFilterTag={currentFilterTag}
-                    />
-                )}
+                 <div id="popular-tags-content">
+                    {isTagsExpanded && (
+                        <>
+                            {tagsLoading && <div className={styles.tagsLoading}><LoadingSpinner size="small" /></div>}
+                            {tagsError && <ErrorMessage message={tagsError} variant="inline" />}
+                            {!tagsLoading && !tagsError && (
+                                <PopularTagsList
+                                    tags={popularTags}
+                                    onTagClick={onTagClick}
+                                    currentFilterTag={currentFilterTag}
+                                />
+                            )}
+                        </>
+                    )}
+                 </div>
             </div>
 
             {/* Site Section */}
             <div className={`${styles.sidebarSection} ${styles.siteSection}`}>
                 <ul className={styles.navList}>
                     <li>
-                        {/* Keep NavLink for About/Help if active state is desired */}
+                        {/* About remains NavLink */}
                         <NavLink to="/about" className={getNavLinkClass} onClick={handleLinkClick}>
                             <FaInfoCircle className={styles.icon} /> About
                         </NavLink>
                     </li>
                     <li>
+                        {/* Help remains NavLink */}
                         <NavLink to="/help" className={getNavLinkClass} onClick={handleLinkClick}>
                             <FaQuestionCircle className={styles.icon} /> Help / FAQ
                         </NavLink>
