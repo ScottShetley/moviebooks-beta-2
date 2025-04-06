@@ -1,15 +1,16 @@
-/* client/src/components/Connection/ConnectionCard/ConnectionCard.module.css */
+/* client/src/components/Connection/ConnectionCard/ConnectionCard.module.css (Restored max-width/margin) */
 
 .card {
     /* --- FIX: Use variables defined in tokens.css --- */
     background-color: var(--color-card);
     /* Use --color-card (White) */
     border-radius: var(--border-radius-md);
-    /* Use --border-radius-md (Renamed in tokens? Check if -l exists) */
+    /* Use --border-radius-md */
     padding: var(--space-md);
     /* Use --space-md */
     margin-bottom: var(--space-lg);
     /* Use --space-lg */
+    /* Keep bottom margin for spacing in lists/grids */
     box-shadow: var(--shadow-md);
     /* Use --shadow-md */
     overflow: hidden;
@@ -17,8 +18,11 @@
     /* Use --border-width & --color-border */
     /* --- END FIX --- */
     max-width: 600px;
+    /* <<< RESTORED Max Width */
     margin-left: auto;
+    /* <<< RESTORED Centering */
     margin-right: auto;
+    /* <<< RESTORED Centering */
 }
 
 .header {
@@ -197,8 +201,8 @@
 }
 
 .favorited:hover:not(:disabled) {
-    background-color: rgba(var(--color-primary-rgb), 0.1);
-    /* Example subtle bg using RGB */
+    background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.1);
+    /* Example subtle bg using RGB (adjust primary RGB if needed) */
     border-color: var(--color-primary);
 }
 
@@ -211,8 +215,8 @@
 }
 
 .deleteButton:hover:not(:disabled) {
-    background-color: rgba(var(--color-error-rgb), 0.1);
-    /* Example subtle bg using RGB */
+    background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
+    /* Example subtle bg using RGB (adjust error RGB if needed) */
     border-color: var(--color-error);
     color: var(--color-error);
     /* Keep color */
@@ -253,7 +257,7 @@
 .commentError {
     padding: var(--space-md);
     color: var(--color-error);
-    background-color: rgba(var(--color-error-rgb), 0.1);
+    background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
     /* Subtle error bg */
     border: var(--border-width) solid var(--color-error);
     border-radius: var(--border-radius-md);
@@ -282,6 +286,8 @@
         padding: var(--space-sm);
         /* Use --space-sm */
         border-radius: var(--border-radius-md);
+        /* max-width might still be relevant on mobile, keep or adjust if needed */
+        /* max-width: 95%; /* Example if 600px is too wide */
     }
 
     .header h3 {

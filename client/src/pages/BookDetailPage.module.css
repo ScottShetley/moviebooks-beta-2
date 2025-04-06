@@ -1,0 +1,217 @@
+/* client/src/pages/BookDetailPage.module.css (Wider Container) */
+/* Reusing styles from MovieDetailPage, adjusted for Book context */
+
+.pageContainer {
+    max-width: 1400px;
+    /* <<< Increased Max Width */
+    margin: 2rem auto;
+    padding: 1rem 2rem;
+    background-color: var(--color-background);
+    border-radius: 8px;
+}
+
+.errorContainer {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: var(--color-background-muted);
+    border: 1px solid var(--color-error-muted);
+    color: var(--color-error);
+    border-radius: 8px;
+}
+
+.errorContainer h2 {
+    color: var(--color-error);
+    margin-bottom: 1rem;
+}
+
+.errorContainer .button {
+    margin-top: 1.5rem;
+}
+
+/* --- Details Section --- */
+.detailsSection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.imageContainer {
+    flex: 0 0 200px;
+    /* Adjust size for typical book cover aspect ratio */
+    max-width: 100%;
+}
+
+.coverImage {
+    /* Renamed from posterImage */
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+    /* Slightly less rounded for books? */
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--color-border-subtle);
+    background-color: var(--color-background-muted);
+}
+
+.infoContainer {
+    flex: 1;
+    min-width: 280px;
+}
+
+.title {
+    font-size: 2.0rem;
+    /* Slightly smaller for book titles? */
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    /* Less space before author */
+    color: var(--color-text-emphasis);
+    line-height: 1.2;
+}
+
+.author {
+    /* Style for the author */
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text-default);
+    margin-bottom: 1rem;
+}
+
+.meta {
+    font-size: 0.9rem;
+    /* Slightly smaller meta */
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    display: inline;
+}
+
+.meta span {
+    display: inline-block;
+}
+
+.metaSeparator {
+    margin: 0 0.4rem;
+    color: var(--color-text-muted);
+    display: inline-block;
+}
+
+
+.infoContainer p {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.infoContainer strong {
+    color: var(--color-text-default);
+}
+
+.synopsis {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--color-text-subtle);
+}
+
+
+/* --- Divider --- */
+.divider {
+    border: none;
+    border-top: 1px solid var(--color-border-subtle);
+    margin: 2.5rem 0;
+}
+
+
+/* --- Connections Section --- */
+.connectionsSection {
+    margin-top: 2rem;
+}
+
+.connectionsTitle {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-default);
+    border-bottom: 2px solid var(--color-accent-subtle);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* --- UPDATED GRID FOR SINGLE COLUMN --- */
+.connectionsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Force a single column that fills the container */
+    gap: 1.5rem;
+    /* Vertical gap between cards */
+    /* Optional: Add max-width to cards if needed, but container max-width might suffice */
+    /* justify-items: center; */
+    /* Uncomment to center cards if container is wider */
+}
+
+/* --- END UPDATED GRID --- */
+
+
+.noItemsMessage {
+    font-style: italic;
+    color: var(--color-text-muted);
+    padding: 2rem;
+    text-align: center;
+    background-color: var(--color-background-muted);
+    border-radius: 4px;
+}
+
+.noItemsMessage a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.noItemsMessage a:hover {
+    text-decoration: underline;
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 600px) {
+    .pageContainer {
+        padding: 1rem;
+        /* max-width remains 1400px, but padding adjusted */
+    }
+
+    .detailsSection {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .imageContainer {
+        flex-basis: auto;
+        width: 60%;
+        /* Adjust cover width on mobile */
+        max-width: 200px;
+        /* Max width */
+    }
+
+    .infoContainer {
+        min-width: unset;
+        text-align: center;
+    }
+
+    .title {
+        font-size: 1.7rem;
+    }
+
+    .author {
+        font-size: 1.0rem;
+    }
+
+    .connectionsTitle {
+        font-size: 1.3rem;
+    }
+
+    /* No change needed for connectionsGrid on mobile, as it's already 1 column */
+    .connectionsGrid {
+        gap: 1rem;
+        /* Adjust gap for mobile */
+    }
+}
