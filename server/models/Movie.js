@@ -1,4 +1,4 @@
-// server/models/Movie.js
+// server/models/Movie.js (UPDATED)
 import mongoose from 'mongoose';
 
 const movieSchema = mongoose.Schema (
@@ -8,34 +8,50 @@ const movieSchema = mongoose.Schema (
       required: true,
       trim: true,
     },
-    // --- NEW FIELDS for Phase 2 Filtering ---
     genres: {
-      type: [String], // Array of Strings
-      index: true, // Index for efficient genre-based filtering
+      type: [String],
+      index: true,
       default: [],
     },
     director: {
       type: String,
       trim: true,
-      index: true, // Index for efficient director-based filtering
+      index: true,
     },
     actors: {
-      type: [String], // Array of Strings
-      index: true, // Index for efficient actor-based filtering
+      type: [String],
+      index: true,
       default: [],
+    },
+    // --- NEW FIELDS ---
+    posterPath: { // Store the full Cloudinary URL or relative path depending on your setup
+        type: String,
+        trim: true,
+        default: null, // Or default: ''
+    },
+    posterPublicId: { // Store the Cloudinary public_id for deletion
+        type: String,
+        trim: true,
+        default: null,
     },
     // --- END NEW FIELDS ---
     // Add year later if needed
+    year: { // Example: Adding year if you plan to
+        type: Number,
+        // required: false // Adjust as needed
+    },
+    synopsis: { // Example: Adding synopsis
+        type: String,
+        trim: true
+    }
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt automatically
+    timestamps: true,
   }
 );
 
-// Index for faster title lookups (case-insensitive) - KEEP THIS
+// Indexes (Keep existing)
 movieSchema.index ({title: 1}, {collation: {locale: 'en', strength: 2}});
-
-// Note: Indexes for genres, director, actors are defined inline above.
 
 const Movie = mongoose.model ('Movie', movieSchema);
 

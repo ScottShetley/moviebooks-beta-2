@@ -1,0 +1,220 @@
+/* client/src/pages/MovieDetailPage.module.css (Wider Container) */
+
+.pageContainer {
+    max-width: 1400px;
+    /* <<< Increased Max Width */
+    margin: 2rem auto;
+    padding: 1rem 2rem;
+    background-color: var(--color-background);
+    /* Use theme variable */
+    border-radius: 8px;
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}
+
+.errorContainer {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: var(--color-background-muted);
+    border: 1px solid var(--color-error-muted);
+    color: var(--color-error);
+    border-radius: 8px;
+}
+
+.errorContainer h2 {
+    color: var(--color-error);
+    margin-bottom: 1rem;
+}
+
+.errorContainer .button {
+    margin-top: 1.5rem;
+}
+
+/* --- Details Section --- */
+.detailsSection {
+    display: flex;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+    gap: 2rem;
+    /* Space between image and info */
+    margin-bottom: 2rem;
+}
+
+.imageContainer {
+    flex: 0 0 250px;
+    /* Fixed width for the image container */
+    max-width: 100%;
+    /* Ensure it doesn't overflow on very small screens */
+}
+
+.posterImage {
+    /* Changed from coverImage to posterImage */
+    width: 100%;
+    height: auto;
+    display: block;
+    /* Prevents potential extra space below image */
+    border-radius: 8px;
+    object-fit: cover;
+    /* Scale while maintaining aspect ratio */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-border-subtle);
+    background-color: var(--color-background-muted);
+    /* Show background if image fails */
+}
+
+.infoContainer {
+    flex: 1;
+    /* Takes up remaining space */
+    min-width: 280px;
+    /* Prevent info from getting too squished */
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-emphasis);
+    line-height: 1.2;
+}
+
+.meta {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    display: inline;
+    /* Keep year and genre on same line if possible */
+}
+
+.meta span {
+    display: inline-block;
+    /* Treat spans like inline blocks */
+}
+
+.metaSeparator {
+    margin: 0 0.4rem;
+    color: var(--color-text-muted);
+    display: inline-block;
+}
+
+
+.infoContainer p {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.infoContainer strong {
+    color: var(--color-text-default);
+}
+
+.synopsis {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--color-text-subtle);
+}
+
+
+/* --- Divider --- */
+.divider {
+    border: none;
+    border-top: 1px solid var(--color-border-subtle);
+    margin: 2.5rem 0;
+}
+
+
+/* --- Connections Section --- */
+.connectionsSection {
+    margin-top: 2rem;
+}
+
+.connectionsTitle {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-default);
+    border-bottom: 2px solid var(--color-accent-subtle);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+    /* Make border only underline text */
+}
+
+/* --- UPDATED GRID FOR SINGLE COLUMN --- */
+.connectionsGrid {
+    /* display: grid; */
+    /* <<< Comment out */
+    display: block;
+    /* <<< Add this */
+    /* grid-template-columns: 1fr; */
+    /* <<< Comment out (Not needed for block) */
+    gap: 1.5rem;
+    /* Note: gap has no effect on display:block */
+    /* justify-items: center; */
+}
+
+/* --- END UPDATED GRID --- */
+
+
+.noItemsMessage {
+    /* Consistent naming with ProfilePage */
+    font-style: italic;
+    color: var(--color-text-muted);
+    padding: 2rem;
+    text-align: center;
+    background-color: var(--color-background-muted);
+    border-radius: 4px;
+}
+
+.noItemsMessage a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.noItemsMessage a:hover {
+    text-decoration: underline;
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 600px) {
+    .pageContainer {
+        padding: 1rem;
+        /* max-width remains 1400px, but padding adjusted */
+    }
+
+    .detailsSection {
+        flex-direction: column;
+        /* Stack image and info vertically */
+        align-items: center;
+        /* Center items when stacked */
+        gap: 1.5rem;
+    }
+
+    .imageContainer {
+        flex-basis: auto;
+        /* Reset basis */
+        width: 80%;
+        /* Allow image to be wider */
+        max-width: 300px;
+        /* But not too wide */
+    }
+
+    .infoContainer {
+        min-width: unset;
+        /* Remove min-width */
+        text-align: center;
+        /* Center text */
+    }
+
+    .title {
+        font-size: 1.8rem;
+    }
+
+    .connectionsTitle {
+        font-size: 1.3rem;
+    }
+
+    /* No change needed for connectionsGrid on mobile, as it's already 1 column */
+    .connectionsGrid {
+        gap: 1rem;
+        /* Adjust gap for mobile */
+    }
+}
