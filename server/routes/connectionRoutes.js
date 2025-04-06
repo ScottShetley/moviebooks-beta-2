@@ -1,19 +1,21 @@
 // server/routes/connectionRoutes.js
 import express from 'express';
 
-// Import controller functions (assuming named exports)
+// Import controller functions
 import {
     createConnection,
     getConnections,
     likeConnection,
     favoriteConnection,
     deleteConnection,
-    getPopularTags // <-- Import the new controller function
-} from '../controllers/connectionController.js'; // Add .js extension
+    getPopularTags,
+    getConnectionsByUserId, // <-- Added import
+    getConnectionsByIds     // <-- Added import (NEW)
+} from '../controllers/connectionController.js';
 
-// Import middleware (assuming named export for protect, default for upload)
-import { protect } from '../middleware/authMiddleware.js'; // Add .js extension
-import uploadConnectionImages from '../middleware/uploadMiddleware.js'; // Add .js extension
+// Import middleware
+import { protect } from '../middleware/authMiddleware.js';
+import uploadConnectionImages from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -23,14 +25,25 @@ const router = express.Router();
 // POST /api/connections: Create a new connection (Private, requires login, handles upload)
 router.route('/')
     .get(getConnections)
-    // Apply middleware and controller function correctly
     .post(protect, uploadConnectionImages, createConnection);
 
 // --- Route for Popular Tags ---
 // GET /api/connections/popular-tags: Get most frequent tags (Public)
-router.route('/popular-tags').get(getPopularTags); // <-- Add the new route
+router.route('/popular-tags').get(getPopularTags);
+
+// --- NEW Route for Batch Fetching by IDs ---
+// POST /api/connections/batch: Get multiple connections by ID (Private)
+router.route('/batch')
+    .post(protect, getConnectionsByIds); // Use POST, protect with auth
+
+// --- Route for User Specific Connections ---
+// GET /api/connections/user/:userId: Get connections created by a user (Public)
+router.route('/user/:userId').get(getConnectionsByUserId);
 
 // --- Routes for specific connections '/api/connections/:id' ---
+
+// GET /api/connections/:id (Optional: Add if needed to get single connection details)
+// router.route('/:id').get(getConnectionById); // Example if you add a single fetch controller
 
 // POST /api/connections/:id/like: Like/Unlike a connection (Private)
 router.route('/:id/like').post(protect, likeConnection);
@@ -43,18 +56,18 @@ router.route('/:id').delete(protect, deleteConnection);
 
 
 // --- Routes for '/api/connections/:id/comments' ---
-// Import comment controllers (assuming named exports)
+// Import comment controllers
 import {
     createComment,
     getCommentsForConnection
-} from '../controllers/commentController.js'; // Add .js extension
+} from '../controllers/commentController.js';
 
 // GET /api/connections/:id/comments: Get comments for a connection (Public)
 // POST /api/connections/:id/comments: Create a comment for a connection (Private)
 router.route('/:id/comments')
     .get(getCommentsForConnection)
-    .post(protect, createComment); // Don't need upload middleware here
+    .post(protect, createComment);
 
 
-// --- Export the router using default export ---
+// --- Export the router ---
 export default router;

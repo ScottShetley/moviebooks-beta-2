@@ -139,38 +139,53 @@ export const AuthProvider = ({ children }) => {
   }, [error]);
 
   // --- NEW: Function to update user's favorites list in context and localStorage ---
+  // This function should be called AFTER a successful API call to favorite/unfavorite
   const updateUserFavorites = useCallback((connectionId) => {
+    if (!connectionId) {
+        console.warn("[AuthContext] updateUserFavorites called with invalid connectionId");
+        return;
+    }
     setUser(currentUser => {
-        if (!currentUser) return null; // Should not happen if called when logged in
+        if (!currentUser) {
+            console.warn("[AuthContext] updateUserFavorites called but no user is logged in.");
+            return null; // Should not happen if called when logged in
+        }
 
         const currentFavorites = currentUser.favorites || [];
         let updatedFavorites;
-        const isCurrentlyFavorite = currentFavorites.includes(connectionId);
+        // Check if the ID is already in the favorites list
+        const isCurrentlyFavorite = currentFavorites.some(id => id === connectionId); // Use .some for clarity
 
         if (isCurrentlyFavorite) {
             // Remove from favorites
             updatedFavorites = currentFavorites.filter(id => id !== connectionId);
-            console.log(`[AuthContext] Removing favorite: ${connectionId}`);
+            console.log(`[AuthContext] Removing favorite: ${connectionId}. New count: ${updatedFavorites.length}`);
         } else {
             // Add to favorites
             updatedFavorites = [...currentFavorites, connectionId];
-            console.log(`[AuthContext] Adding favorite: ${connectionId}`);
+            console.log(`[AuthContext] Adding favorite: ${connectionId}. New count: ${updatedFavorites.length}`);
         }
 
         // Create the new user object with updated favorites
         const updatedUser = { ...currentUser, favorites: updatedFavorites };
 
-        // Update localStorage
-        localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+        // Update localStorage synchronously with the state update
+        try {
+            localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+            console.log("[AuthContext] Updated localStorage with new favorites list.");
+        } catch (e) {
+            console.error("[AuthContext] Failed to update localStorage:", e);
+            // Decide if you want to revert the state update or just log the error
+        }
 
-        // Return the updated user state
+        // Return the updated user state for React to set
         return updatedUser;
     });
-  }, []); // No dependencies needed as it uses the functional update form of setUser
+  }, []); // No external dependencies needed as it uses the functional update form of setUser
 
   // Value provided by the context
   const contextValue = {
-      user,           // NOW includes { ..., favorites: [] }
+      user,           // NOW includes { ..., favorites: [] } and is updated by updateUserFavorites
       loading,
       error,
       login,

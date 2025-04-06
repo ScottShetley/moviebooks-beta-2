@@ -32,6 +32,13 @@ const userSchema = mongoose.Schema (
       required: [true, 'Please add a password'],
       minlength: [6, 'Password must be at least 6 characters long'],
     },
+    // --- ADDED FIELD ---
+    favorites: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Connection', // Reference the Connection model
+        required: true, // Ensure entries are valid ObjectIds (though array can be empty)
+    }],
+    // -------------------
   },
   {
     timestamps: true,
@@ -75,6 +82,8 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 // Indexing username and email for faster lookups
 userSchema.index ({username: 1});
 userSchema.index ({email: 1});
+// Optional: Index the favorites array if you anticipate querying users based on favorites frequently
+// userSchema.index({ favorites: 1 }); // Consider adding this later if performance dictates
 
 const User = mongoose.model ('User', userSchema);
 
