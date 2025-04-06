@@ -30,3 +30,57 @@
       width: 100%;
     }
   }
+  /* client/src/AppLayout.css */
+
+.appLayout {
+  display: flex;
+  min-height: calc(100vh - 120px); /* Adjust 120px if header/footer height changes */
+  position: relative; /* Needed for overlay positioning context if overlay wasn't fixed */
+}
+
+.mainContent {
+  flex-grow: 1;
+  overflow-y: auto;
+  /* On mobile, when sidebar is fixed/overlay, this element naturally flows underneath */
+}
+
+/* --- START: Added Sidebar Overlay Styles --- */
+.sidebarOverlay {
+  display: none; /* Hidden by default */
+  position: fixed; /* Fixed position to cover viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  z-index: 1039; /* Below sidebar (1040 from Sidebar.module.css), above main content */
+  cursor: pointer; /* Indicate it's clickable */
+  /* Optional: Add transition for fade-in effect */
+  /* opacity: 0;
+  transition: opacity 0.3s ease-in-out; */
+}
+/* --- END: Added Sidebar Overlay Styles --- */
+
+
+/* Media query to handle layout adjustments when sidebar is hidden/overlaid */
+@media (max-width: 992px) {
+  .appLayout {
+      /* Revert to block as sidebar is fixed/removed from flow */
+      display: block;
+  }
+
+  .mainContent {
+      width: 100%; /* Ensure main content takes full width */
+  }
+
+  /* --- START: Show overlay only on mobile when needed --- */
+  /* The overlay is conditionally rendered via JS (isSidebarOpen && user),
+     so we just need to ensure its base styles are defined correctly above.
+     If we wanted a fade effect, we'd toggle opacity here. */
+  .sidebarOverlay {
+     display: block; /* Make sure it's displayed when rendered */
+     /* If using opacity transition: */
+     /* opacity: 1; */
+  }
+  /* --- END: Show overlay only on mobile --- */
+}
