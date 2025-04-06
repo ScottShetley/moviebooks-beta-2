@@ -1,4 +1,4 @@
-// client/src/services/api.js
+// client/src/services/api.js (Updated getStaticFileUrl)
 import axios from 'axios';
 
 // --- Configuration ---
@@ -34,12 +34,6 @@ api.interceptors.request.use(
     if (userInfo && userInfo.token) {
       config.headers['Authorization'] = `Bearer ${userInfo.token}`;
     }
-    // --- Request Logging (Optional but useful for debugging) ---
-    /*
-    console.log(`[Axios Request] ${config.method?.toUpperCase()} ${config.url}`, {
-        headers: config.headers, data: config.data, params: config.params,
-    });
-    */
     return config;
   },
   (error) => {
@@ -55,26 +49,17 @@ api.interceptors.response.use(
   (error) => {
     // --- Centralized Error Handling ---
     if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         console.error(`[Axios Response Error ${error.response.status}] URL: ${error.config.url}`, error.response.data);
         if (error.response.status === 401) {
             console.warn("Unauthorized (401) response received. Token might be invalid or expired.");
-            // Potentially trigger logout or token refresh here if needed
-            // Example: if (!error.config.url.includes('/auth/login')) { /* logout user */ }
         }
-        // Optionally reformat error or add more info before rejecting
-        // error.message = error.response.data?.message || error.message;
     } else if (error.request) {
-        // The request was made but no response was received
-        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of http.ClientRequest in node.js
         console.error("[Axios Network/Server Error] No response received:", error.message);
-        error.message = "Network Error: Could not connect to the server. Please check your connection."; // More user-friendly message
+        error.message = "Network Error: Could not connect to the server. Please check your connection.";
     } else {
-        // Something happened in setting up the request that triggered an Error
         console.error('[Axios Setup Error]', error.message);
     }
-    return Promise.reject(error); // Pass the error along
+    return Promise.reject(error);
   }
 );
 
@@ -82,22 +67,28 @@ api.interceptors.response.use(
 // --- Helper Function for Static File URLs ---
 export const getStaticFileUrl = (relativePath) => {
     if (!relativePath) return null;
+
+    // *** ADDED CHECK: If the path is already a full URL (like Cloudinary), return it directly ***
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+        // console.log('[getStaticFileUrl] Path is already a full URL:', relativePath);
+        return relativePath;
+    }
+
+    // --- Original logic (for relative paths like 'uploads/...') ---
     // Ensure no double slashes if relativePath starts with /
     const path = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
-    return `${STATIC_FILE_URL}/${path}`;
+    // Ensure STATIC_FILE_URL doesn't have a trailing slash if path doesn't start with one
+    const baseUrl = STATIC_FILE_URL.endsWith('/') ? STATIC_FILE_URL.slice(0, -1) : STATIC_FILE_URL;
+     // Ensure path starts with a slash
+    const finalPath = path.startsWith('/') ? path : `/${path}`;
+
+    // console.log('[getStaticFileUrl] Constructing URL from relative path:', `${baseUrl}${finalPath}`);
+    return `${baseUrl}${finalPath}`;
 };
 
 
 // --- Connection API Functions ---
 
-/**
- * Sends a DELETE request to remove a specific connection.
- * @param {string} id - The ID of the connection to delete.
- * @returns {Promise<axios.AxiosResponse<any>>} - The Axios promise for the DELETE request.
- */
-export const deleteConnection = (id) => api.delete(`/connections/${id}`);
-
-// --- NEW Function for fetching multiple connections ---
 /**
  * Fetches multiple connections by their IDs. Requires authentication.
  * @param {string[]} connectionIds - An array of connection IDs to fetch.
@@ -108,10 +99,15 @@ export const getConnectionsByIds = (connectionIds) => {
         console.error("[api.getConnectionsByIds] Input must be an array of connection IDs.");
         return Promise.reject(new Error("Invalid input: Expected an array of connection IDs.")); // Return a rejected promise
     }
-    // The backend expects the array under the key "connectionIds" in the body
     return api.post('/connections/batch', { connectionIds });
 };
-// --- END NEW Function ---
+
+/**
+ * Sends a DELETE request to remove a specific connection.
+ * @param {string} id - The ID of the connection to delete.
+ * @returns {Promise<axios.AxiosResponse<any>>} - The Axios promise for the DELETE request.
+ */
+export const deleteConnection = (id) => api.delete(`/connections/${id}`);
 
 
 // --- Comment API Functions ---
@@ -132,6 +128,37 @@ export const getCommentsForConnection = (connectionId) =>
  */
 export const createComment = (connectionId, commentData) =>
     api.post(`/connections/${connectionId}/comments`, commentData);
+
+
+// --- Movie/Book Detail API Functions ---
+
+/**
+ * Fetches details for a specific movie by its ID.
+ * @param {string} movieId - The ID of the movie.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the movie object.
+ */
+export const getMovieById = (movieId) => api.get(`/movies/${movieId}`);
+
+/**
+ * Fetches all connections associated with a specific movie ID.
+ * @param {string} movieId - The ID of the movie.
+ * @returns {Promise<axios.AxiosResponse<Array<object>>>} - Promise resolving to the Axios response containing an array of populated connection objects.
+ */
+export const getConnectionsByMovieId = (movieId) => api.get(`/movies/${movieId}/connections`);
+
+/**
+ * Fetches details for a specific book by its ID.
+ * @param {string} bookId - The ID of the book.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the book object.
+ */
+export const getBookById = (bookId) => api.get(`/books/${bookId}`);
+
+/**
+ * Fetches all connections associated with a specific book ID.
+ * @param {string} bookId - The ID of the book.
+ * @returns {Promise<axios.AxiosResponse<Array<object>>>} - Promise resolving to the Axios response containing an array of populated connection objects.
+ */
+export const getConnectionsByBookId = (bookId) => api.get(`/books/${bookId}/connections`);
 
 
 // --- Default Export ---
