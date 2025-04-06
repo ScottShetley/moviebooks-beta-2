@@ -98,9 +98,18 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
       }
     };
 
+    // *** ADDED: Prevent clicks inside sidebar from closing it via overlay ***
+    const handleSidebarClick = (e) => {
+        e.stopPropagation();
+    };
+
 
     return (
-        <aside id="app-sidebar" className={sidebarClasses}>
+        <aside
+            id="app-sidebar"
+            className={sidebarClasses}
+            onClick={handleSidebarClick} // *** ADDED onClick handler ***
+        >
             {user && (
                 <>
                     {/* User Profile Section */}
