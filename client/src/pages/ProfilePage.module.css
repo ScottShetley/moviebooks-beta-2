@@ -1,0 +1,86 @@
+/* client/src/pages/ProfilePage.module.css */
+.profilePage {
+    padding: 1rem;
+    max-width: 900px;
+    margin: 1rem auto;
+    background-color: var(--color-background-alt);
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .viewToggleContainer {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border-light);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+  }
+  
+  .toggleButton {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--color-primary-dark); /* Keep original border */
+    background-color: var(--color-background);
+    color: var(--color-primary-dark); /* Keep original text color */
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600; /* Base weight */
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, font-weight 0.2s ease; /* Added font-weight */
+    box-shadow: var(--shadow-small);
+    display: flex; /* Align icon and text */
+    align-items: center;
+    gap: 0.5rem; /* Space between text and spinner */
+  }
+  
+  .toggleButton:hover {
+    background-color: var(--color-primary-lightest); /* Keep existing subtle hover */
+    box-shadow: var(--shadow-medium);
+  }
+  
+  /* --- MODIFIED RULE TO MATCH SIDEBAR ACTIVE NAVLINK --- */
+  .toggleButton.active {
+    /* Use variables from .navLink.active in Sidebar.module.css */
+    background-color: var(--color-accent-hover);    /* Use Accent Hover background */
+    color: var(--color-button-text-primary);      /* Use Button Text Primary color */
+    border-color: var(--color-accent-hover);        /* Match border to background */
+    font-weight: 500;                             /* Use same font-weight as active navLink */
+    box-shadow: none;
+    cursor: default; /* Indicate it's the active state */
+  }
+  /* --- END MODIFIED RULE --- */
+  
+  
+  .toggleButton:disabled:not(.active) {
+      cursor: not-allowed;
+      opacity: 0.6;
+      background-color: var(--color-background-disabled);
+  }
+  
+  .sectionTitle {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+    font-size: 1.4rem;
+  }
+  
+  .loadingSection {
+      margin-top: 2rem;
+      text-align: center;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 100px; /* Give it some space */
+  }
+  
+  .emptyMessage {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: var(--color-background);
+      border: 1px dashed var(--color-border-light);
+      border-radius: var(--border-radius-small);
+      color: var(--color-text-secondary);
+      text-align: center;
+  }

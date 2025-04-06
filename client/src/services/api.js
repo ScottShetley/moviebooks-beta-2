@@ -51,22 +51,30 @@ api.interceptors.request.use(
 
 // --- Response Interceptor ---
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response, // Simply return the successful response
   (error) => {
     // --- Centralized Error Handling ---
     if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
         console.error(`[Axios Response Error ${error.response.status}] URL: ${error.config.url}`, error.response.data);
         if (error.response.status === 401) {
-            console.warn("Unauthorized (401) response. Token might be invalid or expired.");
-            // Add specific actions here if needed later (e.g., logout)
-            // Example: localStorage.removeItem('userInfo'); window.location.href = '/login';
+            console.warn("Unauthorized (401) response received. Token might be invalid or expired.");
+            // Potentially trigger logout or token refresh here if needed
+            // Example: if (!error.config.url.includes('/auth/login')) { /* logout user */ }
         }
+        // Optionally reformat error or add more info before rejecting
+        // error.message = error.response.data?.message || error.message;
     } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of http.ClientRequest in node.js
         console.error("[Axios Network/Server Error] No response received:", error.message);
+        error.message = "Network Error: Could not connect to the server. Please check your connection."; // More user-friendly message
     } else {
+        // Something happened in setting up the request that triggered an Error
         console.error('[Axios Setup Error]', error.message);
     }
-    return Promise.reject(error);
+    return Promise.reject(error); // Pass the error along
   }
 );
 
@@ -74,8 +82,9 @@ api.interceptors.response.use(
 // --- Helper Function for Static File URLs ---
 export const getStaticFileUrl = (relativePath) => {
     if (!relativePath) return null;
-    const separator = relativePath.startsWith('/') ? '' : '/';
-    return `${STATIC_FILE_URL}${separator}${relativePath}`;
+    // Ensure no double slashes if relativePath starts with /
+    const path = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
+    return `${STATIC_FILE_URL}/${path}`;
 };
 
 
@@ -88,8 +97,24 @@ export const getStaticFileUrl = (relativePath) => {
  */
 export const deleteConnection = (id) => api.delete(`/connections/${id}`);
 
+// --- NEW Function for fetching multiple connections ---
+/**
+ * Fetches multiple connections by their IDs. Requires authentication.
+ * @param {string[]} connectionIds - An array of connection IDs to fetch.
+ * @returns {Promise<axios.AxiosResponse<Array<object>>>} - Promise resolving to the Axios response containing an array of populated connection objects.
+ */
+export const getConnectionsByIds = (connectionIds) => {
+    if (!Array.isArray(connectionIds)) {
+        console.error("[api.getConnectionsByIds] Input must be an array of connection IDs.");
+        return Promise.reject(new Error("Invalid input: Expected an array of connection IDs.")); // Return a rejected promise
+    }
+    // The backend expects the array under the key "connectionIds" in the body
+    return api.post('/connections/batch', { connectionIds });
+};
+// --- END NEW Function ---
 
-// --- Comment API Functions --- NEW ---
+
+// --- Comment API Functions ---
 
 /**
  * Fetches all comments for a specific connection.
@@ -107,6 +132,7 @@ export const getCommentsForConnection = (connectionId) =>
  */
 export const createComment = (connectionId, commentData) =>
     api.post(`/connections/${connectionId}/comments`, commentData);
+
 
 // --- Default Export ---
 // Export the configured Axios instance as the default export
