@@ -14,7 +14,8 @@
 }
 
 html {
-  font-size: 100%; /* Base font size, typically 16px */
+  font-size: 100%;
+  /* Base font size, typically 16px */
   scroll-behavior: smooth;
 }
 
@@ -26,28 +27,49 @@ body {
   background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh; /* Ensure body takes at least full viewport height */
-  display: flex; /* Use flexbox for sticky footer */
-  flex-direction: column;
+  min-height: 100vh;
+  /* Ensure body takes at least full viewport height */
+  /* display: flex; <<< REMOVED */
+  /* flex-direction: column; <<< REMOVED */
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   line-height: var(--line-height-heading);
   margin-top: var(--space-lg);
   margin-bottom: var(--space-sm);
-  color: var(--color-secondary); /* Darker headings */
+  color: var(--color-secondary);
+  /* Darker headings */
   font-weight: 700;
 }
 
-h1 { font-size: var(--font-size-xxl); margin-top: 0;} /* Often first heading needs no top margin */
-h2 { font-size: var(--font-size-xl); }
-h3 { font-size: var(--font-size-lg); }
-h4 { font-size: var(--font-size-md); font-weight: 600; }
+h1 {
+  font-size: var(--font-size-xxl);
+  margin-top: 0;
+}
+
+/* Often first heading needs no top margin */
+h2 {
+  font-size: var(--font-size-xl);
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+}
+
+h4 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
 
 p {
-    margin-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
 /* Links */
@@ -57,10 +79,12 @@ a {
   transition: var(--transition-fast);
 }
 
-a:hover, a:focus {
+a:hover,
+a:focus {
   color: var(--color-accent);
   text-decoration: underline;
-  outline: none; /* Improve focus visibility later if needed */
+  outline: none;
+  /* Improve focus visibility later if needed */
 }
 
 /* Basic Form Styles (can be overridden by components) */
@@ -80,58 +104,84 @@ button {
   background: none;
 }
 
-img, svg {
-    max-width: 100%;
-    height: auto;
-    display: block; /* Remove extra space below images */
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  /* Remove extra space below images */
 }
 
 /* Utility Classes (Optional, but helpful) */
 .container {
   width: 100%;
-  max-width: 1200px; /* Adjust max width as needed */
+  max-width: 1200px;
+  /* Adjust max width as needed */
   margin-left: auto;
   margin-right: auto;
   padding-left: var(--space-md);
   padding-right: var(--space-md);
 }
 
-.text-center { text-align: center; }
-.error-message { color: var(--color-error); font-size: var(--font-size-sm); margin-top: var(--space-xxs);}
-.success-message { color: var(--color-success); font-size: var(--font-size-sm); margin-top: var(--space-xxs);}
+.text-center {
+  text-align: center;
+}
+
+.error-message {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-xxs);
+}
+
+.success-message {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-xxs);
+}
+
 .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 
 /* Basic Responsive */
 @media (max-width: 768px) {
-  h1 { font-size: var(--font-size-xl); }
-  h2 { font-size: var(--font-size-lg); }
+  h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  h2 {
+    font-size: var(--font-size-lg);
+  }
+
   .container {
-      padding-left: var(--space-sm);
-      padding-right: var(--space-sm);
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
   }
 }
 
 /* Root layout for sticky footer */
 #root {
   display: flex;
+  /* <<< KEEP */
   flex-direction: column;
+  /* <<< KEEP */
   min-height: 100vh;
+  /* <<< KEEP */
 }
 
 /* Main content area */
 main {
-  flex: 1 0 auto; /* Allow main to grow and shrink, but not shrink below content size */
+  flex: 1 0 auto;
+  /* Allow main to grow and shrink, but not shrink below content size */
   padding-top: var(--space-lg);
   padding-bottom: var(--space-lg);
 }
@@ -139,5 +189,6 @@ main {
 /* Footer specific styling */
 /* Assuming a Footer component exists, handled via Layout/Footer.module.css is better */
 /* footer { */
-    /* flex-shrink: 0; */ /* Prevent footer from shrinking */
+/* flex-shrink: 0; */
+/* Prevent footer from shrinking */
 /* } */
