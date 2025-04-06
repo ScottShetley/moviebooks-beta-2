@@ -83,31 +83,28 @@ const ProfilePage = () => {
         } else {
           // Fetch other user's data - expecting endpoint to provide username and connections
           console.log("[ProfilePage Initial Fetch] Fetching CREATED connections and username for other user...");
-          // Let's assume a combined endpoint for simplicity now, adjust if needed
-          // Example: GET /api/users/:userId/profile - returns { username, connections: [...] }
-          // OR stick to the connections endpoint if it also returns username
-          // Let's use /connections/user/:userId and assume it somehow gives username too,
-          // or make a separate call if needed. For now, let's assume a hypothetical combined endpoint or logic.
-          // A simpler approach: fetch username first, then connections.
-          try {
-             // Hypothetical: Fetch just the username first
-             // const userRes = await api.get(`/users/${userIdToView}/basic-info`); // Needs backend route
-             // fetchedUsername = userRes.data.username;
-             // If no such endpoint, we might have to rely on the first connection's userRef
-          } catch (userErr) {
-             // Handle unable to get username specifically
-          }
+          // Fetch username first, then connections for clarity
+          let otherUsername = `User ${userIdToView.substring(0, 8)}...`; // Fallback
+           try {
+             // Let's assume the /connections/user/:userId endpoint response *doesn't* include username reliably.
+             // We need a way to get the username. If no dedicated endpoint exists,
+             // we can fetch connections first and grab username from there.
+           } catch (userErr) {
+             // Handle error fetching username if a separate endpoint was used
+           }
 
           const connectionsRes = await api.get(`/connections/user/${userIdToView}`);
           fetchedConnections = connectionsRes.data || [];
-          // If username wasn't fetched separately, try getting it from the connections list
-          if (!fetchedUsername && fetchedConnections.length > 0 && fetchedConnections[0].userRef) {
-              fetchedUsername = fetchedConnections[0].userRef.username;
-          } else if (!fetchedUsername) {
-             // Still no username? Might be an issue or user has no connections
-             fetchedUsername = `User ${userIdToView.substring(0, 8)}...`; // Fallback display name
-             console.warn("Could not determine profile username.");
+
+          // Try to get username from the fetched connections
+          if (fetchedConnections.length > 0 && fetchedConnections[0].userRef?.username) {
+              otherUsername = fetchedConnections[0].userRef.username;
+          } else {
+             // If still no username, maybe fetch basic user info if an endpoint exists
+             // e.g., await api.get(`/users/${userIdToView}/basic-info`);
+             console.warn(`Could not determine profile username for ${userIdToView}. Using fallback.`);
           }
+          fetchedUsername = otherUsername;
           console.log(`[ProfilePage Initial Fetch] Found ${fetchedConnections.length} created connections for user ${fetchedUsername}.`);
         }
 
@@ -128,15 +125,12 @@ const ProfilePage = () => {
     };
 
     fetchInitialData();
-  }, [userIdToView, isOwnProfile, loggedInUser, authLoading]); // Re-run if user changes or auth loads
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIdToView, isOwnProfile /* Removed loggedInUser as primary trigger, use authLoading */, authLoading]); // Re-run if user changes or auth loads/status changes
 
   // --- Fetch Favorite Connections When View Changes ---
   useEffect(() => {
-    // Only fetch if:
-    // 1. Viewing own profile
-    // 2. Active view is 'favorites'
-    // 3. Favorites haven't been fetched yet
-    // 4. We have the loggedInUser object with favorites array
+    // Only fetch if: viewing own profile, view is 'favorites', not already fetched, and user data is available
     if (isOwnProfile && activeView === 'favorites' && !favoritesFetched && loggedInUser?.favorites) {
         const fetchFavorites = async () => {
             console.log("[ProfilePage Fav Fetch] Fetching favorite connections...");
@@ -146,41 +140,44 @@ const ProfilePage = () => {
                 const favoriteIds = loggedInUser.favorites;
                 if (favoriteIds.length === 0) {
                      console.log("[ProfilePage Fav Fetch] User has no favorite IDs. Skipping API call.");
-                     setFavoriteConnections([]); // Ensure list is empty
+                     setFavoriteConnections([]);
                 } else {
                     console.log(`[ProfilePage Fav Fetch] Calling API with ${favoriteIds.length} IDs.`);
-                    const response = await getConnectionsByIds(favoriteIds); // Use the API service function
+                    const response = await getConnectionsByIds(favoriteIds);
                     setFavoriteConnections(response.data || []);
                     console.log(`[ProfilePage Fav Fetch] Received ${response.data?.length || 0} favorite connections.`);
                 }
-                setFavoritesFetched(true); // Mark as fetched (even if empty)
+                setFavoritesFetched(true);
             } catch (err) {
                 const message = err.response?.data?.message || err.message || "Failed to load favorites.";
                 console.error("Fetch favorite connections error:", err);
                 setErrorFavorites(message);
-                setFavoriteConnections([]); // Clear on error
-                setFavoritesFetched(false); // Allow retry by setting fetched to false
+                setFavoriteConnections([]);
+                setFavoritesFetched(false); // Allow retry
             } finally {
                 setLoadingFavorites(false);
             }
         };
         fetchFavorites();
     }
-    // This effect depends on when the user switches the view or when user data (favorites list) changes
+    // Re-run if view changes, profile type changes, user logs in/out/updates, or fetch status changes
   }, [activeView, isOwnProfile, loggedInUser, favoritesFetched]);
 
-  // --- Redirect Logic (No change needed) ---
+  // --- Redirect Logic (Corrected Dependency Array) ---
   useEffect(() => {
       if (!paramsUserId && !authLoading && !loggedInUser) {
+          console.log("Redirecting to login from ProfilePage effect.");
           navigate('/login', { replace: true, state: { from: '/profile' } });
       }
-  }, [paramsUserId, authLoading, loggedInUser, navigate]);
+  // --- Ensure ALL dependencies used inside the effect are listed ---
+  }, [paramsUserId, authLoading, loggedInUser, navigate]); // <<< Added paramsUserId
+
 
   // --- Render Logic ---
   const renderConnections = () => {
     if (activeView === 'created') {
-        if (pageLoading) return null; // Handled by main spinner
-        if (pageError && createdConnections.length === 0) return null; // Handled by main error message
+        if (pageLoading) return null;
+        if (pageError && createdConnections.length === 0) return null;
 
         return (
             <>
@@ -191,7 +188,7 @@ const ProfilePage = () => {
                     <div>
                         {createdConnections.map((connection) => (
                             <ConnectionCard
-                                key={`created-${connection._id}`} // Add prefix for key uniqueness
+                                key={`created-${connection._id}`}
                                 connection={connection}
                                 onUpdate={updateConnectionInBothLists}
                                 onDelete={deleteConnectionFromBothLists}
@@ -202,7 +199,7 @@ const ProfilePage = () => {
             </>
         );
     } else if (activeView === 'favorites') {
-        if (!isOwnProfile) return null; // Should not happen, but safeguard
+        if (!isOwnProfile) return null;
 
         if (loadingFavorites) {
             return <div className={styles.loadingSection}><LoadingSpinner /> Loading Favorites...</div>;
@@ -210,7 +207,6 @@ const ProfilePage = () => {
         if (errorFavorites) {
             return <ErrorMessage message={errorFavorites} />;
         }
-        // Only show after fetch attempt is complete (loading false, fetched true)
         if (!loadingFavorites && favoritesFetched) {
              return (
                 <>
@@ -221,7 +217,7 @@ const ProfilePage = () => {
                         <div>
                             {favoriteConnections.map((connection) => (
                                 <ConnectionCard
-                                    key={`favorite-${connection._id}`} // Add prefix for key uniqueness
+                                    key={`favorite-${connection._id}`}
                                     connection={connection}
                                     onUpdate={updateConnectionInBothLists}
                                     onDelete={deleteConnectionFromBothLists}
@@ -232,27 +228,20 @@ const ProfilePage = () => {
                 </>
             );
         }
-        return null; // Return null if not loading but also not fetched yet
+        return null;
     }
-    return null; // Default case
+    return null;
   };
 
   // --- Main Component Return ---
   return (
     <div className={styles.profilePage}>
-      {/* Main Page Loading Spinner */}
       {pageLoading && <LoadingSpinner />}
-
-      {/* Main Page Error Message */}
       {!pageLoading && pageError && <ErrorMessage message={pageError} />}
-
-      {/* Profile Content (only render if not loading page and no page error, and username is available) */}
       {!pageLoading && !pageError && profileUsername && (
         <>
           <h1>{profileUsername}'s Profile</h1>
           {isOwnProfile && <p>(This is your public profile)</p>}
-
-          {/* View Toggle Buttons (Only for Own Profile) */}
           {isOwnProfile && (
             <div className={styles.viewToggleContainer}>
               <button
@@ -265,15 +254,13 @@ const ProfilePage = () => {
               <button
                 className={`${styles.toggleButton} ${activeView === 'favorites' ? styles.active : ''}`}
                 onClick={() => setActiveView('favorites')}
-                disabled={activeView === 'favorites' || loadingFavorites} // Disable while loading favorites too
+                disabled={activeView === 'favorites' || loadingFavorites}
               >
-                My Favorites ({loggedInUser?.favorites?.length || 0}) {/* Show count from user object */}
+                My Favorites ({loggedInUser?.favorites?.length || 0})
                 {loadingFavorites && <LoadingSpinner size="small" inline marginLeft="0.5rem" />}
               </button>
             </div>
           )}
-
-          {/* Render the selected connections list */}
           {renderConnections()}
         </>
       )}
