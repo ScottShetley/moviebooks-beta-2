@@ -5,10 +5,38 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+
+    <!-- === START: Updated Meta Tags for Social Sharing === -->
+
+    <!-- Updated Description -->
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="Explore a growing collection of connections documenting books that appear in films. Add your own findings and browse scenes."
     />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="MovieBooks: Discover Books Featured in Movies" />
+    <meta property="og:description" content="Explore a growing collection of connections documenting books that appear in films. Add your own findings and browse scenes." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://moviebooks-frontend.onrender.com/" />
+    <!-- *** VERIFY THIS URL: Ensure this is the correct full public URL to your logo *** -->
+    <meta property="og:image" content="https://moviebooks-frontend.onrender.com/logo512.png" />
+    <!-- Optional: Add image dimensions if known -->
+    <!-- <meta property="og:image:width" content="512" /> -->
+    <!-- <meta property="og:image:height" content="512" /> -->
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:domain" content="moviebooks-frontend.onrender.com" />
+    <meta property="twitter:url" content="https://moviebooks-frontend.onrender.com/" />
+    <meta name="twitter:title" content="MovieBooks: Discover Books Featured in Movies" />
+    <meta name="twitter:description" content="Explore a growing collection of connections documenting books that appear in films. Add your own findings and browse scenes." />
+    <!-- *** VERIFY THIS URL: Ensure this is the correct full public URL to your logo *** -->
+    <meta name="twitter:image" content="https://moviebooks-frontend.onrender.com/logo512.png" />
+
+    <!-- === END: Updated Meta Tags for Social Sharing === -->
+
+
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -24,7 +52,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>MovieBooks</title>
+    <title>MovieBooks</title> <!-- Default title, will be overridden by Helmet for users -->
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
