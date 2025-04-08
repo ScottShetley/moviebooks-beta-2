@@ -1,30 +1,30 @@
 // client/src/components/Connection/ConnectionCard/ConnectionCard.js
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
-import api, { getCommentsForConnection } from '../../../services/api';
+import api, { getCommentsForConnection, getStaticFileUrl } from '../../../services/api';
 import LoadingSpinner from '../../Common/LoadingSpinner/LoadingSpinner';
 import CommentList from '../../comments/CommentList';
 import AddCommentForm from '../../comments/AddCommentForm';
-import styles from './ConnectionCard.module.css';
+import styles from './ConnectionCard.module.css'; // The CSS Module import
 
-// --- Import React Icons ---
+// Import React Icons
 import {
-    FaStar,         // Filled star (for favorited)
-    FaRegStar,      // Outline star (for not favorited)
-    FaThumbsUp,     // Filled thumbs up (for liked)
-    FaRegThumbsUp,  // Outline thumbs up (for not liked)
-    FaRegCommentDots, // Comment icon
-    FaTrashAlt      // Delete icon
+    FaStar, FaRegStar, FaThumbsUp, FaRegThumbsUp, FaRegCommentDots, FaTrashAlt, FaShareAlt,
+    FaTwitter, FaFacebook, FaLink, FaTimes
 } from 'react-icons/fa';
-// --- End React Icons Import ---
+
+// --- ADD CONSOLE LOG HERE ---
+// Log the imported styles object immediately after import to see its content
+console.log("ConnectionCard - Imported styles object:", styles);
+// --- END CONSOLE LOG ---
 
 
 const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
-    // --- Auth Context ---
-    const { user, updateUserFavorites } = useAuth(); // Get user and the update function
+    // Auth Context
+    const { user, updateUserFavorites } = useAuth();
 
-    // --- State Hooks ---
+    // State Hooks
     const [isLiking, setIsLiking] = useState(false);
     const [isFavoriting, setIsFavoriting] = useState(false);
     const [localError, setLocalError] = useState(null);
@@ -35,301 +35,146 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     const [showComments, setShowComments] = useState(false);
     const [commentsFetched, setCommentsFetched] = useState(false);
 
-    // --- Log Component Render Start ---
-    // console.log(`[ConnectionCard Render START] ID: ${connection?._id}`); // Keep minimal logging if needed
+    // Share State
+    const [showShareOptions, setShowShareOptions] = useState(false);
+    const [copyStatus, setCopyStatus] = useState('Copy Link');
+    const shareButtonRef = useRef(null);
+    const shareOptionsRef = useRef(null);
 
-    // --- Callbacks/Memos ---
+    // Effect for closing share options on outside click
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showShareOptions &&
+                shareButtonRef.current && !shareButtonRef.current.contains(event.target) &&
+                shareOptionsRef.current && !shareOptionsRef.current.contains(event.target))
+            { setShowShareOptions(false); }
+        };
+        if (showShareOptions) { document.addEventListener('mousedown', handleClickOutside); }
+        else { document.removeEventListener('mousedown', handleClickOutside); }
+        return () => { document.removeEventListener('mousedown', handleClickOutside); };
+    }, [showShareOptions]);
+
+
+    // Callbacks/Memos
     const handleToggleComments = useCallback(async () => {
-        // console.log(`[handleToggleComments - ${connection?._id}] Called. showComments: ${showComments}, commentsFetched: ${commentsFetched}`); // Optional debug
-        if (!connection?._id) {
-             console.error("[handleToggleComments] Cannot fetch comments: connection._id is missing or invalid!");
-             setCommentError("Cannot fetch comments: Connection ID is missing.");
-             if (!showComments) setShowComments(true); // Still show the error area
-             setIsLoadingComments(false);
-             return;
-        }
-        // If currently showing, just hide it
-        if (showComments) {
-            setShowComments(false);
-            return;
-        }
-        // If opening and not yet fetched (or errored before)
+        if (!connection?._id) { setCommentError("Cannot fetch comments: Connection ID is missing."); if (!showComments) setShowComments(true); setIsLoadingComments(false); return; }
+        if (showComments) { setShowComments(false); return; }
         setShowComments(true);
         if (!commentsFetched || commentError) {
-            setIsLoadingComments(true);
-            setCommentError(null); // Clear previous error
-            try {
-                const response = await getCommentsForConnection(connection._id);
-                setComments(response.data || []); // Ensure it's an array
-                setCommentsFetched(true);
-                // console.log(`[handleToggleComments - ${connection?._id}] Fetched ${response.data?.length || 0} comments.`); // Optional debug
-            } catch (err) {
-                console.error("[handleToggleComments] Error fetching comments:", err);
-                const message = err.response?.data?.message || err.message || "Failed to load comments.";
-                setCommentError(message);
-                setCommentsFetched(false); // Allow retry
-                setComments([]); // Clear potentially stale comments
-            } finally {
-                setIsLoadingComments(false);
-            }
+            setIsLoadingComments(true); setCommentError(null);
+            try { const response = await getCommentsForConnection(connection._id); setComments(response.data || []); setCommentsFetched(true); }
+            catch (err) { console.error("[handleToggleComments] Error fetching comments:", err); const message = err.response?.data?.message || err.message || "Failed to load comments."; setCommentError(message); setCommentsFetched(false); setComments([]); }
+            finally { setIsLoadingComments(false); }
         }
-        // If already fetched and no error, just setShowComments(true) is enough (handled above)
-    }, [showComments, commentsFetched, connection?._id, commentError]); // Dependencies look correct
+    }, [showComments, commentsFetched, connection?._id, commentError]);
 
     const handleAddComment = useCallback((newComment) => {
         setComments(prevComments => [newComment, ...prevComments]);
-        // If comments weren't fetched before, mark them as fetched now since we have at least one
-        if (!commentsFetched) {
-            setCommentsFetched(true);
-        }
+        if (!commentsFetched) setCommentsFetched(true);
     }, [commentsFetched]);
 
-    // --- Early return for invalid data ---
+
+    // Early return check
     if (!connection || !connection.movieRef || !connection.bookRef || !connection.userRef || !connection.userRef.username) {
         console.error("[ConnectionCard Render] Incomplete connection data, rendering error.", { connection });
-        return <div className={styles.card}>Error: Incomplete connection data.</div>;
+        return <div className={styles.card}>Error: Incomplete connection data for ID {connection?._id}. Check console.</div>;
     }
 
-    // --- Derived state Calculation ---
+
+    // Derived state
     const isLikedByCurrentUser = !!user && !!connection.likes?.includes(user._id);
-    // Calculate based on user's favorites list from context
     const isFavoritedByCurrentUser = !!user && !!user.favorites && !!connection._id && user.favorites.includes(connection._id);
     const isOwner = !!user && user._id === connection.userRef._id;
 
-    // --- Action Handlers ---
+    // Action Handlers (Like, Favorite, Delete)
     const handleLikeToggle = async () => {
-        const currentConnectionId = connection?._id;
-        // console.log(`[handleLikeToggle - ${currentConnectionId}] Clicked.`); // Optional
-        if (!user || isLiking || !currentConnectionId) return;
-        setIsLiking(true);
-        setLocalError(null);
-        try {
-            const { data } = await api.post(`/connections/${currentConnectionId}/like`);
-            if (onUpdate) onUpdate(data.connection); // Update parent if needed (e.g., HomePage list)
-        } catch (err) {
-             console.error(`[handleLikeToggle - ${currentConnectionId}] Error:`, err);
-             setLocalError("Failed to update like status.");
-        } finally {
-             setIsLiking(false);
-        }
+        const currentConnectionId = connection?._id; if (!user || isLiking || !currentConnectionId) return; setIsLiking(true); setLocalError(null); try { const { data } = await api.post(`/connections/${currentConnectionId}/like`); if (onUpdate) onUpdate(data.connection); } catch (err) { console.error(`[handleLikeToggle - ${currentConnectionId}] Error:`, err); setLocalError("Failed to update like status."); } finally { setIsLiking(false); }
     };
-
     const handleFavoriteToggle = async () => {
-        const currentConnectionId = connection?._id; // Capture ID for logs/use
-        // console.log(`[handleFavoriteToggle - ${currentConnectionId}] Clicked. User: ${!!user}, isFavoriting: ${isFavoriting}`); // Optional
-        if (!user || isFavoriting || !currentConnectionId) return;
-
-        setIsFavoriting(true);
-        setLocalError(null);
-
-        try {
-            // console.log(`[handleFavoriteToggle - ${currentConnectionId}] Sending API request...`); // Optional
-            const { data: updatedConnection } = await api.post(`/connections/${currentConnectionId}/favorite`);
-            // console.log(`[handleFavoriteToggle - ${currentConnectionId}] API success.`); // Optional
-
-            // --- CRITICAL: Update Auth Context state ---
-            // console.log(`[handleFavoriteToggle - ${currentConnectionId}] Calling updateUserFavorites from context...`); // Optional
-            updateUserFavorites(currentConnectionId); // This updates the global user.favorites list
-            // --- END Context Update ---
-
-            // Optional: Update parent component state if needed (e.g., HomePage list)
-            // The connection object itself might have updated counts, etc.
-            if (onUpdate) {
-                // console.log(`[handleFavoriteToggle - ${currentConnectionId}] Calling onUpdate prop...`); // Optional
-                onUpdate(updatedConnection);
-            }
-        } catch (err) {
-            console.error(`[handleFavoriteToggle - ${currentConnectionId}] Favorite toggle error:`, err);
-            setLocalError("Failed to update favorite status.");
-            // NOTE: We don't automatically revert the context update here.
-            // A more robust solution might involve reverting if the API call fails,
-            // but for now, we rely on the API call succeeding to keep things in sync.
-        } finally {
-            // console.log(`[handleFavoriteToggle - ${currentConnectionId}] Setting isFavoriting to false.`); // Optional
-            setIsFavoriting(false);
-        }
+        const currentConnectionId = connection?._id; if (!user || isFavoriting || !currentConnectionId) return; setIsFavoriting(true); setLocalError(null); try { const { data: updatedConnection } = await api.post(`/connections/${currentConnectionId}/favorite`); updateUserFavorites(currentConnectionId); if (onUpdate) { onUpdate(updatedConnection); } } catch (err) { console.error(`[handleFavoriteToggle - ${currentConnectionId}] Favorite toggle error:`, err); setLocalError("Failed to update favorite status."); } finally { setIsFavoriting(false); }
     };
-
      const handleDelete = async () => {
-        const currentConnectionId = connection?._id;
-        // console.log(`[handleDelete - ${currentConnectionId}] Clicked.`); // Optional
-        if (!isOwner || isDeleting || !currentConnectionId || !window.confirm('Are you sure you want to delete this connection?')) return;
-
-        setIsDeleting(true);
-        setLocalError(null);
-        try {
-            await api.delete(`/connections/${currentConnectionId}`);
-            // console.log(`[handleDelete - ${currentConnectionId}] API success.`); // Optional
-            // --- CRITICAL: Remove from user's favorites if it was favorited ---
-            // Check if the deleted connection was in the user's favorites before deleting
-            if (user?.favorites?.includes(currentConnectionId)) {
-                 // console.log(`[handleDelete - ${currentConnectionId}] Deleted connection was a favorite, calling updateUserFavorites to remove.`); // Optional
-                 updateUserFavorites(currentConnectionId); // Tell context to remove it
-            }
-            // --- END Context Update on Delete ---
-            if (onDelete) onDelete(currentConnectionId); // Notify parent to remove from list
-            // No need to setIsDeleting(false) as the component will unmount
-        } catch (err) {
-            const msg = err.response?.data?.message || err.message || "Failed to delete connection.";
-            console.error(`[handleDelete - ${currentConnectionId}] Error:`, err);
-            setLocalError(msg);
-            setIsDeleting(false); // Re-enable button if delete failed
-        }
+        const currentConnectionId = connection?._id; if (!isOwner || isDeleting || !currentConnectionId || !window.confirm('Are you sure you want to delete this connection?')) return; setIsDeleting(true); setLocalError(null); try { await api.delete(`/connections/${currentConnectionId}`); if (user?.favorites?.includes(currentConnectionId)) { updateUserFavorites(currentConnectionId); } if (onDelete) onDelete(currentConnectionId); } catch (err) { const msg = err.response?.data?.message || err.message || "Failed to delete connection."; console.error(`[handleDelete - ${currentConnectionId}] Error:`, err); setLocalError(msg); setIsDeleting(false); }
     };
 
-    // --- Log Component Render End ---
-    // console.log(`[ConnectionCard Render END - ${connection?._id}] isFavorited: ${isFavoritedByCurrentUser}`); // Optional: Reduced logging
+    // Share Action Handlers
+    const connectionUrl = `${window.location.origin}/connections/${connection._id}`;
+    const shareText = `Check out this connection between "${connection.movieRef.title}" and "${connection.bookRef.title}" on MovieBooks!`;
+    const handleShareToggle = () => { setShowShareOptions(prev => !prev); setCopyStatus('Copy Link'); };
+    const handleCopyToClipboard = async () => { try { await navigator.clipboard.writeText(connectionUrl); setCopyStatus('Copied!'); setTimeout(() => setCopyStatus('Copy Link'), 2000); } catch (err) { console.error('Failed to copy link: ', err); setCopyStatus('Failed!'); setTimeout(() => setCopyStatus('Copy Link'), 2000); } };
+    const handleShareToTwitter = () => { const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(connectionUrl)}&text=${encodeURIComponent(shareText)}`; window.open(twitterUrl, '_blank', 'noopener,noreferrer'); setShowShareOptions(false); };
+    const handleShareToFacebook = () => { const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(connectionUrl)}`; window.open(facebookUrl, '_blank', 'noopener,noreferrer'); setShowShareOptions(false); };
 
-    // --- JSX Return ---
+
+    // --- Log the specific class name being applied ---
+    console.log(`ConnectionCard ID ${connection._id} - Applying styles.card:`, styles.card);
+
+
+    // --- JSX Return (Using the styles object) ---
     return (
-        <article className={styles.card}>
+        <article className={styles.card}> {/* Using styles.card */}
              {/* Header */}
             <header className={styles.header}>
                  <h3>
-                    <Link to={`/movies/${connection.movieRef._id}`} className={styles.titleLink}>{connection.movieRef.title}</Link>
-                    {' & '}
-                    <Link to={`/books/${connection.bookRef._id}`} className={styles.titleLink}>{connection.bookRef.title}</Link>
+                    <Link to={`/connections/${connection._id}`} className={styles.titleLink}>
+                        {connection.movieRef.title} & {connection.bookRef.title}
+                    </Link>
                 </h3>
             </header>
             {/* Meta */}
             <p className={styles.meta}>
                 Added by{' '}
-                <Link to={`/profile/${connection.userRef._id}`} className={styles.userLink}>{connection.userRef.username}</Link>
+                <Link to={`/users/${connection.userRef._id}`} className={styles.userLink}>{connection.userRef.username}</Link>
                 {' on '}
                 {new Date(connection.createdAt).toLocaleDateString()}
             </p>
 
-            {/* Screenshot Section */}
-            {connection.screenshotUrl ? (
-                <div className={styles.screenshotWrapper}>
-                    <img
-                        src={connection.screenshotUrl}
-                        alt={`Scene from ${connection.movieRef.title} featuring ${connection.bookRef.title}`}
-                        className={styles.screenshot}
-                        loading="lazy"
-                    />
-                </div>
-            ) : (
-                 <div className={`${styles.screenshotWrapper} ${styles.noScreenshotPlaceholder}`}>No Screenshot Available</div>
-            )}
+            {/* Screenshot Section / Placeholder */}
+            {connection.screenshotUrl ? ( <Link to={`/connections/${connection._id}`} className={styles.imageLink}> <div className={styles.screenshotWrapper}> <img src={getStaticFileUrl(connection.screenshotUrl)} alt={`Scene from ${connection.movieRef.title} featuring ${connection.bookRef.title}`} className={styles.screenshot} loading="lazy" /> </div> </Link> ) : ( <div className={`${styles.screenshotWrapper} ${styles.noScreenshotPlaceholder}`}>No Screenshot Available</div> )}
 
             {/* Context */}
             {connection.context && ( <p className={styles.context}>{connection.context}</p> )}
 
             {/* Additional Images */}
-            {(connection.moviePosterUrl || connection.bookCoverUrl) && (
-                <div className={styles.additionalImagesContainer}>
-                    {connection.moviePosterUrl && (
-                       <div className={styles.additionalImageWrapper}>
-                            <img
-                                src={connection.moviePosterUrl}
-                                alt={`${connection.movieRef.title} Poster`}
-                                className={styles.additionalImage}
-                                loading="lazy" />
-                       </div>
-                    )}
-                    {connection.bookCoverUrl && (
-                        <div className={styles.additionalImageWrapper}>
-                            <img
-                                src={connection.bookCoverUrl}
-                                alt={`${connection.bookRef.title} Cover`}
-                                className={styles.additionalImage}
-                                loading="lazy" />
-                        </div>
-                    )}
-                </div>
-             )}
+            {(connection.movieRef?.posterPath || connection.bookRef?.coverPath) && ( <div className={styles.additionalImagesContainer}> {connection.movieRef?.posterPath && ( <Link to={`/movies/${connection.movieRef._id}`} title={connection.movieRef.title} className={styles.additionalImageWrapper}> <img src={getStaticFileUrl(connection.movieRef.posterPath)} alt={`${connection.movieRef.title} Poster`} className={styles.additionalImage} loading="lazy" /> </Link> )} {connection.bookRef?.coverPath && ( <Link to={`/books/${connection.bookRef._id}`} title={connection.bookRef.title} className={styles.additionalImageWrapper}> <img src={getStaticFileUrl(connection.bookRef.coverPath)} alt={`${connection.bookRef.title} Cover`} className={styles.additionalImage} loading="lazy" /> </Link> )} </div> )}
 
-            {/* Footer Actions (Using React Icons) */}
+            {/* Footer Actions */}
             <footer className={styles.actions}>
-                {/* Like Button */}
-                <button
-                    className={`${styles.actionButton} ${isLikedByCurrentUser ? styles.liked : ''}`}
-                    onClick={handleLikeToggle}
-                    disabled={!user || isLiking}
-                    title={isLikedByCurrentUser ? "Unlike" : "Like"}
-                    aria-label={isLikedByCurrentUser ? `Unlike connection, currently ${connection.likes?.length || 0} likes` : `Like connection, currently ${connection.likes?.length || 0} likes`}
-                    aria-pressed={isLikedByCurrentUser}
-                >
-                    {isLiking
-                        ? <LoadingSpinner size="small" inline />
-                        : (isLikedByCurrentUser ? <FaThumbsUp /> : <FaRegThumbsUp />) // Conditional Icon
-                    }
-                    <span className={styles.count}>{connection.likes?.length || 0}</span>
-                </button>
-
+                 {/* Like Button */}
+                <button className={`${styles.actionButton} ${isLikedByCurrentUser ? styles.liked : ''}`} onClick={handleLikeToggle} disabled={!user || isLiking} title={isLikedByCurrentUser ? "Unlike" : "Like"} aria-label={isLikedByCurrentUser ? `Unlike connection, currently ${connection.likes?.length || 0} likes` : `Like connection, currently ${connection.likes?.length || 0} likes`} aria-pressed={isLikedByCurrentUser} > {isLiking ? <LoadingSpinner size="small" inline /> : (isLikedByCurrentUser ? <FaThumbsUp /> : <FaRegThumbsUp />) } <span className={styles.count}>{connection.likes?.length || 0}</span> </button>
                 {/* Favorite Button */}
-                <button
-                    className={`${styles.actionButton} ${isFavoritedByCurrentUser ? styles.favorited : ''}`}
-                    onClick={handleFavoriteToggle}
-                    disabled={!user || isFavoriting}
-                    title={isFavoritedByCurrentUser ? "Remove from Favorites" : "Add to Favorites"}
-                    aria-label={isFavoritedByCurrentUser ? "Remove connection from Favorites" : "Add connection to Favorites"}
-                    aria-pressed={isFavoritedByCurrentUser}
-                >
-                    {isFavoriting
-                        ? <LoadingSpinner size="small" inline />
-                        : (isFavoritedByCurrentUser ? <FaStar /> : <FaRegStar />) // Conditional Icon
-                    }
-                    {/* Optional: Favorite count if you add it to schema later */}
-                    {/* <span className={styles.count}>{connection.favorites?.length || 0}</span> */}
-                </button>
-
+                <button className={`${styles.actionButton} ${isFavoritedByCurrentUser ? styles.favorited : ''}`} onClick={handleFavoriteToggle} disabled={!user || isFavoriting} title={isFavoritedByCurrentUser ? "Remove from Favorites" : "Add to Favorites"} aria-label={isFavoritedByCurrentUser ? "Remove connection from Favorites" : "Add connection to Favorites"} aria-pressed={isFavoritedByCurrentUser} > {isFavoriting ? <LoadingSpinner size="small" inline /> : (isFavoritedByCurrentUser ? <FaStar /> : <FaRegStar />) } </button>
                 {/* Comment Button */}
-                <button
-                    className={`${styles.actionButton} ${styles.commentButton}`}
-                    onClick={handleToggleComments}
-                    title={showComments ? "Hide Comments" : "Show Comments"}
-                    aria-label={showComments ? "Hide comments section" : "Show comments section"}
-                    aria-expanded={showComments}
-                >
-                    <FaRegCommentDots /> {/* Comment Icon */}
-                    {/* Optionally show comment count if available/needed */}
-                    {/* <span className={styles.count}>{connection.commentCount || 0}</span> */}
-                </button>
-
+                <button className={`${styles.actionButton} ${styles.commentButton}`} onClick={handleToggleComments} title={showComments ? "Hide Comments" : "Show Comments"} aria-label={showComments ? "Hide comments section" : "Show comments section"} aria-expanded={showComments} > <FaRegCommentDots /> </button>
+                {/* --- SHARE BUTTON & OPTIONS --- */}
+                <div className={styles.shareActionWrapper}>
+                    <button ref={shareButtonRef} className={`${styles.actionButton} ${styles.shareButton}`} onClick={handleShareToggle} title="Share Connection" aria-label="Share this connection" aria-haspopup="true" aria-expanded={showShareOptions} aria-controls={`share-options-${connection._id}`} > <FaShareAlt /> </button>
+                    {showShareOptions && ( <div ref={shareOptionsRef} id={`share-options-${connection._id}`} className={styles.shareOptionsPopup} role="menu" aria-orientation="vertical" aria-labelledby={`share-button-${connection._id}`} > <button role="menuitem" onClick={handleCopyToClipboard} className={styles.shareOptionButton}> <FaLink className={styles.shareIcon} /> {copyStatus} </button> <button role="menuitem" onClick={handleShareToTwitter} className={styles.shareOptionButton}> <FaTwitter className={styles.shareIcon} /> Twitter </button> <button role="menuitem" onClick={handleShareToFacebook} className={styles.shareOptionButton}> <FaFacebook className={styles.shareIcon} /> Facebook </button> <button onClick={() => setShowShareOptions(false)} className={`${styles.shareOptionButton} ${styles.closeShareButton}`} title="Close share options" aria-label="Close share options" > <FaTimes /> </button> </div> )}
+                </div>
+                {/* --- END SHARE BUTTON & OPTIONS --- */}
                 {/* Delete Button */}
-                {isOwner && (
-                    <button
-                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        title="Delete Connection"
-                        aria-label="Delete this connection"
-                    >
-                        {isDeleting ? <LoadingSpinner size="small" inline /> : <FaTrashAlt />} {/* Delete Icon */}
-                    </button>
-                )}
+                {isOwner && ( <button className={`${styles.actionButton} ${styles.deleteButton}`} onClick={handleDelete} disabled={isDeleting} title="Delete Connection" aria-label="Delete this connection" > {isDeleting ? <LoadingSpinner size="small" inline /> : <FaTrashAlt />} </button> )}
+                {/* Local Error */}
                 {localError && <span className={styles.actionError}>{localError}</span>}
             </footer>
 
-            {/* Comments Section (Collapsible content area) */}
+            {/* --- Comments Section (USING STATE VARIABLES) --- */}
              <div className={styles.commentsSection} hidden={!showComments}>
-                 {/* Render content only when shown for performance */}
                 {showComments && (
                     <>
-                        {/* Conditionally render AddCommentForm only if user is logged in */}
-                        {user && (
-                            <AddCommentForm
-                                connectionId={connection._id}
-                                onCommentAdded={handleAddComment}
-                            />
-                        )}
-                        {isLoadingComments && <div className={styles.commentLoading}><LoadingSpinner size="medium" /> Loading Comments...</div>}
-                        {commentError && <div className={styles.commentError}>Error: {commentError}</div>}
-                        {/* Render comment list only if not loading, no error, and comments have been fetched */}
-                        {!isLoadingComments && !commentError && commentsFetched && (
-                            <CommentList comments={comments} />
-                        )}
-                         {/* Show "No comments" only if not loading, no error, fetched, and array is empty */}
-                         {!isLoadingComments && !commentError && commentsFetched && comments.length === 0 && (
-                             <p className={styles.noCommentsYet}>No comments yet. {user ? 'Be the first to comment!' : 'Log in to comment.'}</p>
-                         )}
+                        {user && ( <AddCommentForm connectionId={connection._id} onCommentAdded={handleAddComment} /> )}
+                        {isLoadingComments && ( <div className={styles.commentLoading}> <LoadingSpinner size="medium" /> Loading Comments... </div> )}
+                        {commentError && !isLoadingComments && ( <div className={styles.commentError}>Error: {commentError}</div> )}
+                        {!isLoadingComments && !commentError && commentsFetched && ( <CommentList comments={comments} /> )}
+                         {!isLoadingComments && !commentError && commentsFetched && comments.length === 0 && ( <p className={styles.noCommentsYet}> No comments yet. {user ? 'Be the first to comment!' : 'Log in to comment.'} </p> )}
                     </>
                 )}
             </div>
+            {/* --- END Comments Section --- */}
         </article>
     );
 };
+
+// Helper checks remain the same
 
 export default ConnectionCard;

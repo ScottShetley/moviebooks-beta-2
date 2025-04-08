@@ -5,12 +5,13 @@ import express from 'express';
 import {
     createConnection,
     getConnections,
+    getConnectionById, // <-- Added import (NEW)
     likeConnection,
     favoriteConnection,
     deleteConnection,
     getPopularTags,
-    getConnectionsByUserId, // <-- Added import
-    getConnectionsByIds     // <-- Added import (NEW)
+    getConnectionsByUserId,
+    getConnectionsByIds
 } from '../controllers/connectionController.js';
 
 // Import middleware
@@ -31,7 +32,7 @@ router.route('/')
 // GET /api/connections/popular-tags: Get most frequent tags (Public)
 router.route('/popular-tags').get(getPopularTags);
 
-// --- NEW Route for Batch Fetching by IDs ---
+// --- Route for Batch Fetching by IDs ---
 // POST /api/connections/batch: Get multiple connections by ID (Private)
 router.route('/batch')
     .post(protect, getConnectionsByIds); // Use POST, protect with auth
@@ -42,17 +43,17 @@ router.route('/user/:userId').get(getConnectionsByUserId);
 
 // --- Routes for specific connections '/api/connections/:id' ---
 
-// GET /api/connections/:id (Optional: Add if needed to get single connection details)
-// router.route('/:id').get(getConnectionById); // Example if you add a single fetch controller
+// GET /api/connections/:id: Get single connection details (Public - NEW)
+// DELETE /api/connections/:id: Delete a connection (Private, Owner only)
+router.route('/:id')
+    .get(getConnectionById) // <-- Added route handler (NEW)
+    .delete(protect, deleteConnection);
 
 // POST /api/connections/:id/like: Like/Unlike a connection (Private)
 router.route('/:id/like').post(protect, likeConnection);
 
 // POST /api/connections/:id/favorite: Favorite/Unfavorite a connection (Private)
 router.route('/:id/favorite').post(protect, favoriteConnection);
-
-// DELETE /api/connections/:id: Delete a connection (Private, Owner only)
-router.route('/:id').delete(protect, deleteConnection);
 
 
 // --- Routes for '/api/connections/:id/comments' ---

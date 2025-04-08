@@ -2,6 +2,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async'; // <-- Import HelmetProvider
+
 // Import styles BEFORE App component to ensure correct cascade
 import './styles/tokens.css'; // Import tokens first
 import './styles/global.css'; // Import global styles
@@ -13,13 +15,15 @@ import { NotificationProvider } from './contexts/NotificationContext';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Router> {/* Handles routing */}
-      <AuthProvider> {/* Provides authentication state/functions */}
-         <NotificationProvider> {/* Provides notification state/functions */}
-             <App /> {/* The main application component */}
-         </NotificationProvider>
-      </AuthProvider>
-    </Router>
+    <HelmetProvider> {/* <-- Wrap the entire app */}
+      <Router> {/* Handles routing */}
+        <AuthProvider> {/* Provides authentication state/functions */}
+          <NotificationProvider> {/* Provides notification state/functions */}
+              <App /> {/* The main application component */}
+          </NotificationProvider>
+        </AuthProvider>
+      </Router>
+    </HelmetProvider> {/* <-- Close HelmetProvider */}
   </React.StrictMode>
 );
 

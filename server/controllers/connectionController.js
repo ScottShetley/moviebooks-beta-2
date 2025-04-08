@@ -1,4 +1,4 @@
-// server/controllers/connectionController.js (UPDATED)
+// server/controllers/connectionController.js
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Connection from '../models/Connection.js';
@@ -54,12 +54,17 @@ const findOrCreate = async (model, query, data) => {
             // Simple comparison: Update if key is missing or value differs
             // This logic WILL overwrite existing posters/data if new data is provided in `updateData`.
             // Add specific logic here if you want to prevent overwriting certain fields (e.g., posterPath)
-            if (key === 'posterPath' && doc.posterPath && updateData.posterPath) {
-                 // Example: Prevent overwriting existing poster
-                 // console.log(`[findOrCreate] Existing poster found (${doc.posterPath}). Not overwriting with ${updateData.posterPath}.`);
+            if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath) {
+                 // Example: Prevent overwriting existing poster if a new one IS provided
+                 // console.log(`[findOrCreate] Existing movie poster found (${doc.posterPath}). Not overwriting with ${updateData.posterPath}.`);
                  continue; // Skip updating this field
              }
-             // Add similar logic for book cover path if needed
+            if ((key === 'coverPath' || key === 'coverPublicId') && doc.coverPath && updateData.coverPath) {
+                 // Example: Prevent overwriting existing book cover if a new one IS provided
+                 // console.log(`[findOrCreate] Existing book cover found (${doc.coverPath}). Not overwriting with ${updateData.coverPath}.`);
+                 continue; // Skip updating this field
+             }
+
 
             if (!(key in doc) || JSON.stringify(doc[key]) !== JSON.stringify(updateData[key])) {
                 // console.log(`[findOrCreate] Updating field '${key}' from '${JSON.stringify(doc[key])}' to '${JSON.stringify(updateData[key])}'`);
@@ -91,7 +96,7 @@ export const createConnection = asyncHandler(async (req, res, next) => {
   // Add any other fields coming from your form (e.g., movieYear, synopsis etc.)
   const {
     movieTitle, movieGenres, movieDirector, movieActors, movieYear, movieSynopsis,
-    bookTitle, bookGenres, bookAuthor, /* bookIsbn, bookSynopsis, bookCoverSourceUrl, etc. */
+    bookTitle, bookGenres, bookAuthor, bookPublicationYear, bookIsbn, bookSynopsis, /* bookCoverSourceUrl, etc. */
     context, tags
   } = req.body;
 
@@ -118,14 +123,16 @@ export const createConnection = asyncHandler(async (req, res, next) => {
       genres: processedMovieGenres,
       director: movieDirector?.trim() || undefined,
       actors: processedMovieActors,
-      year: movieYear ? parseInt(movieYear, 10) : undefined, // Example: Parse year
-      synopsis: movieSynopsis?.trim() || undefined        // Example: Add synopsis
+      year: movieYear ? parseInt(movieYear, 10) : undefined,
+      synopsis: movieSynopsis?.trim() || undefined
   };
   const bookData = {
       title: bookTitle,
       genres: processedBookGenres,
       author: bookAuthor?.trim() || undefined,
-      // Add other relevant book fields from req.body here if needed
+      publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined,
+      isbn: bookIsbn?.trim() || undefined,
+      synopsis: bookSynopsis?.trim() || undefined
   };
 
   // --- *** IMPORTANT: Add Image Paths to Movie/Book Data *** ---
@@ -134,14 +141,12 @@ export const createConnection = asyncHandler(async (req, res, next) => {
   if (req.files) {
     // --- Movie Poster ---
     if (req.files.moviePoster?.[0]) {
-        // Check if Movie model has posterPath & posterPublicId fields
         movieData.posterPath = req.files.moviePoster[0].path;     // Cloudinary URL
         movieData.posterPublicId = req.files.moviePoster[0].filename; // Cloudinary Public ID
         // console.log('[createConnection] Movie poster uploaded. Adding to movieData:', movieData.posterPath);
     }
     // --- Book Cover ---
     if (req.files.bookCover?.[0]) {
-        // Make sure Book model has corresponding fields (e.g., coverPath, coverPublicId)
         bookData.coverPath = req.files.bookCover[0].path;
         bookData.coverPublicId = req.files.bookCover[0].filename;
         // console.log('[createConnection] Book cover uploaded. Adding to bookData:', bookData.coverPath);
@@ -150,7 +155,6 @@ export const createConnection = asyncHandler(async (req, res, next) => {
   }
 
   // --- Find or Create Movie and Book documents ---
-  // The findOrCreate helper will now use the movieData/bookData potentially containing image paths
   const movie = await findOrCreate(Movie, { title: movieTitle }, movieData);
   const book = await findOrCreate(Book, { title: bookTitle }, bookData);
 
@@ -161,12 +165,11 @@ export const createConnection = asyncHandler(async (req, res, next) => {
       bookRef: book._id,
       context: context || '',
       tags: processedTags,
-      // Store screenshot info directly on the connection
       screenshotUrl: req.files?.screenshot?.[0]?.path || null,
       screenshotPublicId: req.files?.screenshot?.[0]?.filename || null,
-      // Optionally, you could still store redundant copies of movie/book image paths here
-      // moviePosterUrl: movie.posterPath, // Example of storing a copy
-      // bookCoverUrl: book.coverPath,   // Example of storing a copy
+      // Redundant copies are generally discouraged now we have detail pages
+      // moviePosterUrl: movie.posterPath,
+      // bookCoverUrl: book.coverPath,
   };
 
   // --- Create the Connection document ---
@@ -174,7 +177,6 @@ export const createConnection = asyncHandler(async (req, res, next) => {
   // console.log('[createConnection] Connection document created. ID:', newConnection._id);
 
   // --- Populate the new connection for the response ---
-  // This will now pull the Movie/Book documents which *should* contain the image paths
   const populatedConnection = await Connection.findById(newConnection._id)
     .populate('userRef', 'username profileImageUrl _id')
     .populate('movieRef') // Includes fields from Movie model (like posterPath)
@@ -212,20 +214,46 @@ export const getConnections = asyncHandler(async (req, res, next) => {
      // *** Project stage: Ensure Movie/Book Refs include necessary fields ***
      { $project: {
         _id: 1, context: 1, tags: 1, likes: 1, favorites: 1, createdAt: 1, updatedAt: 1,
-        // Include connection-specific images if needed
+        // Include connection-specific images
         screenshotUrl: 1,
         screenshotPublicId: 1,
         // User reference
         userRef: { _id: '$userData._id', username: '$userData.username', profileImageUrl: '$userData.profileImageUrl' },
-        // Movie reference - Include posterPath now!
-        movieRef: { _id: '$movieData._id', title: '$movieData.title', genres: '$movieData.genres', director: '$movieData.director', actors: '$movieData.actors', year: '$movieData.year', synopsis: '$movieData.synopsis', posterPath: '$movieData.posterPath' },
-        // Book reference - Include coverPath if added to model
-        bookRef: { _id: '$bookData._id', title: '$bookData.title', genres: '$bookData.genres', author: '$bookData.author', coverPath: '$bookData.coverPath' }
+        // Movie reference - Include comprehensive fields
+        movieRef: { _id: '$movieData._id', title: '$movieData.title', genres: '$movieData.genres', director: '$movieData.director', actors: '$movieData.actors', year: '$movieData.year', synopsis: '$movieData.synopsis', posterPath: '$movieData.posterPath', posterPublicId: '$movieData.posterPublicId' },
+        // Book reference - Include comprehensive fields
+        bookRef: { _id: '$bookData._id', title: '$bookData.title', genres: '$bookData.genres', author: '$bookData.author', publicationYear: '$bookData.publicationYear', isbn: '$bookData.isbn', synopsis: '$bookData.synopsis', coverPath: '$bookData.coverPath', coverPublicId: '$bookData.coverPublicId' }
        }
      }
     ]);
   res.json({ connections, page, pages: Math.ceil(count / pageSize), filterApplied: isFilterApplied, activeFilters: req.query });
 });
+
+
+// @desc    Get a single connection by its ID
+// @route   GET /api/connections/:id
+// @access  Public
+export const getConnectionById = asyncHandler(async (req, res) => {
+    const connectionId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(connectionId)) {
+        res.status(400);
+        throw new Error('Invalid Connection ID format');
+    }
+
+    const connection = await Connection.findById(connectionId)
+        .populate('userRef', 'username profileImageUrl _id') // Populate user details
+        .populate('movieRef') // Populate all movie details from Movie model
+        .populate('bookRef'); // Populate all book details from Book model
+
+    if (!connection) {
+        res.status(404);
+        throw new Error('Connection not found');
+    }
+
+    res.status(200).json(connection);
+});
+
 
 // @desc    Get popular tags based on frequency in Connections
 // @route   GET /api/connections/popular-tags
@@ -385,5 +413,4 @@ export const getConnectionsByIds = asyncHandler(async (req, res) => {
     res.json(connections || []);
 });
 
-// Note: Make sure all exported functions are listed if you modified the export block
-// export { createConnection, getConnections, ... }; // Already handled in the code above
+// No changes needed to exports as they are handled individually

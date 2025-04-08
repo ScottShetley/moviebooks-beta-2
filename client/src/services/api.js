@@ -1,4 +1,4 @@
-// client/src/services/api.js (Updated getStaticFileUrl)
+// client/src/services/api.js (Updated getStaticFileUrl & Added getConnectionById)
 import axios from 'axios';
 
 // --- Configuration ---
@@ -7,8 +7,8 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:500
 const STATIC_FILE_URL = process.env.REACT_APP_STATIC_FILE_URL || 'http://localhost:5001';
 
 // Log the URLs being used (helpful for debugging)
-console.log("API Base URL:", API_BASE_URL);
-console.log("Static File URL:", STATIC_FILE_URL);
+// console.log("API Base URL:", API_BASE_URL);
+// console.log("Static File URL:", STATIC_FILE_URL);
 
 
 // --- Axios Instance Creation ---
@@ -52,6 +52,7 @@ api.interceptors.response.use(
         console.error(`[Axios Response Error ${error.response.status}] URL: ${error.config.url}`, error.response.data);
         if (error.response.status === 401) {
             console.warn("Unauthorized (401) response received. Token might be invalid or expired.");
+            // Optionally: Trigger logout or token refresh logic here
         }
     } else if (error.request) {
         console.error("[Axios Network/Server Error] No response received:", error.message);
@@ -88,6 +89,13 @@ export const getStaticFileUrl = (relativePath) => {
 
 
 // --- Connection API Functions ---
+
+/**
+ * Fetches a single connection by its ID. Public access.
+ * @param {string} connectionId - The ID of the connection to fetch.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the populated connection object.
+ */
+export const getConnectionById = (connectionId) => api.get(`/connections/${connectionId}`); // <-- NEW FUNCTION
 
 /**
  * Fetches multiple connections by their IDs. Requires authentication.
