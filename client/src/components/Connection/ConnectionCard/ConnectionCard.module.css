@@ -1,102 +1,95 @@
-/* client/src/components/Connection/ConnectionCard/ConnectionCard.module.css (Restored max-width/margin) */
+/* client/src/components/Connection/ConnectionCard/ConnectionCard.module.css */
 
+/* --- Correct .card rule --- */
 .card {
-    /* --- FIX: Use variables defined in tokens.css --- */
     background-color: var(--color-card);
-    /* Use --color-card (White) */
     border-radius: var(--border-radius-md);
-    /* Use --border-radius-md */
     padding: var(--space-md);
-    /* Use --space-md */
     margin-bottom: var(--space-lg);
-    /* Use --space-lg */
-    /* Keep bottom margin for spacing in lists/grids */
     box-shadow: var(--shadow-md);
-    /* Use --shadow-md */
-    overflow: hidden;
+    overflow: visible; /* Allow popup to show */
     border: var(--border-width) solid var(--color-border);
-    /* Use --border-width & --color-border */
-    /* --- END FIX --- */
     max-width: 600px;
-    /* <<< RESTORED Max Width */
     margin-left: auto;
-    /* <<< RESTORED Centering */
     margin-right: auto;
-    /* <<< RESTORED Centering */
+    position: relative; /* Positioning context for popup */
 }
 
 .header {
     margin-bottom: var(--space-xs);
-    /* Use --space-xs */
 }
 
 .header h3 {
     margin: 0 0 var(--space-xs) 0;
-    /* Use --space-xs */
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold, 700);
-    /* Add fallback weight */
     color: var(--color-text);
-    /* Use --color-text or --color-secondary if preferred */
+    line-height: 1.3;
 }
 
-.header h3 a {
-    color: inherit;
+.titleLink {
+    color: var(--color-primary);
     text-decoration: none;
 }
-
-.header h3 a:hover {
-    color: var(--color-primary);
+.titleLink:hover {
     text-decoration: underline;
+    color: var(--color-primary-dark);
 }
 
 .meta {
     font-size: var(--font-size-sm);
     color: var(--color-text-light);
     margin-bottom: var(--space-md);
-    /* Use --space-md */
 }
 
-.meta a {
+.userLink {
     color: var(--color-primary);
-    /* Use --color-primary (or custom link color if defined) */
     font-weight: var(--font-weight-medium, 600);
-    /* Add fallback weight */
     text-decoration: none;
 }
-
-.meta a:hover {
+.userLink:hover {
     text-decoration: underline;
 }
 
-.screenshot {
+.imageLink {
     display: block;
-    width: 100%;
-    height: auto;
-    border-radius: var(--border-radius-md);
-    /* Use --border-radius-md */
     margin-bottom: var(--space-md);
-    /* Use --space-md */
-    object-fit: cover;
+    text-decoration: none;
+}
+
+.screenshotWrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
     background-color: var(--color-background);
-    /* Use --color-background as placeholder bg */
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.screenshot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
 }
 
 .noScreenshotPlaceholder {
     width: 100%;
-    height: 150px;
+    min-height: 150px;
+    height: auto;
+    padding-top: 0;
     background-color: var(--color-background);
-    /* Use --color-background */
     border-radius: var(--border-radius-md);
-    /* Use --border-radius-md */
-    margin-bottom: var(--space-md);
-    /* Use --space-md */
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--color-text-light);
     font-style: italic;
     font-size: var(--font-size-sm);
+    margin-bottom: var(--space-md);
 }
 
 .context {
@@ -104,28 +97,33 @@
     color: var(--color-text);
     line-height: var(--line-height-body);
     margin-bottom: var(--space-md);
-    /* Use --space-md */
     white-space: pre-wrap;
 }
 
 .additionalImagesContainer {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-sm);
-    /* --- FIX: Use --space-sm --- */
     margin-bottom: var(--space-md);
-    /* Use --space-md */
+}
+
+.additionalImageWrapper {
+    display: block;
+    text-decoration: none;
 }
 
 .additionalImage {
+    display: block;
     width: 80px;
-    /* Keep this size for now, can adjust */
-    height: auto;
-    max-height: 120px;
+    height: 120px;
     object-fit: cover;
     border-radius: var(--border-radius-sm);
-    /* Use --border-radius-sm */
     border: var(--border-width) solid var(--color-border);
-    /* Use --border-width & --color-border */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.additionalImage:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
 }
 
 .actions {
@@ -133,41 +131,30 @@
     align-items: center;
     flex-wrap: wrap;
     gap: var(--space-sm);
-    /* --- FIX: Use --space-sm --- */
     border-top: var(--border-width) solid var(--color-border);
-    /* Use --border-width & --color-border */
     padding-top: var(--space-md);
-    /* Use --space-md */
+    position: relative; /* Allow absolute positioning of popup */
 }
 
 .actionButton {
     background-color: transparent;
     border: var(--border-width) solid var(--color-border);
-    /* Use --border-width & --color-border */
     color: var(--color-text-light);
     padding: var(--space-xs) var(--space-sm);
-    /* Use --space-xs/sm */
     border-radius: var(--border-radius-md);
-    /* Use --border-radius-md */
     cursor: pointer;
     transition: var(--transition-fast);
-    font-size: var(--font-size-m);
-    /* Check if -m is defined, fallback to -md */
+    font-size: var(--font-size-sm); /* Changed from -m to -sm */
     display: inline-flex;
     align-items: center;
     gap: var(--space-xs);
-    /* Use --space-xs */
     line-height: 1;
 }
-
 .actionButton:hover:not(:disabled) {
     background-color: var(--color-background);
-    /* Use --color-background for subtle hover */
     border-color: var(--color-text-light);
-    /* Darken border slightly */
     color: var(--color-text);
 }
-
 .actionButton:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -176,171 +163,114 @@
 .count {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium, 600);
-    /* Add fallback */
+    margin-left: 2px;
 }
 
-/* --- FIX: Use variables defined in tokens.css --- */
-.liked {
-    color: var(--color-accent);
-    /* Use --color-accent */
-    border-color: var(--color-accent);
-    /* Use --color-accent directly or create subtle version */
+.liked { color: var(--color-accent); border-color: var(--color-accent); }
+.liked:hover:not(:disabled) { background-color: rgba(var(--color-accent-rgb, 227, 178, 60), 0.1); border-color: var(--color-accent); }
+
+.favorited { color: var(--color-primary); border-color: var(--color-primary); }
+.favorited:hover:not(:disabled) { background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.1); border-color: var(--color-primary); }
+
+.shareButton { color: var(--color-info); border-color: var(--color-info); }
+.shareButton:hover:not(:disabled) { background-color: rgba(var(--color-info-rgb, 23, 162, 184), 0.1); border-color: var(--color-info); color: var(--color-info); }
+
+.deleteButton { margin-left: auto; color: var(--color-error); border-color: var(--color-error); }
+.deleteButton:hover:not(:disabled) { background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1); border-color: var(--color-error); color: var(--color-error); }
+
+.actionError { color: var(--color-error); font-size: var(--font-size-xs); margin-left: var(--space-sm); }
+
+
+/* --- Share Options Styles --- */
+.shareActionWrapper {
+    position: relative;
+    display: inline-block;
 }
 
-.liked:hover:not(:disabled) {
-    background-color: rgba(var(--color-accent-rgb, 227, 178, 60), 0.1);
-    /* Example subtle bg using RGB */
-    border-color: var(--color-accent);
+.shareOptionsPopup {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-var(--space-xs));
+    background-color: var(--color-card);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-large);
+    padding: var(--space-xs);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xxs);
+    z-index: 10;
+    min-width: 150px;
+    animation: fadeIn 0.15s ease-out;
 }
 
-.favorited {
-    color: var(--color-primary);
-    /* Use --color-primary for favorites */
-    border-color: var(--color-primary);
-    /* Use --color-primary directly or create subtle version */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(0); }
+    to { opacity: 1; transform: translateX(-50%) translateY(-var(--space-xs)); }
 }
 
-.favorited:hover:not(:disabled) {
-    background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.1);
-    /* Example subtle bg using RGB (adjust primary RGB if needed) */
-    border-color: var(--color-primary);
-}
-
-.deleteButton {
-    margin-left: auto;
-    color: var(--color-error);
-    /* Use --color-error */
-    border-color: var(--color-error);
-    /* Use --color-error */
-}
-
-.deleteButton:hover:not(:disabled) {
-    background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
-    /* Example subtle bg using RGB (adjust error RGB if needed) */
-    border-color: var(--color-error);
-    color: var(--color-error);
-    /* Keep color */
-}
-
-.actionError {
-    color: var(--color-error);
-    font-size: var(--font-size-xs);
-    margin-left: var(--space-sm);
-    /* Use --space-sm */
-}
-
-/* --- END FIX --- */
-
-
-/* --- Comment Section Styles (Use corrected variables) --- */
-.commentsSection {
-    margin-top: var(--space-md);
-    padding-top: var(--space-md);
-    border-top: var(--border-width) solid var(--color-border);
-    margin-left: calc(-1 * var(--space-md));
-    /* Match card padding */
-    margin-right: calc(-1 * var(--space-md));
-    padding-left: var(--space-md);
-    padding-right: var(--space-md);
-}
-
-.commentLoading {
+.shareOptionButton {
+    background-color: transparent;
+    border: none;
+    color: var(--color-text);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: var(--space-lg) 0;
-    color: var(--color-text-light);
     gap: var(--space-sm);
-    font-size: var(--font-size-sm);
+    text-align: left;
+    width: 100%;
+}
+.shareOptionButton:hover {
+    background-color: var(--color-background-light);
+    color: var(--color-primary);
 }
 
-.commentError {
-    padding: var(--space-md);
-    color: var(--color-error);
-    background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
-    /* Subtle error bg */
-    border: var(--border-width) solid var(--color-error);
-    border-radius: var(--border-radius-md);
+.shareIcon {
+    font-size: var(--font-size-md);
+    width: 1.2em;
     text-align: center;
-    font-size: var(--font-size-sm);
-    margin-top: var(--space-sm);
 }
 
-.noCommentsYet {
-    font-size: var(--font-size-sm);
+.closeShareButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: var(--space-xxs);
+    line-height: 1;
     color: var(--color-text-light);
-    font-style: italic;
-    text-align: center;
-    padding: var(--space-md) 0;
-    margin-top: var(--space-sm);
+    background: none;
+    border: none;
+    font-size: var(--font-size-md);
 }
+.closeShareButton:hover {
+    color: var(--color-error);
+    background: none;
+}
+/* --- END Share Options Styles --- */
 
-/* --- END Comment Section Styles --- */
+
+/* --- Comments Section Styles --- */
+.commentsSection { margin-top: var(--space-md); padding-top: var(--space-md); border-top: var(--border-width) solid var(--color-border); margin-left: calc(-1 * var(--space-md)); margin-right: calc(-1 * var(--space-md)); padding-left: var(--space-md); padding-right: var(--space-md); }
+.commentLoading { display: flex; align-items: center; justify-content: center; padding: var(--space-lg) 0; color: var(--color-text-light); gap: var(--space-sm); font-size: var(--font-size-sm); }
+.commentError { padding: var(--space-md); color: var(--color-error); background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1); border: var(--border-width) solid var(--color-error); border-radius: var(--border-radius-md); text-align: center; font-size: var(--font-size-sm); margin-top: var(--space-sm); }
+.noCommentsYet { font-size: var(--font-size-sm); color: var(--color-text-light); font-style: italic; text-align: center; padding: var(--space-md) 0; margin-top: var(--space-sm); }
 
 
-/* --- Basic Responsive (Use corrected variables) --- */
-@media (max-width: var(--breakpoint-md)) {
-
-    /* Use --breakpoint-md */
-    .card {
-        padding: var(--space-sm);
-        /* Use --space-sm */
-        border-radius: var(--border-radius-md);
-        /* max-width might still be relevant on mobile, keep or adjust if needed */
-        /* max-width: 95%; /* Example if 600px is too wide */
-    }
-
-    .header h3 {
-        font-size: var(--font-size-lg);
-        /* Use -lg or adjust */
-    }
-
-    .meta {
-        font-size: var(--font-size-xs);
-    }
-
-    .context {
-        font-size: var(--font-size-sm);
-    }
-
-    .additionalImage {
-        width: 60px;
-        max-height: 90px;
-    }
-
-    .actions {
-        gap: var(--space-xs);
-        /* Use --space-xs */
-        padding-top: var(--space-sm);
-        /* Use --space-sm */
-    }
-
-    .actionButton {
-        padding: var(--space-xs) var(--space-sm);
-        /* Use --space-xs/sm */
-        font-size: var(--font-size-md);
-        /* Use -md */
-    }
-
-    .count {
-        font-size: var(--font-size-xs);
-        /* Use -xs */
-    }
-
-    .commentsSection {
-        margin-left: calc(-1 * var(--space-sm));
-        /* Match mobile card padding */
-        margin-right: calc(-1 * var(--space-sm));
-        padding-left: var(--space-sm);
-        padding-right: var(--space-sm);
-        margin-top: var(--space-sm);
-        padding-top: var(--space-sm);
-    }
-
-    .commentLoading,
-    .commentError,
-    .noCommentsYet {
-        font-size: var(--font-size-xs);
-        padding: var(--space-md) 0;
-    }
+/* --- Media Query for CARD styles --- */
+@media (max-width: var(--breakpoint-md, 768px)) {
+    .card { padding: var(--space-sm); border-radius: var(--border-radius-md); }
+    .header h3 { font-size: var(--font-size-md); }
+    .meta { font-size: var(--font-size-xs); }
+    .context { font-size: var(--font-size-sm); }
+    .additionalImage { width: 60px; height: 90px; }
+    .actions { gap: var(--space-xs); padding-top: var(--space-sm); }
+    .actionButton { padding: var(--space-xxs) var(--space-xs); font-size: var(--font-size-sm); }
+    .count { font-size: var(--font-size-xs); }
+    .commentsSection { margin-left: calc(-1 * var(--space-sm)); margin-right: calc(-1 * var(--space-sm)); padding-left: var(--space-sm); padding-right: var(--space-sm); margin-top: var(--space-sm); padding-top: var(--space-sm); }
+    .commentLoading, .commentError, .noCommentsYet { font-size: var(--font-size-xs); padding: var(--space-md) 0; }
 }

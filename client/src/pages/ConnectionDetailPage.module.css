@@ -1,0 +1,215 @@
+/* client/src/pages/ConnectionDetailPage.module.css */
+
+.pageContainer {
+    padding: var(--space-md) var(--space-lg);
+    max-width: 1100px;
+    margin: var(--space-lg) auto;
+    background-color: var(--color-background-light);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-medium);
+}
+
+.connectionHeader {
+    border-bottom: 1px solid var(--color-grey-light);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+}
+
+.title {
+    color: var(--color-primary-dark);
+    font-size: var(--font-size-xxl);
+    margin-bottom: var(--space-xs);
+}
+
+.meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.meta a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-bold);
+}
+
+.meta a:hover {
+    text-decoration: underline;
+}
+
+/* --- Correct Grid Layout for Detail Page --- */
+.contentGrid {
+    display: grid;
+    /* Define 2 equal columns */
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.movieSection,
+.bookSection {
+    background-color: var(--color-background);
+    padding: var(--space-md);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-grey-lighter);
+    overflow-wrap: break-word;
+    /* No specific grid-column needed, they fit in the 1fr 1fr */
+}
+
+.contextSection {
+    background-color: var(--color-background);
+    padding: var(--space-lg);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-grey-lighter);
+    overflow-wrap: break-word;
+    grid-column: 1 / 3;
+    /* Span across both columns */
+    margin-top: 0;
+}
+
+.tagsSection {
+    background-color: var(--color-background);
+    padding: var(--space-md);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-grey-lighter);
+    overflow-wrap: break-word;
+    grid-column: 1 / 3;
+    /* Span across both columns */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contentGrid {
+        grid-template-columns: 1fr;
+        /* Stack to single column */
+        gap: var(--space-md);
+    }
+
+    .movieSection,
+    .bookSection,
+    .contextSection,
+    .tagsSection {
+        grid-column: 1 / 2;
+        /* Reset span for single column */
+    }
+
+    .contextSection {
+        padding: var(--space-md);
+    }
+}
+
+/* --- End Correct Grid Layout --- */
+
+
+/* Styling Refinements (Float, Text, Screenshot, etc.) */
+.sectionTitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-primary-dark);
+    margin-top: 0;
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-grey-light);
+    padding-bottom: var(--space-sm);
+}
+
+.itemTitleLink {
+    text-decoration: none;
+    color: var(--color-text-primary);
+}
+
+.itemTitleLink h3 {
+    font-size: var(--font-size-lg);
+    color: var(--color-primary);
+    margin-top: var(--space-sm);
+    margin-bottom: var(--space-sm);
+    transition: color 0.2s ease;
+}
+
+.itemTitleLink:hover h3 {
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
+.image {
+    display: block;
+    float: left;
+    max-width: 150px;
+    height: auto;
+    margin-right: var(--space-md);
+    margin-bottom: var(--space-sm);
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-light);
+    background-color: var(--color-grey-light);
+}
+
+.contextText {
+    font-size: var(--font-size-md);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    margin-bottom: var(--space-xl);
+    color: var(--color-text-primary);
+}
+
+.contextSection>*:not(.sectionTitle) {
+    clear: both;
+}
+
+.screenshotTitle {
+    margin-top: 0;
+    margin-bottom: var(--space-md);
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-bold);
+    border-top: 1px solid var(--color-grey-light);
+    padding-top: var(--space-lg);
+    clear: both;
+}
+
+.screenshotImage {
+    display: block;
+    max-width: 80%;
+    height: auto;
+    max-height: 500px;
+    object-fit: contain;
+    margin: 0 auto var(--space-lg) auto;
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-light);
+    background-color: var(--color-grey-lighter);
+}
+
+.synopsis {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-top: var(--space-sm);
+    clear: both;
+}
+
+.tagsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+}
+
+.tagLink {
+    text-decoration: none;
+}
+
+.backLinkContainer {
+    margin-top: var(--space-lg);
+    text-align: center;
+}
+
+.backButton {
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-md);
+    transition: background-color 0.2s ease;
+}
+
+.backButton:hover {
+    background-color: var(--color-primary-dark);
+}

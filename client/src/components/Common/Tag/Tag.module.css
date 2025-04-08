@@ -1,0 +1,25 @@
+/* client/src/components/Common/Tag/Tag.module.css */
+
+.tag {
+    display: inline-block; /* Allows padding and margins */
+    padding: var(--space-xxs) var(--space-sm); /* Small padding */
+    background-color: var(--color-grey-light); /* Default background */
+    color: var(--color-text-secondary); /* Default text color */
+    border-radius: var(--border-radius-lg); /* Pill shape */
+    font-size: var(--font-size-xs); /* Small font */
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+    text-decoration: none; /* Ensure no underline if wrapped in a link */
+    transition: background-color 0.2s ease, color 0.2s ease;
+    cursor: default; /* Default cursor, override if wrapped in button/link */
+    white-space: nowrap; /* Prevent tag text wrapping */
+  }
+  
+  /* Add a hover effect if needed, typically applied to the parent Link/Button */
+  /* Example:
+  a:hover .tag,
+  button:hover .tag {
+      background-color: var(--color-primary-light);
+      color: var(--color-primary-dark);
+  }
+  */

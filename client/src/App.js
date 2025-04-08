@@ -1,5 +1,5 @@
 // client/src/App.js
-import React, { useState, useCallback, useEffect } from 'react'; // Added useEffect
+import React, { useState, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Header from './components/Layout/Header/Header';
@@ -12,6 +12,7 @@ import SignupPage from './pages/SignupPage';
 import CreateConnectionPage from './pages/CreateConnectionPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import BookDetailPage from './pages/BookDetailPage';
+import ConnectionDetailPage from './pages/ConnectionDetailPage'; // <-- NEW IMPORT
 import ProfilePage from './pages/ProfilePage';
 import NotificationsPage from './pages/NotificationsPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -47,20 +48,17 @@ function App() {
     setIsSidebarOpen(prev => typeof forceState === 'boolean' ? forceState : !prev);
   }, []);
 
-  // *** START: Close sidebar on route change (for mobile) ***
+  // Close sidebar on route change (for mobile)
   useEffect(() => {
-    // If the sidebar is open when the location changes, close it.
-    // This handles cases like browser back/forward navigation while sidebar is open on mobile.
     if (isSidebarOpen) {
       toggleSidebar(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]); // Depend only on pathname to avoid closing on hash changes etc.
-  // *** END: Close sidebar on route change ***
+  }, [location.pathname]);
 
 
   const handleTagClick = useCallback((tag) => {
-    console.log('Tag clicked in App:', tag);
+    // console.log('Tag clicked in App:', tag);
     setCurrentFilterTag(tag);
     if (location.pathname !== '/') {
       navigate('/');
@@ -92,21 +90,20 @@ function App() {
       />
 
       <div className="appLayout">
-        {/* *** START: Added Overlay for closing sidebar on mobile *** */}
+        {/* Added Overlay for closing sidebar on mobile */}
         {isSidebarOpen && user && (
             <div
                 className="sidebarOverlay"
-                onClick={() => toggleSidebar(false)} // Close sidebar when overlay is clicked
+                onClick={() => toggleSidebar(false)}
                 aria-hidden="true"
             ></div>
         )}
-        {/* *** END: Added Overlay *** */}
 
         {/* Render Sidebar globally if user is logged in */}
         {user && (
            <Sidebar
              isOpen={isSidebarOpen}
-             closeSidebar={() => toggleSidebar(false)} // Pass explicit close function
+             closeSidebar={() => toggleSidebar(false)}
              onTagClick={handleTagClick}
              currentFilterTag={currentFilterTag}
            />
@@ -135,8 +132,9 @@ function App() {
                path="/signup"
                element={!user ? <SignupPage /> : <Navigate to="/" replace />}
             />
-            {MovieDetailPage && <Route path="/movies/:movieId" element={<MovieDetailPage />} />}
-            {BookDetailPage && <Route path="/books/:bookId" element={<BookDetailPage />} />}
+            <Route path="/movies/:movieId" element={<MovieDetailPage />} />
+            <Route path="/books/:bookId" element={<BookDetailPage />} />
+            <Route path="/connections/:connectionId" element={<ConnectionDetailPage />} /> {/* <-- NEW ROUTE */}
             <Route path="/users/:userId" element={<ProfilePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/help" element={<HelpPage />} />

@@ -35,7 +35,7 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
-    
+
     // --- Local Filter Input States ---
     const [movieGenreInput, setMovieGenreInput] = useState('');
     const [directorInput, setDirectorInput] = useState('');
@@ -44,7 +44,7 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     const [authorInput, setAuthorInput] = useState('');
     // --- Active Local Filters State (tags excluded) ---
     const [activeFilters, setActiveFilters] = useState({});
-    
+
     // --- NEW: Filter Tab UI State ---
     const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
@@ -82,10 +82,12 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
                  setPage(data.page);
                  setPages(data.pages);
             } else {
+                console.warn("[HomePage] Received unexpected data structure:", data); // Added warning
                 setConnections([]); setPage(1); setPages(1);
                 setError("Received invalid data from server.");
             }
         } catch (err) {
+            console.error("[HomePage] Fetch Connections Error:", err); // Enhanced log
             const message = err.response?.data?.message || err.message || "Failed to fetch connections.";
             setError(message);
             setConnections([]); setPage(1); setPages(1);
@@ -97,6 +99,7 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
 
     // --- Effect for Initial Load and Filter/Page Changes ---
     useEffect(() => {
+        // console.log("[HomePage] useEffect triggered. InitialMount:", isInitialMount.current, "Page:", page, "ActiveFilters:", activeFilters, "GlobalTag:", currentFilterTag); // Debug log
         if (isInitialMount.current) {
              isInitialMount.current = false;
              // Fetch initial page using current global tag filter (if any) and empty local filters
@@ -115,44 +118,33 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     }, []);
     const handleDeleteConnection = useCallback((deletedConnectionId) => {
         setConnections(prev => prev.filter(c => c._id !== deletedConnectionId));
-        // Optionally refetch current page after delete - consider dependencies if uncommenting
-        // fetchConnections(page, activeFilters, currentFilterTag);
-    }, []);
+    }, []); // Removed fetchConnections from here to avoid double fetching
 
 
     // --- Filter Handlers ---
-    // Applies LOCAL filters from the form
     const handleApplyFilter = useCallback((e) => {
         if(e) e.preventDefault();
-        // Construct local filters object from input states (tags excluded)
         const newLocalFilters = {
-            movieGenre: movieGenreInput.trim(),
-            director: directorInput.trim(), actor: actorInput.trim(),
-            bookGenre: bookGenreInput.trim(), author: authorInput.trim(),
+            movieGenre: movieGenreInput.trim(), director: directorInput.trim(),
+            actor: actorInput.trim(), bookGenre: bookGenreInput.trim(),
+            author: authorInput.trim(),
         };
-        // Create object with only non-empty values
         const filtersToApply = Object.entries(newLocalFilters)
             .reduce((acc, [key, value]) => { if (value) acc[key] = value; return acc; }, {});
 
-        // Only update state if local filters actually changed
         if(JSON.stringify(activeFilters) !== JSON.stringify(filtersToApply)) {
             setActiveFilters(filtersToApply);
-            setPage(1); // Reset to first page when filters change
+            setPage(1);
         }
-        
-        // Collapse filter panel when filters are applied
         setIsFilterExpanded(false);
     }, [movieGenreInput, directorInput, actorInput, bookGenreInput, authorInput, activeFilters]);
 
-    // Clears LOCAL filters and resets their input fields
     const handleClearLocalFilter = useCallback(() => {
-        // Clear input fields
         setMovieGenreInput(''); setDirectorInput(''); setActorInput('');
         setBookGenreInput(''); setAuthorInput('');
-        // Clear active local filters state if it's not already empty
         if(Object.keys(activeFilters).length > 0) {
             setActiveFilters({});
-            setPage(1); // Reset to first page
+            setPage(1);
         }
     }, [activeFilters]);
 
@@ -164,55 +156,37 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     // --- Memo to check if LOCAL filter inputs differ from active local filters ---
      const localFiltersChanged = useMemo(() => {
          const currentInputFilters = {
-            // tags input removed
             movieGenre: movieGenreInput.trim(), director: directorInput.trim(),
             actor: actorInput.trim(), bookGenre: bookGenreInput.trim(),
             author: authorInput.trim(),
         };
-        // Create object with only non-empty values from inputs
         const relevantInputFilters = Object.entries(currentInputFilters)
             .reduce((acc, [k, v]) => { if(v) acc[k]=v; return acc; }, {});
-        // Compare stringified versions
         return JSON.stringify(activeFilters) !== JSON.stringify(relevantInputFilters);
     }, [movieGenreInput, directorInput, actorInput, bookGenreInput, authorInput, activeFilters]);
 
 
+    // --- Render Logic ---
     return (
          <div className={styles.mainContentArea}>
              <h1>MovieBooks Feed</h1>
 
-             {/* NEW: Display Global Tag Filter Status */}
+             {/* Global Tag Filter Status */}
              {currentFilterTag && (
                  <div className={styles.filterStatus} style={{ marginBottom: '20px', backgroundColor: 'var(--color-accent-subtle)' }}>
                      <span className={styles.activeTagFilter}>
                          Filtering by tag: <strong>#{currentFilterTag}</strong>
-                         <button
-                            onClick={clearTagFilter} // Use prop function to clear global filter
-                            className={styles.clearFilterButton}
-                            title="Clear tag filter"
-                            style={{ marginLeft: '10px' }} // Add some space
-                         >
-                             × {/* Simple clear icon */}
-                         </button>
+                         <button onClick={clearTagFilter} className={styles.clearFilterButton} title="Clear tag filter" style={{ marginLeft: '10px' }} > × </button>
                      </span>
                  </div>
              )}
 
-             {/* NEW: Filter Tab UI */}
+             {/* Filter Tab UI */}
              <div className={styles.filterTabContainer}>
-                <button 
-                    className={`${styles.filterTab} ${isLocalFilterApplied ? styles.filterTabActive : ''}`}
-                    onClick={toggleFilterPanel}
-                    aria-expanded={isFilterExpanded}
-                    aria-controls="filter-panel"
-                >
+                <button className={`${styles.filterTab} ${isLocalFilterApplied ? styles.filterTabActive : ''}`} onClick={toggleFilterPanel} aria-expanded={isFilterExpanded} aria-controls="filter-panel" >
                     <span>Filters</span>
-                    {isLocalFilterApplied && (
-                        <span className={styles.filterActiveIndicator}></span>
-                    )}
+                    {isLocalFilterApplied && ( <span className={styles.filterActiveIndicator}></span> )}
                 </button>
-                
-                {/* Filter Panel - Conditionally rendered based on expanded state */}
                 {isFilterExpanded && (
                     <div id="filter-panel" className={styles.filterPanel}>
                         <form onSubmit={handleApplyFilter} className={styles.filterForm}>
@@ -236,11 +210,7 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
              </div>
 
              {/* Display active LOCAL filters */}
-             {isLocalFilterApplied && (
-                <p className={styles.activeFilterInfo}>
-                    Advanced filters active: {formatActiveLocalFilters(activeFilters)}
-                </p>
-             )}
+             {isLocalFilterApplied && ( <p className={styles.activeFilterInfo}> Advanced filters active: {formatActiveLocalFilters(activeFilters)} </p> )}
 
              {/* Loading/Error/Feed Content Area */}
              {loading && <div className={styles.centered}><LoadingSpinner /></div>}
@@ -249,14 +219,11 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
              {!loading && !error && (
                  <>
                      {connections.length === 0 ? (
-                        <p className={styles.noResults}>
-                            {isLocalFilterApplied || currentFilterTag
-                                ? 'No connections found matching your filter(s).'
-                                : 'No connections found yet. Be the first to add one!'
-                            }
-                        </p>
+                        <p className={styles.noResults}> {isLocalFilterApplied || currentFilterTag ? 'No connections found matching your filter(s).' : 'No connections found yet. Be the first to add one!'} </p>
                      ) : (
                         <div className={styles.feedList}>
+                            {/* --- ADDED CONSOLE LOG HERE --- */}
+                            {console.log("HomePage connections data:", connections)}
                             {connections.map((connection) => (
                                 <ConnectionCard
                                     key={connection._id}
