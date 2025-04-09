@@ -1,0 +1,7 @@
+// client/jsconfig.json
+{
+    "compilerOptions": {
+      "baseUrl": "src"
+    },
+    "include": ["src"]
+  }
