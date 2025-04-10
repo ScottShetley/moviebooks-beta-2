@@ -27,6 +27,7 @@ export const NotificationProvider = ({ children }) => {
         try {
             // Make API call to get notifications
             const { data } = await api.get('/notifications');
+
             // Update state with fetched notifications
             setNotifications(data);
             // Calculate unread count from the fetched data
@@ -34,7 +35,7 @@ export const NotificationProvider = ({ children }) => {
             setUnreadCount(count);
         } catch (err) {
             const message = err.response?.data?.message || err.message || 'Failed to fetch notifications';
-            console.error("Notification fetch error:", message);
+            console.error("Notification fetch error:", message, err); // Keep this error log for actual errors
             setError(message);
             setNotifications([]); // Clear notifications on error
             setUnreadCount(0);
@@ -69,7 +70,7 @@ export const NotificationProvider = ({ children }) => {
             await api.patch(`/notifications/${notificationId}/read`);
             // Success: Optimistic update is now confirmed by server
         } catch (err) {
-            console.error("Error marking notification as read:", err);
+            console.error("Error marking notification as read:", err); // Keep error log
             // Rollback UI changes if API call fails
             setError('Failed to mark notification as read. Please try again.');
             setNotifications(originalNotifications);
@@ -95,7 +96,7 @@ export const NotificationProvider = ({ children }) => {
             await api.patch('/notifications/read-all');
             // Success
         } catch (err) {
-            console.error("Error marking all notifications as read:", err);
+            console.error("Error marking all notifications as read:", err); // Keep error log
             // Rollback UI changes
             setError('Failed to mark all notifications as read. Please try again.');
             setNotifications(originalNotifications);
@@ -104,9 +105,7 @@ export const NotificationProvider = ({ children }) => {
         }
     }, [notifications, unreadCount]); // Dependencies: notifications and unreadCount
 
-    // --- Function to Add a Notification Locally (Advanced - requires WebSocket ideally) ---
-    // This is a placeholder for how you might add a notification received via other means (e.g., WebSocket push)
-    // Or potentially add it optimistically after an action that triggers a notification (like liking)
+    // --- Function to Add a Notification Locally ---
     const addNotificationLocally = useCallback((notification) => {
         // Avoid adding duplicates if already present
         setNotifications(prev => {
@@ -120,7 +119,6 @@ export const NotificationProvider = ({ children }) => {
             }
             return prev; // No change if already exists
         });
-
     }, []);
 
     // Value provided by the context
