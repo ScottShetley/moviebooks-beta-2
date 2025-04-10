@@ -1,8 +1,7 @@
-// client/src/services/api.js (Updated getStaticFileUrl & Added getConnectionById)
+// client/src/services/api.js (Added User Profile Functions)
 import axios from 'axios';
 
 // --- Configuration ---
-// Use environment variables or fallback to defaults
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001/api';
 const STATIC_FILE_URL = process.env.REACT_APP_STATIC_FILE_URL || 'http://localhost:5001';
 
@@ -53,13 +52,18 @@ api.interceptors.response.use(
         if (error.response.status === 401) {
             console.warn("Unauthorized (401) response received. Token might be invalid or expired.");
             // Optionally: Trigger logout or token refresh logic here
+            // Example: might dispatch a logout action or redirect to login
         }
     } else if (error.request) {
         console.error("[Axios Network/Server Error] No response received:", error.message);
-        error.message = "Network Error: Could not connect to the server. Please check your connection.";
+        // Enhance error message for user clarity
+        const enhancedError = new Error("Network Error: Could not connect to the server. Please check your connection or try again later.");
+        enhancedError.originalError = error; // Keep original error if needed
+        return Promise.reject(enhancedError); // Reject with the enhanced error
     } else {
         console.error('[Axios Setup Error]', error.message);
     }
+    // Reject with the original error for other cases or if specific handling wasn't done
     return Promise.reject(error);
   }
 );
@@ -68,34 +72,53 @@ api.interceptors.response.use(
 // --- Helper Function for Static File URLs ---
 export const getStaticFileUrl = (relativePath) => {
     if (!relativePath) return null;
-
-    // *** ADDED CHECK: If the path is already a full URL (like Cloudinary), return it directly ***
     if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
-        // console.log('[getStaticFileUrl] Path is already a full URL:', relativePath);
         return relativePath;
     }
-
-    // --- Original logic (for relative paths like 'uploads/...') ---
-    // Ensure no double slashes if relativePath starts with /
     const path = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
-    // Ensure STATIC_FILE_URL doesn't have a trailing slash if path doesn't start with one
     const baseUrl = STATIC_FILE_URL.endsWith('/') ? STATIC_FILE_URL.slice(0, -1) : STATIC_FILE_URL;
-     // Ensure path starts with a slash
     const finalPath = path.startsWith('/') ? path : `/${path}`;
-
-    // console.log('[getStaticFileUrl] Constructing URL from relative path:', `${baseUrl}${finalPath}`);
     return `${baseUrl}${finalPath}`;
 };
 
 
-// --- Connection API Functions ---
+// --- User API Functions --- NEW SECTION ---
+
+/**
+ * Fetches the detailed profile of the currently logged-in user. Requires authentication.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the user's profile data (including new fields like displayName, bio, etc.).
+ */
+export const getMyProfile = () => api.get('/users/me');
+
+/**
+ * Updates the profile of the currently logged-in user. Requires authentication.
+ * @param {object} profileData - An object containing the fields to update (e.g., { displayName, bio, location, profilePictureUrl }). Only include fields you want to change.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the updated user profile data.
+ */
+export const updateMyProfile = (profileData) => api.put('/users/profile', profileData);
+
+/**
+ * Fetches the public profile information for a specific user by their ID. Public access.
+ * @param {string} userId - The ID of the user whose profile is being requested.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the public profile data (username, displayName, bio, location, profilePictureUrl, createdAt, _id).
+ */
+export const getPublicUserProfile = (userId) => api.get(`/users/${userId}/profile`);
+
+/**
+ * Fetches all connections created by a specific user. Public access.
+ * @param {string} userId - The ID of the user whose connections are being requested.
+ * @returns {Promise<axios.AxiosResponse<Array<object>>>} - Promise resolving to the Axios response containing an array of connection objects created by the user.
+ */
+export const getUserConnections = (userId) => api.get(`/users/${userId}/connections`);
+
+// --- Connection API Functions --- (Existing functions remain below)
 
 /**
  * Fetches a single connection by its ID. Public access.
  * @param {string} connectionId - The ID of the connection to fetch.
  * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the populated connection object.
  */
-export const getConnectionById = (connectionId) => api.get(`/connections/${connectionId}`); // <-- NEW FUNCTION
+export const getConnectionById = (connectionId) => api.get(`/connections/${connectionId}`);
 
 /**
  * Fetches multiple connections by their IDs. Requires authentication.
@@ -105,13 +128,13 @@ export const getConnectionById = (connectionId) => api.get(`/connections/${conne
 export const getConnectionsByIds = (connectionIds) => {
     if (!Array.isArray(connectionIds)) {
         console.error("[api.getConnectionsByIds] Input must be an array of connection IDs.");
-        return Promise.reject(new Error("Invalid input: Expected an array of connection IDs.")); // Return a rejected promise
+        return Promise.reject(new Error("Invalid input: Expected an array of connection IDs."));
     }
     return api.post('/connections/batch', { connectionIds });
 };
 
 /**
- * Sends a DELETE request to remove a specific connection.
+ * Sends a DELETE request to remove a specific connection. Requires authentication.
  * @param {string} id - The ID of the connection to delete.
  * @returns {Promise<axios.AxiosResponse<any>>} - The Axios promise for the DELETE request.
  */
@@ -129,7 +152,7 @@ export const getCommentsForConnection = (connectionId) =>
     api.get(`/connections/${connectionId}/comments`);
 
 /**
- * Creates a new comment on a specific connection.
+ * Creates a new comment on a specific connection. Requires authentication.
  * @param {string} connectionId - The ID of the connection to comment on.
  * @param {{ text: string }} commentData - An object containing the comment text.
  * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the newly created comment object (populated with user info).
@@ -141,28 +164,28 @@ export const createComment = (connectionId, commentData) =>
 // --- Movie/Book Detail API Functions ---
 
 /**
- * Fetches details for a specific movie by its ID.
+ * Fetches details for a specific movie by its ID. Public access.
  * @param {string} movieId - The ID of the movie.
  * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the movie object.
  */
 export const getMovieById = (movieId) => api.get(`/movies/${movieId}`);
 
 /**
- * Fetches all connections associated with a specific movie ID.
+ * Fetches all connections associated with a specific movie ID. Public access.
  * @param {string} movieId - The ID of the movie.
  * @returns {Promise<axios.AxiosResponse<Array<object>>>} - Promise resolving to the Axios response containing an array of populated connection objects.
  */
 export const getConnectionsByMovieId = (movieId) => api.get(`/movies/${movieId}/connections`);
 
 /**
- * Fetches details for a specific book by its ID.
+ * Fetches details for a specific book by its ID. Public access.
  * @param {string} bookId - The ID of the book.
  * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the book object.
  */
 export const getBookById = (bookId) => api.get(`/books/${bookId}`);
 
 /**
- * Fetches all connections associated with a specific book ID.
+ * Fetches all connections associated with a specific book ID. Public access.
  * @param {string} bookId - The ID of the book.
  * @returns {Promise<axios.AxiosResponse<Array<object>>>} - Promise resolving to the Axios response containing an array of populated connection objects.
  */

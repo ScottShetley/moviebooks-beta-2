@@ -12,12 +12,13 @@ import SignupPage from './pages/SignupPage';
 import CreateConnectionPage from './pages/CreateConnectionPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import BookDetailPage from './pages/BookDetailPage';
-import ConnectionDetailPage from './pages/ConnectionDetailPage'; // <-- NEW IMPORT
+import ConnectionDetailPage from './pages/ConnectionDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import NotificationsPage from './pages/NotificationsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AboutPage from './pages/AboutPage/AboutPage';
 import HelpPage from './pages/HelpPage/HelpPage';
+import EditProfilePage from './pages/EditProfilePage'; // <-- IMPORT ADDED HERE
 
 import './AppLayout.css'; // Import layout CSS
 
@@ -134,7 +135,7 @@ function App() {
             />
             <Route path="/movies/:movieId" element={<MovieDetailPage />} />
             <Route path="/books/:bookId" element={<BookDetailPage />} />
-            <Route path="/connections/:connectionId" element={<ConnectionDetailPage />} /> {/* <-- NEW ROUTE */}
+            <Route path="/connections/:connectionId" element={<ConnectionDetailPage />} />
             <Route path="/users/:userId" element={<ProfilePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/help" element={<HelpPage />} />
@@ -148,6 +149,12 @@ function App() {
               path="/profile"
               element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
             />
+            {/* --- NEW ROUTE FOR EDITING PROFILE --- */}
+            <Route
+              path="/profile/edit" // Define the path
+              element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} // Wrap with ProtectedRoute
+            />
+            {/* --- END NEW ROUTE --- */}
             <Route
                path="/notifications"
                element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}

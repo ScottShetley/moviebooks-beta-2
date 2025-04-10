@@ -84,3 +84,185 @@
       color: var(--color-text-secondary);
       text-align: center;
   }
+  /* client/src/pages/ProfilePage.module.css */
+
+/* --- NEW: Profile Header Styles --- */
+.profileHeader {
+  display: flex;
+  align-items: flex-start; /* Align items to the top */
+  gap: 1.5rem; /* Space between avatar and info */
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.profileAvatar {
+  width: 100px; /* Adjust size as needed */
+  height: 100px;
+  border-radius: 50%; /* Make it circular */
+  object-fit: cover; /* Ensure image covers the area well */
+  border: 3px solid var(--color-background-body); /* Optional: small border */
+  box-shadow: var(--shadow-medium);
+  background-color: var(--color-background); /* Background for transparency */
+}
+
+.profileInfo {
+  flex-grow: 1; /* Allow info section to take remaining space */
+}
+
+.profileName {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  font-size: 1.8rem; /* Larger name */
+  color: var(--color-text-primary);
+}
+
+.profileUsername {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.profileBio {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  white-space: pre-wrap; /* Respect line breaks in bio */
+}
+
+.profileLocation {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.profileJoined {
+  margin-top: 0;
+  margin-bottom: 1rem; /* Space before edit button or toggles */
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Placeholder style for edit button - will be used later */
+.editProfileButton {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  background-color: transparent;
+  border-radius: var(--border-radius-small);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+.editProfileButton:hover {
+  background-color: var(--color-primary-lightest);
+  border-color: var(--color-primary-dark);
+  color: var(--color-primary-dark);
+}
+/* --- END NEW Profile Header Styles --- */
+
+
+/* Existing styles below... */
+
+.profilePage {
+    padding: 1rem;
+    max-width: 900px;
+    margin: 1rem auto;
+    background-color: var(--color-background-alt);
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow-medium);
+}
+
+/* --- NEW: Connections Section Wrapper --- */
+.connectionsSection {
+    margin-top: 1.5rem;
+}
+
+/* --- NEW: Optional Grid for Connection Cards --- */
+.connectionsGrid {
+    display: grid;
+    /* grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Example: Responsive columns */
+    gap: 1rem; /* Space between cards */
+    /* If not using grid, ConnectionCards will stack vertically by default */
+}
+
+
+.viewToggleContainer {
+  margin-bottom: 1.5rem;
+  /* padding-bottom: 1rem; */ /* Removed bottom padding, header has border now */
+  /* border-bottom: 1px solid var(--color-border-light); */ /* Removed bottom border */
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Styles for toggleButton, active, disabled, sectionTitle, loadingSection, emptyMessage remain the same */
+/* ... (keep the rest of your existing styles) ... */
+
+.toggleButton {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--color-primary-dark);
+    background-color: var(--color-background);
+    color: var(--color-primary-dark);
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, font-weight 0.2s ease;
+    box-shadow: var(--shadow-small);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .toggleButton:hover {
+    background-color: var(--color-primary-lightest);
+    box-shadow: var(--shadow-medium);
+  }
+
+  .toggleButton.active {
+    background-color: var(--color-accent-hover);
+    color: var(--color-button-text-primary);
+    border-color: var(--color-accent-hover);
+    font-weight: 500;
+    box-shadow: none;
+    cursor: default;
+  }
+
+  .toggleButton:disabled:not(.active) {
+      cursor: not-allowed;
+      opacity: 0.6;
+      background-color: var(--color-background-disabled);
+  }
+
+  .sectionTitle {
+    margin-top: 1rem; /* Reset top margin slightly */
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+    font-size: 1.4rem;
+  }
+
+  .loadingSection {
+      margin-top: 2rem;
+      text-align: center;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 100px;
+  }
+
+  .emptyMessage {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: var(--color-background);
+      border: 1px dashed var(--color-border-light);
+      border-radius: var(--border-radius-small);
+      color: var(--color-text-secondary);
+      text-align: center;
+  }
