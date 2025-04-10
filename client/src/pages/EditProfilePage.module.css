@@ -1,0 +1,203 @@
+/* client/src/pages/EditProfilePage.module.css */
+
+.pageContainer {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--color-background-alt);
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow-medium);
+}
+
+.pageContainer h1 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: var(--color-text-primary);
+}
+
+.profileForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    /* Space between form groups */
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.formGroup input[type="text"],
+.formGroup textarea {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-small);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-lightest);
+}
+
+.formGroup textarea {
+    resize: vertical;
+    /* Allow vertical resize */
+    min-height: 80px;
+}
+
+.formActions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    /* Align buttons to the right */
+    gap: 1rem;
+}
+
+.submitButton,
+.cancelButton {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius-small);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    min-width: 100px;
+    /* Ensure buttons have some width */
+    text-align: center;
+}
+
+.submitButton {
+    background-color: var(--color-primary);
+    color: var(--color-button-text-primary);
+}
+
+.submitButton:hover:not(:disabled) {
+    background-color: var(--color-primary-dark);
+}
+
+.submitButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    background-color: var(--color-background-muted);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+}
+
+.cancelButton:hover {
+    background-color: var(--color-background-hover);
+}
+
+/* Optional Avatar Preview Style */
+.avatarPreview {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 0.75rem;
+    border: 2px solid var(--color-border-light);
+}
+
+.retryButton {
+    /* Style similarly to cancelButton or create unique style */
+    margin-top: 1rem;
+    background-color: var(--color-background-muted);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-small);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+    background-color: var(--color-background-hover);
+}
+/* Add these styles to client/src/pages/EditProfilePage.module.css */
+
+/* --- NEW Styles for Avatar Upload --- */
+.avatarUploadContainer {
+    display: flex;
+    align-items: center; /* Vertically align image and button */
+    gap: 1rem; /* Space between image and button */
+    margin-top: 0.5rem; /* Space below the label */
+}
+
+.avatarPreviewLarge {
+    width: 100px; /* Larger preview on edit page */
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--color-border-light);
+    cursor: pointer; /* Indicate it's clickable */
+    transition: filter 0.2s ease;
+    background-color: var(--color-background); /* Ensure background */
+}
+
+.avatarPreviewLarge:hover {
+    filter: brightness(0.9); /* Slight dim effect on hover */
+}
+
+.changePictureButton {
+    padding: 0.6rem 1rem;
+    background-color: var(--color-background-muted);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--border-radius-small);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.changePictureButton:hover:not(:disabled) {
+    background-color: var(--color-background-hover);
+}
+
+.changePictureButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.fieldHint {
+    font-size: 0.85rem;
+    color: var(--color-text-tertiary);
+    margin-top: 0.5rem;
+    display: block; /* Ensure it takes its own line */
+}
+
+/* --- END NEW Avatar Styles --- */
+
+
+/* --- Existing Styles Below --- */
+/* Keep .pageContainer, .profileForm, .formGroup, label, input, textarea, */
+/* .formActions, .submitButton, .cancelButton, .retryButton etc. */
+
+.pageContainer {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--color-background-alt);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--shadow-medium);
+}
+
+/* ... rest of your existing styles ... */

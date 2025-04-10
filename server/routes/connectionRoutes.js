@@ -5,7 +5,7 @@ import express from 'express';
 import {
     createConnection,
     getConnections,
-    getConnectionById, // <-- Added import (NEW)
+    getConnectionById,
     likeConnection,
     favoriteConnection,
     deleteConnection,
@@ -16,7 +16,9 @@ import {
 
 // Import middleware
 import { protect } from '../middleware/authMiddleware.js';
-import uploadConnectionImages from '../middleware/uploadMiddleware.js';
+// --- CORRECTED IMPORT: Use named import ---
+import { uploadConnectionImages } from '../middleware/uploadMiddleware.js';
+// --- END CORRECTION ---
 
 const router = express.Router();
 
@@ -26,7 +28,7 @@ const router = express.Router();
 // POST /api/connections: Create a new connection (Private, requires login, handles upload)
 router.route('/')
     .get(getConnections)
-    .post(protect, uploadConnectionImages, createConnection);
+    .post(protect, uploadConnectionImages, createConnection); // This uses the correctly imported middleware
 
 // --- Route for Popular Tags ---
 // GET /api/connections/popular-tags: Get most frequent tags (Public)
@@ -43,10 +45,10 @@ router.route('/user/:userId').get(getConnectionsByUserId);
 
 // --- Routes for specific connections '/api/connections/:id' ---
 
-// GET /api/connections/:id: Get single connection details (Public - NEW)
+// GET /api/connections/:id: Get single connection details (Public)
 // DELETE /api/connections/:id: Delete a connection (Private, Owner only)
 router.route('/:id')
-    .get(getConnectionById) // <-- Added route handler (NEW)
+    .get(getConnectionById)
     .delete(protect, deleteConnection);
 
 // POST /api/connections/:id/like: Like/Unlike a connection (Private)
