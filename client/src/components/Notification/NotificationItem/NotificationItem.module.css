@@ -10,49 +10,93 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--space-md);
-  }
-  
-  .item.unread {
-    background-color: var(--color-notification-bg); /* Light yellow for unread */
-    border-left: 4px solid var(--color-notification-border); /* Accent border for unread */
-    font-weight: 600; /* Slightly bolder text for unread */
-  }
-  
-  .content {
-      flex-grow: 1; /* Allow content to take available space */
-      font-size: var(--font-size-sm);
-  }
-  
-  .content a {
+}
+
+.item.unread {
+    background-color: var(--color-notification-bg);
+    /* Light yellow for unread */
+    border-left: 4px solid var(--color-notification-border);
+    /* Accent border for unread */
+    font-weight: 600;
+    /* Slightly bolder text for unread */
+}
+
+/* Make unread item's specific sender link bolder too */
+.item.unread .senderLink {
+    font-weight: 700;
+    /* Even bolder for the link in unread items */
+}
+
+
+.content {
+    flex-grow: 1;
+    /* Allow content to take available space */
+    font-size: var(--font-size-sm);
+    /* Ensure text wraps correctly */
+    word-break: break-word;
+    /* Helps prevent long messages overflowing */
+    overflow-wrap: break-word;
+    /* Standard property */
+}
+
+/* Remove the generic 'a' styling if it conflicts */
+/* .content a {
       font-weight: 600;
       color: var(--color-primary);
   }
    .content a:hover {
        color: var(--color-accent);
-   }
-  
-  .timestamp {
-      display: block; /* Put timestamp on new line */
-      font-size: var(--font-size-xs);
-      color: var(--color-text-light);
-      margin-top: var(--space-xxs);
-  }
-  
-  .actions button {
-      font-size: var(--font-size-xs);
-      padding: var(--space-xxs) var(--space-xs);
-      /* Use ghost or outline variant from Button component? Or style here */
-       color: var(--color-text-light);
-       border: 1px solid var(--color-border);
-       border-radius: var(--border-radius-sm);
-       cursor: pointer;
-       transition: var(--transition-fast);
-  }
-  .actions button:hover {
-       background-color: var(--color-background);
-       border-color: var(--color-text-light);
-  }
-  .actions button:disabled {
-       cursor: not-allowed;
-       opacity: 0.5;
-  }
+   } */
+
+/* Style specifically for the sender link */
+.senderLink {
+    font-weight: 600;
+    /* Or 700 for more prominence */
+    color: var(--color-primary);
+    text-decoration: none;
+    /* Optional: remove underline */
+    margin: 0 2px;
+    /* Add tiny space around the link if needed */
+}
+
+.senderLink:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+    /* Optional: add underline on hover */
+}
+
+.senderLink:focus {
+    outline: 2px solid var(--color-accent);
+    /* Accessibility */
+    outline-offset: 2px;
+}
+
+
+.timestamp {
+    display: block;
+    /* Put timestamp on new line */
+    font-size: var(--font-size-xs);
+    color: var(--color-text-light);
+    margin-top: var(--space-xxs);
+}
+
+.actions button {
+    font-size: var(--font-size-xs);
+    padding: var(--space-xxs) var(--space-xs);
+    /* Use ghost or outline variant from Button component? Or style here */
+    color: var(--color-text-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.actions button:hover {
+    background-color: var(--color-background);
+    border-color: var(--color-text-light);
+}
+
+.actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
