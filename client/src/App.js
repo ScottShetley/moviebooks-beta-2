@@ -18,7 +18,8 @@ import NotificationsPage from './pages/NotificationsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AboutPage from './pages/AboutPage/AboutPage';
 import HelpPage from './pages/HelpPage/HelpPage';
-import EditProfilePage from './pages/EditProfilePage'; // <-- IMPORT ADDED HERE
+import EditProfilePage from './pages/EditProfilePage';
+import UpdatesPage from './pages/UpdatesPage'; // <-- IMPORT ADDED FOR UPDATES PAGE
 
 import './AppLayout.css'; // Import layout CSS
 
@@ -139,6 +140,10 @@ function App() {
             <Route path="/users/:userId" element={<ProfilePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/help" element={<HelpPage />} />
+            {/* --- NEW ROUTE FOR UPDATES PAGE --- */}
+            <Route path="/updates" element={<UpdatesPage />} />
+            {/* --- END NEW ROUTE --- */}
+
 
             {/* --- Protected Routes (Require Login) --- */}
             <Route
@@ -149,12 +154,10 @@ function App() {
               path="/profile"
               element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
             />
-            {/* --- NEW ROUTE FOR EDITING PROFILE --- */}
             <Route
               path="/profile/edit" // Define the path
               element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} // Wrap with ProtectedRoute
             />
-            {/* --- END NEW ROUTE --- */}
             <Route
                path="/notifications"
                element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}

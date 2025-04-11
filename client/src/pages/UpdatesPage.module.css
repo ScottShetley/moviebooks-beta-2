@@ -1,0 +1,52 @@
+/* client/src/pages/UpdatesPage.module.css */
+
+.updatesContainer {
+    padding: var(--space-lg);
+    max-width: 800px; /* Adjust max-width as needed */
+    margin: var(--space-lg) auto; /* Center the content */
+    background-color: var(--color-background-light); /* Or your preferred background */
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .updatesContainer h1 {
+    color: var(--color-primary);
+    margin-bottom: var(--space-md);
+    text-align: center;
+    border-bottom: 1px solid var(--color-border-light);
+    padding-bottom: var(--space-sm);
+  }
+  
+  .updateSection {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .updateSection h2 {
+    color: var(--color-text-strong);
+    margin-bottom: var(--space-sm);
+    border-bottom: 1px dashed var(--color-border-subtle);
+    padding-bottom: var(--space-xs);
+  }
+  
+  .updateSection p,
+  .updateSection ul {
+    color: var(--color-text-default);
+    line-height: 1.6;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .updateSection ul {
+    list-style: disc;
+    padding-left: var(--space-lg); /* Indent list items */
+  }
+  
+  .updateSection li {
+    margin-bottom: var(--space-xs);
+  }
+  
+  .updateSection strong {
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-accent); /* Or another highlight color */
+  }
+  
+  /* Add more specific styles as needed */
