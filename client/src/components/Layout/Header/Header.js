@@ -76,14 +76,15 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
   const handleMobileLinkClick = (focusToggle = true) => { closeMobileMenu(focusToggle); };
 
   return (
-    // ... rest of the Header JSX remains the same ...
      <header className={styles.header}>
       <div className={`container ${styles.navContainer}`}>
         <button className={styles.sidebarToggleButton} onClick={onSidebarToggle} aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={isSidebarOpen} aria-controls="app-sidebar">
             {isSidebarOpen ? <FaTimes /> : <FaBars />}
         </button>
         <div className={styles.logo}>
-             <Link to="/" onClick={() => handleMobileLinkClick(false)}>MovieBooks</Link>
+             {/* --- MODIFIED LINE BELOW: Changed 'to' prop --- */}
+             <Link to="/updates" onClick={() => handleMobileLinkClick(false)}>MovieBooks</Link>
+             {/* --- END MODIFICATION --- */}
         </div>
         <button ref={hamburgerButtonRef} className={styles.hamburgerButton} onClick={toggleMobileMenu} aria-label={isMobileMenuOpen ? "Close main menu" : "Open main menu"} aria-expanded={isMobileMenuOpen} aria-controls="mobile-nav-links">
             <HamburgerIcon isOpen={isMobileMenuOpen} />
