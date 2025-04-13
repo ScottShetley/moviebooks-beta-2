@@ -10,65 +10,59 @@ const connectionSchema = mongoose.Schema (
       ref: 'User', // Reference to the User model
     },
     movieRef: {
-      // The movie in the connection
+      // The movie in the connection (NOW OPTIONAL)
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      // required: true, // <-- REMOVED
       ref: 'Movie', // Reference to the Movie model
+      default: null, // Explicitly allow null
     },
     bookRef: {
-      // The book in the connection
+      // The book in the connection (NOW OPTIONAL)
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      // required: true, // <-- REMOVED
       ref: 'Book', // Reference to the Book model
+      default: null, // Explicitly allow null
     },
     context: {
-      // Optional text description
+      // Optional text description (becomes primary for text-only posts)
       type: String,
       trim: true,
     },
-    // --- NEW FIELD for Phase 1 Filtering ---
     tags: {
       // Array of user-defined tags for thematic filtering
       type: [String], // Defines an array of Strings
       index: true, // Add an index for efficient tag-based searches
       default: [], // Default to an empty array
     },
-    // --- END NEW FIELD ---
-    // --- UPDATED IMAGE FIELDS ---
-    moviePosterUrl: {
-      // Cloudinary URL for the movie poster image
+    // --- Cloudinary Image Fields ---
+    moviePosterUrl: { // Consider removing if always pulling from Movie ref
       type: String,
     },
-    moviePosterPublicId: {
-      // Cloudinary public_id for deletion
+    moviePosterPublicId: { // Consider removing if always pulling from Movie ref
       type: String,
     },
-    bookCoverUrl: {
-      // Cloudinary URL for the book cover image
+    bookCoverUrl: { // Consider removing if always pulling from Book ref
       type: String,
     },
-    bookCoverPublicId: {
-      // Cloudinary public_id for deletion
+    bookCoverPublicId: { // Consider removing if always pulling from Book ref
       type: String,
     },
     screenshotUrl: {
-      // Cloudinary URL for the screenshot image
+      // Cloudinary URL for the screenshot image (connection-specific)
       type: String,
     },
     screenshotPublicId: {
-      // Cloudinary public_id for deletion
+      // Cloudinary public_id for deletion (connection-specific)
       type: String,
     },
-    // --- END UPDATED IMAGE FIELDS ---
+    // --- Engagement Fields ---
     likes: [
-      // Array of users who liked this
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
       },
     ],
     favorites: [
-      // Array of users who favorited this
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -83,9 +77,10 @@ const connectionSchema = mongoose.Schema (
 // Indexes for optimizing common queries
 connectionSchema.index ({userRef: 1, createdAt: -1}); // User's connections feed
 connectionSchema.index ({createdAt: -1}); // Global feed sorted by date
-connectionSchema.index ({movieRef: 1}); // Finding connections by movie
-connectionSchema.index ({bookRef: 1}); // Finding connections by book
-// Note: Index for 'tags' is defined directly in the schema definition above
+connectionSchema.index ({movieRef: 1}); // Finding connections by movie (sparse?)
+connectionSchema.index ({bookRef: 1}); // Finding connections by book (sparse?)
+// Consider adding sparse:true to movieRef/bookRef indexes if many connections will lack them
+connectionSchema.index ({ tags: 1 }); // Index for 'tags' (already defined in schema)
 
 const Connection = mongoose.model ('Connection', connectionSchema);
 

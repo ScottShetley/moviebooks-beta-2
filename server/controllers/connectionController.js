@@ -2,8 +2,8 @@
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Connection from '../models/Connection.js';
-import Movie from '../models/Movie.js'; // Make sure Movie model has posterPath/posterPublicId fields
-import Book from '../models/Book.js'; // Make sure Book model has coverPath/coverPublicId fields if needed
+import Movie from '../models/Movie.js';
+import Book from '../models/Book.js';
 import Notification from '../models/Notification.js';
 import Comment from '../models/Comment.js';
 import cloudinary from '../config/cloudinary.js';
@@ -11,190 +11,96 @@ import User from '../models/User.js';
 
 // --- Helper Function to process comma-separated strings into arrays ---
 const processStringToArray = (inputString) => {
-  if (!inputString || typeof inputString !== 'string') {
-    return [];
-  }
-  return inputString.split(',')
-                    .map(item => item.trim())
-                    .filter(item => item.length > 0);
+  if (!inputString || typeof inputString !== 'string') { return []; }
+  return inputString.split(',').map(item => item.trim()).filter(item => item.length > 0);
 };
 
 // --- Helper function to find or create Movie/Book ---
-// This function now attempts to merge provided data with existing data
-// Needs careful review if you want specific behaviour like "don't overwrite existing poster"
 const findOrCreate = async (model, query, data) => {
     const options = { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true };
-    const collation = { locale: 'en', strength: 2 }; // Case-insensitive query for title
-
-    // Prepare the data we intend to potentially set or update
+    const collation = { locale: 'en', strength: 2 };
     const updateData = {};
-    for (const key in data) {
-        if (data[key] !== undefined && data[key] !== null) { // Exclude null/undefined
-            if (Array.isArray(data[key])) {
-                // Keep empty arrays if provided explicitly, otherwise fallback to schema default
-                 updateData[key] = data[key]; // Allow empty arrays from input
-            } else if (typeof data[key] === 'string') {
-                 // Keep empty strings if provided explicitly
-                 updateData[key] = data[key];
-            } else {
-                 updateData[key] = data[key];
-            }
-        }
-    }
-
-    // console.log(`[findOrCreate] model: ${model.modelName}, query: ${JSON.stringify(query)}, intended updateData: ${JSON.stringify(updateData)}`);
-
+    for (const key in data) { if (data[key] !== undefined && data[key] !== null) { updateData[key] = data[key]; } }
     let doc = await model.findOne(query).collation(collation);
-
     if (doc) {
-        // Document exists, check if update is needed
-        // console.log(`[findOrCreate] Found existing doc: ${doc._id}`);
         let needsUpdate = false;
         for (const key in updateData) {
-            // Simple comparison: Update if key is missing or value differs
-            // This logic WILL overwrite existing posters/data if new data is provided in `updateData`.
-            // Add specific logic here if you want to prevent overwriting certain fields (e.g., posterPath)
-            if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath) {
-                 // Example: Prevent overwriting existing poster if a new one IS provided
-                 // console.log(`[findOrCreate] Existing movie poster found (${doc.posterPath}). Not overwriting with ${updateData.posterPath}.`);
-                 continue; // Skip updating this field
-             }
-            if ((key === 'coverPath' || key === 'coverPublicId') && doc.coverPath && updateData.coverPath) {
-                 // Example: Prevent overwriting existing book cover if a new one IS provided
-                 // console.log(`[findOrCreate] Existing book cover found (${doc.coverPath}). Not overwriting with ${updateData.coverPath}.`);
-                 continue; // Skip updating this field
-             }
-
-
-            if (!(key in doc) || JSON.stringify(doc[key]) !== JSON.stringify(updateData[key])) {
-                // console.log(`[findOrCreate] Updating field '${key}' from '${JSON.stringify(doc[key])}' to '${JSON.stringify(updateData[key])}'`);
-                doc[key] = updateData[key];
-                needsUpdate = true;
-            }
+            if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath) { continue; }
+            if ((key === 'coverPath' || key === 'coverPublicId') && doc.coverPath && updateData.coverPath) { continue; }
+            if (!(key in doc) || JSON.stringify(doc[key]) !== JSON.stringify(updateData[key])) { doc[key] = updateData[key]; needsUpdate = true; }
         }
-        if (needsUpdate) {
-            // console.log(`[findOrCreate] Saving updated doc: ${doc._id}`);
-            doc = await doc.save();
-        }
+        if (needsUpdate) { doc = await doc.save(); }
         return doc;
     } else {
-        // Document doesn't exist, create it with merged query and data
-        // console.log(`[findOrCreate] Creating new doc.`);
-        const createData = { ...query, ...updateData }; // Combine query (e.g., title) with the rest of the data
+        const createData = { ...query, ...updateData };
         return await model.create(createData);
     }
 };
 
 
 /**
- * @desc    Create a new MovieBook connection
+ * @desc    Create a new MovieBook connection (now supports text-only)
  * @route   POST /api/connections
  * @access  Private
  */
 export const createConnection = asyncHandler(async (req, res, next) => {
-  // --- Extract data from request body ---
-  // Add any other fields coming from your form (e.g., movieYear, synopsis etc.)
-  const {
-    movieTitle, movieGenres, movieDirector, movieActors, movieYear, movieSynopsis,
-    bookTitle, bookGenres, bookAuthor, bookPublicationYear, bookIsbn, bookSynopsis, /* bookCoverSourceUrl, etc. */
-    context, tags
-  } = req.body;
-
-  // --- Validate User and Required Fields ---
-  if (!req.user || !req.user._id) {
-      res.status(401);
-      throw new Error('Authentication error: User not found.');
-  }
+  const { movieTitle, movieGenres, movieDirector, movieActors, movieYear, movieSynopsis, bookTitle, bookGenres, bookAuthor, bookPublicationYear, bookIsbn, bookSynopsis, context, tags } = req.body;
+  if (!req.user || !req.user._id) { res.status(401); throw new Error('Authentication error: User not found.'); }
   const userId = req.user._id;
-  if (!movieTitle || !bookTitle) {
-      res.status(400);
-      throw new Error('Movie title and Book title are required');
-  }
+  const hasMediaTitles = movieTitle && bookTitle;
+  const hasContext = context && context.trim().length > 0;
+  if (!hasMediaTitles && !hasContext) { res.status(400); throw new Error('A connection must include either both Movie and Book titles, or Context text.'); }
 
-  // --- Process Input Data (e.g., string arrays) ---
   const processedTags = processStringToArray(tags);
-  const processedMovieGenres = processStringToArray(movieGenres);
-  const processedMovieActors = processStringToArray(movieActors);
-  const processedBookGenres = processStringToArray(bookGenres);
+  let movie = null;
+  let book = null;
 
-  // --- Prepare initial Movie and Book data objects (without images first) ---
-  const movieData = {
-      title: movieTitle,
-      genres: processedMovieGenres,
-      director: movieDirector?.trim() || undefined,
-      actors: processedMovieActors,
-      year: movieYear ? parseInt(movieYear, 10) : undefined,
-      synopsis: movieSynopsis?.trim() || undefined
-  };
-  const bookData = {
-      title: bookTitle,
-      genres: processedBookGenres,
-      author: bookAuthor?.trim() || undefined,
-      publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined,
-      isbn: bookIsbn?.trim() || undefined,
-      synopsis: bookSynopsis?.trim() || undefined
-  };
-
-  // --- *** IMPORTANT: Add Image Paths to Movie/Book Data *** ---
-  // If an image for the movie/book is uploaded, add its path and public ID
-  // to the respective data object *before* calling findOrCreate.
-  if (req.files) {
-    // --- Movie Poster ---
-    if (req.files.moviePoster?.[0]) {
-        movieData.posterPath = req.files.moviePoster[0].path;     // Cloudinary URL
-        movieData.posterPublicId = req.files.moviePoster[0].filename; // Cloudinary Public ID
-        // console.log('[createConnection] Movie poster uploaded. Adding to movieData:', movieData.posterPath);
-    }
-    // --- Book Cover ---
-    if (req.files.bookCover?.[0]) {
-        bookData.coverPath = req.files.bookCover[0].path;
-        bookData.coverPublicId = req.files.bookCover[0].filename;
-        // console.log('[createConnection] Book cover uploaded. Adding to bookData:', bookData.coverPath);
-    }
-    // Screenshot remains connection-specific, handled below
+  if (movieTitle) {
+      const processedMovieGenres = processStringToArray(movieGenres);
+      const processedMovieActors = processStringToArray(movieActors);
+      const movieData = { title: movieTitle, genres: processedMovieGenres, director: movieDirector?.trim() || undefined, actors: processedMovieActors, year: movieYear ? parseInt(movieYear, 10) : undefined, synopsis: movieSynopsis?.trim() || undefined };
+      if (req.files?.moviePoster?.[0]) { movieData.posterPath = req.files.moviePoster[0].path; movieData.posterPublicId = req.files.moviePoster[0].filename; }
+      movie = await findOrCreate(Movie, { title: movieTitle }, movieData);
   }
 
-  // --- Find or Create Movie and Book documents ---
-  const movie = await findOrCreate(Movie, { title: movieTitle }, movieData);
-  const book = await findOrCreate(Book, { title: bookTitle }, bookData);
+  if (bookTitle) {
+      const processedBookGenres = processStringToArray(bookGenres);
+      const bookData = { title: bookTitle, genres: processedBookGenres, author: bookAuthor?.trim() || undefined, publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined, isbn: bookIsbn?.trim() || undefined, synopsis: bookSynopsis?.trim() || undefined };
+      if (req.files?.bookCover?.[0]) { bookData.coverPath = req.files.bookCover[0].path; bookData.coverPublicId = req.files.bookCover[0].filename; }
+      book = await findOrCreate(Book, { title: bookTitle }, bookData);
+  }
 
-  // --- Prepare Connection-Specific Data ---
+  if (hasMediaTitles && (!movie || !book)) {
+       console.error(`[createConnection] Failed to find/create movie or book document despite titles being provided. Movie: ${movie?._id}, Book: ${book?._id}`);
+       res.status(500); throw new Error('Failed to process movie or book information. Please try again.');
+   }
+
   const connectionData = {
       userRef: userId,
-      movieRef: movie._id,
-      bookRef: book._id,
-      context: context || '',
+      movieRef: movie?._id || null,
+      bookRef: book?._id || null,
+      context: context?.trim() || '',
       tags: processedTags,
       screenshotUrl: req.files?.screenshot?.[0]?.path || null,
       screenshotPublicId: req.files?.screenshot?.[0]?.filename || null,
-      // Redundant copies are generally discouraged now we have detail pages
-      // moviePosterUrl: movie.posterPath,
-      // bookCoverUrl: book.coverPath,
   };
 
-  // --- Create the Connection document ---
   const newConnection = await Connection.create(connectionData);
-  // console.log('[createConnection] Connection document created. ID:', newConnection._id);
-
-  // --- Populate the new connection for the response ---
   const populatedConnection = await Connection.findById(newConnection._id)
-    .populate('userRef', 'username profileImageUrl _id')
-    .populate('movieRef') // Includes fields from Movie model (like posterPath)
-    .populate('bookRef');  // Includes fields from Book model (like coverPath)
+    .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+    .populate('movieRef')
+    .populate('bookRef');
 
-  if (!populatedConnection) {
-    console.error(`[createConnection] CRITICAL: Connection created (ID: ${newConnection._id}) but failed to populate!`);
-    res.status(404); throw new Error('Connection created but could not be retrieved for response.');
-  }
-
-  // console.log('[createConnection] Sending success response (201). Populated Movie Ref:', populatedConnection.movieRef);
+  if (!populatedConnection) { console.error(`[createConnection] CRITICAL: Connection created (ID: ${newConnection._id}) but failed to populate!`); res.status(404); throw new Error('Connection created but could not be retrieved for response.'); }
   res.status(201).json(populatedConnection);
 });
 
 
-// @desc    Get connections (feed) with filtering and pagination using Aggregation
-// @route   GET /api/connections?tags=...&movieGenre=...&bookAuthor=...&pageNumber=...
-// @access  Public
+/**
+ * @desc    Get connections (feed) with filtering and pagination using Aggregation
+ * @route   GET /api/connections?tags=...&movieGenre=...&bookAuthor=...&pageNumber=...
+ * @access  Public
+ */
 export const getConnections = asyncHandler(async (req, res, next) => {
   const pageSize = 10;
   const page = Number(req.query.pageNumber) || 1;
@@ -207,25 +113,62 @@ export const getConnections = asyncHandler(async (req, res, next) => {
   if (bookGenre && typeof bookGenre === 'string' && bookGenre.trim() !== '') { matchStage['bookData.genres'] = { $regex: `^${bookGenre.trim()}$`, $options: 'i' }; }
   if (author && typeof author === 'string' && author.trim() !== '') { matchStage['bookData.author'] = { $regex: `^${author.trim()}$`, $options: 'i' }; }
   const isFilterApplied = Object.keys(matchStage).length > 0;
-  const aggregationPipelineBase = [ { $lookup: { from: 'movies', localField: 'movieRef', foreignField: '_id', as: 'movieData' } }, { $unwind: { path: '$movieData', preserveNullAndEmptyArrays: true } }, { $lookup: { from: 'books', localField: 'bookRef', foreignField: '_id', as: 'bookData' } }, { $unwind: { path: '$bookData', preserveNullAndEmptyArrays: true } }, { $lookup: { from: 'users', localField: 'userRef', foreignField: '_id', as: 'userData' } }, { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } }, { $match: matchStage } ];
+
+  const aggregationPipelineBase = [
+    { $lookup: { from: 'movies', localField: 'movieRef', foreignField: '_id', as: 'movieData' } },
+    { $unwind: { path: '$movieData', preserveNullAndEmptyArrays: true } },
+    { $lookup: { from: 'books', localField: 'bookRef', foreignField: '_id', as: 'bookData' } },
+    { $unwind: { path: '$bookData', preserveNullAndEmptyArrays: true } },
+    { $lookup: { from: 'users', localField: 'userRef', foreignField: '_id', as: 'userData' } },
+    { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } },
+    { $match: matchStage }
+  ];
+
   const countResult = await Connection.aggregate([...aggregationPipelineBase, { $count: 'totalCount' }]);
   const count = countResult.length > 0 ? countResult[0].totalCount : 0;
-  const connections = await Connection.aggregate([ ...aggregationPipelineBase, { $sort: { createdAt: -1 } }, { $skip: pageSize * (page - 1) }, { $limit: pageSize },
-     // *** Project stage: Ensure Movie/Book Refs include necessary fields ***
+
+  const connections = await Connection.aggregate([
+     ...aggregationPipelineBase,
+     { $sort: { createdAt: -1 } },
+     { $skip: pageSize * (page - 1) },
+     { $limit: pageSize },
+     // --- *** MODIFIED $project Stage *** ---
      { $project: {
         _id: 1, context: 1, tags: 1, likes: 1, favorites: 1, createdAt: 1, updatedAt: 1,
-        // Include connection-specific images
-        screenshotUrl: 1,
-        screenshotPublicId: 1,
-        // User reference
-        userRef: { _id: '$userData._id', username: '$userData.username', profileImageUrl: '$userData.profileImageUrl' },
-        // Movie reference - Include comprehensive fields
-        movieRef: { _id: '$movieData._id', title: '$movieData.title', genres: '$movieData.genres', director: '$movieData.director', actors: '$movieData.actors', year: '$movieData.year', synopsis: '$movieData.synopsis', posterPath: '$movieData.posterPath', posterPublicId: '$movieData.posterPublicId' },
-        // Book reference - Include comprehensive fields
-        bookRef: { _id: '$bookData._id', title: '$bookData.title', genres: '$bookData.genres', author: '$bookData.author', publicationYear: '$bookData.publicationYear', isbn: '$bookData.isbn', synopsis: '$bookData.synopsis', coverPath: '$bookData.coverPath', coverPublicId: '$bookData.coverPublicId' }
+        screenshotUrl: 1, screenshotPublicId: 1,
+        // Ensure userRef includes necessary fields (added displayName)
+        userRef: {
+             _id: '$userData._id',
+             username: '$userData.username',
+             profileImageUrl: '$userData.profileImageUrl',
+             displayName: '$userData.displayName' // Include displayName
+        },
+        // Explicitly check if movieData exists and has an _id before including
+        movieRef: {
+            $cond: {
+                if: { $and: [ "$movieData", "$movieData._id" ] },
+                then: "$movieData", // Pass the whole object if valid
+                else: null         // Otherwise, explicitly set to null
+            }
+        },
+        // Explicitly check if bookData exists and has an _id before including
+        bookRef: {
+             $cond: {
+                 if: { $and: [ "$bookData", "$bookData._id" ] },
+                 then: "$bookData", // Pass the whole object if valid
+                 else: null        // Otherwise, explicitly set to null
+             }
+         }
        }
      }
+     // --- *** END MODIFIED $project Stage *** ---
     ]);
+
+  // DEBUG: Log the structure of the first connection object being sent
+  // if (connections.length > 0) {
+  //   console.log("[getConnections] Sample connection object being sent:", JSON.stringify(connections[0], null, 2));
+  // }
+
   res.json({ connections, page, pages: Math.ceil(count / pageSize), filterApplied: isFilterApplied, activeFilters: req.query });
 });
 
@@ -235,22 +178,12 @@ export const getConnections = asyncHandler(async (req, res, next) => {
 // @access  Public
 export const getConnectionById = asyncHandler(async (req, res) => {
     const connectionId = req.params.id;
-
-    if (!mongoose.Types.ObjectId.isValid(connectionId)) {
-        res.status(400);
-        throw new Error('Invalid Connection ID format');
-    }
-
+    if (!mongoose.Types.ObjectId.isValid(connectionId)) { res.status(400); throw new Error('Invalid Connection ID format'); }
     const connection = await Connection.findById(connectionId)
-        .populate('userRef', 'username profileImageUrl _id') // Populate user details
-        .populate('movieRef') // Populate all movie details from Movie model
-        .populate('bookRef'); // Populate all book details from Book model
-
-    if (!connection) {
-        res.status(404);
-        throw new Error('Connection not found');
-    }
-
+        .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+        .populate('movieRef')
+        .populate('bookRef');
+    if (!connection) { res.status(404); throw new Error('Connection not found'); }
     res.status(200).json(connection);
 });
 
@@ -261,21 +194,9 @@ export const getConnectionById = asyncHandler(async (req, res) => {
 export const getPopularTags = asyncHandler(async (req, res) => {
     const tagLimit = 15;
     try {
-        const popularTags = await Connection.aggregate([
-            { $match: { tags: { $exists: true, $ne: [] } } },
-            { $unwind: '$tags' },
-            { $project: { tagLower: { $toLower: '$tags' } } },
-            { $group: { _id: '$tagLower', count: { $sum: 1 } } },
-            { $sort: { count: -1 } },
-            { $limit: tagLimit },
-            { $project: { _id: 0, tag: '$_id', count: 1 } }
-        ]);
+        const popularTags = await Connection.aggregate([ { $match: { tags: { $exists: true, $ne: [] } } }, { $unwind: '$tags' }, { $project: { tagLower: { $toLower: '$tags' } } }, { $group: { _id: '$tagLower', count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: tagLimit }, { $project: { _id: 0, tag: '$_id', count: 1 } } ]);
         res.json(popularTags);
-    } catch (error) {
-        console.error('[getPopularTags] Error fetching popular tags:', error);
-        res.status(500);
-        throw new Error('Server error fetching popular tags');
-    }
+    } catch (error) { console.error('[getPopularTags] Error fetching popular tags:', error); res.status(500); throw new Error('Server error fetching popular tags'); }
 });
 
 // @desc    Like/Unlike a connection
@@ -284,24 +205,20 @@ export const getPopularTags = asyncHandler(async (req, res) => {
 export const likeConnection = asyncHandler(async (req, res, next) => {
   const connectionId = req.params.id;
   if (!req.user || !req.user._id || !req.user.username) { res.status(401); throw new Error('User not found or username missing for like action.'); }
-  const userId = req.user._id;
-  const username = req.user.username;
+  const userId = req.user._id; const username = req.user.username;
   if (!mongoose.Types.ObjectId.isValid(connectionId)) { res.status(400); throw new Error('Invalid Connection ID format'); }
   const connection = await Connection.findById(connectionId);
   if (!connection) { res.status(404); throw new Error('Connection not found'); }
   const alreadyLiked = connection.likes.some(like => like.equals(userId));
-  let updateOperation;
-  let notificationShouldBeCreated = false;
-  let notificationId = null;
+  let updateOperation; let notificationShouldBeCreated = false; let notificationId = null;
   if (alreadyLiked) { updateOperation = { $pull: { likes: userId } }; } else { updateOperation = { $addToSet: { likes: userId } }; if (!connection.userRef.equals(userId)) { notificationShouldBeCreated = true; } }
   const updatedConnectionRaw = await Connection.findByIdAndUpdate(connectionId, updateOperation, { new: true });
   if (!updatedConnectionRaw) { res.status(404); throw new Error('Connection not found after update attempt.'); }
   if (notificationShouldBeCreated) { try { const notificationMessage = `${username} liked your connection.`; const notification = await Notification.create({ recipientRef: connection.userRef, senderRef: userId, type: 'LIKE', connectionRef: connection._id, message: notificationMessage }); notificationId = notification._id; } catch (notificationError) { console.error(`[likeConnection] Failed notification creation: ${notificationError.message}`); } }
-  // Repopulate for response consistency
   const updatedConnection = await Connection.findById(updatedConnectionRaw._id)
-        .populate('userRef', 'username profileImageUrl _id')
-        .populate('movieRef') // Includes posterPath
-        .populate('bookRef'); // Includes coverPath
+        .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+        .populate('movieRef')
+        .populate('bookRef');
   res.json({ connection: updatedConnection, notificationId });
 });
 
@@ -318,26 +235,16 @@ export const favoriteConnection = asyncHandler(async (req, res, next) => {
   if (!connection) { res.status(404); throw new Error('Connection not found'); }
   const connectionCreatorId = connection.userRef;
   const alreadyFavorited = connection.favorites.some(fav => fav.equals(userId));
-  let connectionUpdateOperation;
-  let userUpdateOperation;
-  let notificationShouldBeCreated = false;
-  if (alreadyFavorited) {
-    connectionUpdateOperation = { $pull: { favorites: userId } };
-    userUpdateOperation = { $pull: { favorites: connectionId } };
-  } else {
-    connectionUpdateOperation = { $addToSet: { favorites: userId } };
-    userUpdateOperation = { $addToSet: { favorites: connectionId } };
-    if (!connectionCreatorId.equals(userId)) { notificationShouldBeCreated = true; }
-  }
+  let connectionUpdateOperation; let userUpdateOperation; let notificationShouldBeCreated = false;
+  if (alreadyFavorited) { connectionUpdateOperation = { $pull: { favorites: userId } }; userUpdateOperation = { $pull: { favorites: connectionId } }; } else { connectionUpdateOperation = { $addToSet: { favorites: userId } }; userUpdateOperation = { $addToSet: { favorites: connectionId } }; if (!connectionCreatorId.equals(userId)) { notificationShouldBeCreated = true; } }
   const updatedConnectionRaw = await Connection.findByIdAndUpdate(connectionId, connectionUpdateOperation, { new: true });
   if (!updatedConnectionRaw) { res.status(404); throw new Error('Connection not found during update attempt.'); }
   try { await User.findByIdAndUpdate(userId, userUpdateOperation); } catch (userUpdateError) { console.error(`[favoriteConnection] FAILED to update user ${userId} favorites list:`, userUpdateError); }
   if (notificationShouldBeCreated) { try { const favoriterUsername = req.user.username || 'Someone'; const notificationMessage = `${favoriterUsername} favorited your connection.`; await Notification.create({ recipientRef: connectionCreatorId, senderRef: userId, type: 'FAVORITE', connectionRef: connection._id, message: notificationMessage }); } catch (notificationError) { console.error(`[favoriteConnection] Failed notification creation for FAVORITE: ${notificationError.message}`); } }
-  // Repopulate for response
   const updatedConnection = await Connection.findById(updatedConnectionRaw._id)
-      .populate('userRef', 'username profileImageUrl _id')
-      .populate('movieRef') // Includes posterPath
-      .populate('bookRef'); // Includes coverPath
+      .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+      .populate('movieRef')
+      .populate('bookRef');
   if (!updatedConnection) { res.status(500); throw new Error('Failed to retrieve updated connection details.'); }
   res.json(updatedConnection);
 });
@@ -350,31 +257,15 @@ export const deleteConnection = asyncHandler(async (req, res, next) => {
     if (!req.user || !req.user._id) { res.status(401); throw new Error('User not found for delete action.'); }
     const userId = req.user._id;
     if (!mongoose.Types.ObjectId.isValid(connectionId)) { res.status(400); throw new Error('Invalid Connection ID format'); }
-
     const connection = await Connection.findById(connectionId);
     if (!connection) { res.status(404); throw new Error('Connection not found'); }
     if (!connection.userRef.equals(userId)) { res.status(403); throw new Error('User not authorized to delete this connection'); }
-
-    // --- Cleanup ---
-    // Note: This currently deletes screenshot only. Movie/Book posters are not deleted here
-    // because they might be shared by other connections. Add separate logic if needed.
     const publicIdsToDelete = [ connection.screenshotPublicId ].filter(Boolean);
-    if (publicIdsToDelete.length > 0) {
-        try { await cloudinary.api.delete_resources(publicIdsToDelete, { type: 'upload', resource_type: 'image' }); }
-        catch (cloudinaryError) { console.error(`[deleteConnection] WARNING: Error deleting Cloudinary images:`, cloudinaryError); }
-    }
-    // Remove from User favorites
-    try { await User.updateMany({ favorites: connectionId }, { $pull: { favorites: connectionId } }); }
-    catch (userUpdateError) { console.error(`[deleteConnection] WARNING: Failed to remove connection ${connectionId} from users' favorites lists:`, userUpdateError); }
-    // Delete Comments
-    try { await Comment.deleteMany({ connection: connectionId }); }
-    catch(commentDeleteError) { console.error(`[deleteConnection] WARNING: Failed to delete comments for connection ${connectionId}:`, commentDeleteError); }
-    // Delete Notifications
-    try { await Notification.deleteMany({ connectionRef: connectionId }); }
-    catch (notificationDeleteError) { console.error(`[deleteConnection] WARNING: Failed to delete notifications for connection ${connectionId}:`, notificationDeleteError); }
-    // Delete Connection itself
+    if (publicIdsToDelete.length > 0) { try { await cloudinary.api.delete_resources(publicIdsToDelete, { type: 'upload', resource_type: 'image' }); } catch (cloudinaryError) { console.error(`[deleteConnection] WARNING: Error deleting Cloudinary images:`, cloudinaryError); } }
+    try { await User.updateMany({ favorites: connectionId }, { $pull: { favorites: connectionId } }); } catch (userUpdateError) { console.error(`[deleteConnection] WARNING: Failed to remove connection ${connectionId} from users' favorites lists:`, userUpdateError); }
+    try { await Comment.deleteMany({ connection: connectionId }); } catch(commentDeleteError) { console.error(`[deleteConnection] WARNING: Failed to delete comments for connection ${connectionId}:`, commentDeleteError); }
+    try { await Notification.deleteMany({ connectionRef: connectionId }); } catch (notificationDeleteError) { console.error(`[deleteConnection] WARNING: Failed to delete notifications for connection ${connectionId}:`, notificationDeleteError); }
     await Connection.deleteOne({ _id: connectionId });
-
     res.status(200).json({ message: 'Connection deleted successfully', connectionId: connectionId });
 });
 
@@ -386,9 +277,9 @@ export const getConnectionsByUserId = asyncHandler(async (req, res) => {
   const targetUserId = req.params.userId;
   if (!mongoose.Types.ObjectId.isValid(targetUserId)) { res.status(400); throw new Error('Invalid User ID format'); }
   const connections = await Connection.find({ userRef: targetUserId })
-    .populate('userRef', 'username profileImageUrl _id')
-    .populate('movieRef') // Includes posterPath
-    .populate('bookRef')  // Includes coverPath
+    .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+    .populate('movieRef')
+    .populate('bookRef')
     .sort({ createdAt: -1 });
   res.json(connections || []);
 });
@@ -397,20 +288,16 @@ export const getConnectionsByUserId = asyncHandler(async (req, res) => {
 // @route   POST /api/connections/batch
 // @access  Private
 export const getConnectionsByIds = asyncHandler(async (req, res) => {
-    // console.log('[getConnectionsByIds] Request received. Body:', req.body);
     const { connectionIds } = req.body;
     if (!Array.isArray(connectionIds)) { res.status(400); throw new Error('Request body must contain an array named "connectionIds".'); }
     if (connectionIds.length === 0) { return res.json([]); }
     const validConnectionIds = connectionIds.filter(id => mongoose.Types.ObjectId.isValid(id));
     if (validConnectionIds.length === 0) { return res.json([]); }
-    // console.log(`[getConnectionsByIds] Fetching ${validConnectionIds.length} valid connection IDs.`);
     const connections = await Connection.find({ _id: { $in: validConnectionIds } })
-        .populate('userRef', 'username profileImageUrl _id')
-        .populate('movieRef') // Includes posterPath
-        .populate('bookRef')  // Includes coverPath
+        .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+        .populate('movieRef')
+        .populate('bookRef')
         .sort({ createdAt: -1 });
-    // console.log(`[getConnectionsByIds] Found ${connections.length} connections.`);
     res.json(connections || []);
 });
 
-// No changes needed to exports as they are handled individually
