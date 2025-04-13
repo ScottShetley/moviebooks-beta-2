@@ -1,0 +1,51 @@
+/* client/src/components/Common/LikeButton/LikeButton.module.css */
+
+.actionButton {
+    background-color: transparent;
+    /* Adapt styles from ConnectionCard.module.css or TextConnectionCard.module.css as needed */
+    /* These are styles commonly applied to action buttons */
+    border: var(--border-width, 1px) solid var(--color-border, #ccc);
+    color: var(--color-text-light, #666);
+    padding: var(--space-xs, 4px) var(--space-sm, 8px);
+    border-radius: var(--border-radius-md, 6px);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out; /* Use 'all' or specific properties */
+    font-size: var(--font-size-sm, 0.9rem); /* Adjust as needed */
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs, 4px);
+    line-height: 1;
+}
+.actionButton:hover:not(:disabled) {
+    background-color: var(--color-background-hover, #f0f0f0);
+    border-color: var(--color-text-light, #666);
+    color: var(--color-text, #333);
+}
+.actionButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.count {
+    font-size: var(--font-size-xs, 0.8rem);
+    font-weight: var(--font-weight-medium, 600);
+    margin-left: 2px;
+}
+
+/* Styles for the 'liked' state */
+.liked {
+    /* Use theme variables if available */
+    color: var(--color-accent, #e3b23c);
+    border-color: var(--color-accent, #e3b23c);
+}
+.liked:hover:not(:disabled) {
+    background-color: rgba(var(--color-accent-rgb, 227, 178, 60), 0.1);
+    border-color: var(--color-accent, #e3b23c); /* Ensure border stays colored */
+}
+
+/* Optional: Inline error style */
+.inlineError {
+    color: var(--color-error, red);
+    font-size: var(--font-size-xs, 0.75rem);
+    margin-left: var(--space-sm, 8px);
+}
