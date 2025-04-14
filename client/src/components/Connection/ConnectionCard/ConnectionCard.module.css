@@ -6,17 +6,14 @@
     padding: var(--space-md);
     margin-bottom: var(--space-lg);
     box-shadow: var(--shadow-md);
-    overflow: hidden; /* Change to hidden for collapse effect */
+    overflow: hidden; /* Keep hidden for collapse effect base state */
     border: var(--border-width) solid var(--color-border);
     max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    position: relative;
-    /* Add transition for overall card changes if needed */
-    /* transition: all var(--transition-fast); */
+    position: relative; /* For absolute positioned children like popups */
+    width: 100%; /* Take full width up to max-width */
 }
 
-/* Keep overflow visible when expanded for popups like share */
+/* Allow overflow when expanded for popups */
 .card.expanded {
     overflow: visible;
 }
@@ -44,7 +41,7 @@
 .meta {
     font-size: var(--font-size-sm);
     color: var(--color-text-light);
-    margin-bottom: var(--space-sm); /* Reduce margin slightly */
+    margin-bottom: var(--space-sm);
 }
 
 .userLink {
@@ -56,14 +53,12 @@
     text-decoration: underline;
 }
 
-/* --- Styles for Content Wrapper (Collapsible Area) --- */
+/* Styles for Content Wrapper (Collapsible Area) */
 .contentWrapper {
-    /* Estimate collapsed height: screenshot placeholder (~150px) + few lines context? */
-    /* Adjust this max-height based on desired collapsed look */
-    max-height: 250px; /* Example: Adjust as needed */
+    max-height: 250px; /* Initial collapsed height */
     overflow: hidden;
     position: relative; /* For the fade-out overlay */
-    transition: max-height 0.4s ease-in-out; /* Smooth transition */
+    transition: max-height 0.4s ease-in-out;
     margin-bottom: var(--space-sm); /* Space before actions */
 }
 
@@ -74,22 +69,19 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 50px; /* Adjust height of fade */
+    height: 50px;
     background: linear-gradient(to bottom, transparent, var(--color-card));
-    pointer-events: none; /* Allow clicks through */
-    z-index: 1; /* Above content but below actions */
+    pointer-events: none;
+    z-index: 1;
 }
-
 
 /* Expanded state for content wrapper */
 .card.expanded .contentWrapper {
-    max-height: 2000px; /* Large enough for any content, or use 'none' if transitions allow */
-    /* transition: max-height 0.5s ease-in-out; */ /* Can adjust timing */
+    max-height: 2000px; /* Large enough for any content */
 }
 .card.expanded .contentWrapper::before {
     opacity: 0; /* Hide fade effect when expanded */
 }
-/* --- End Content Wrapper Styles --- */
 
 
 .imageLink {
@@ -101,10 +93,10 @@
 .screenshotWrapper {
     position: relative;
     width: 100%;
-    padding-top: 56.25%;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
     background-color: var(--color-background);
     border-radius: var(--border-radius-md);
-    overflow: hidden; /* Keep this */
+    overflow: hidden;
 }
 
 .screenshot {
@@ -117,39 +109,27 @@
     border: none;
 }
 
-.noScreenshotPlaceholder {
-    width: 100%;
-    min-height: 150px;
-    height: auto;
-    padding-top: 0;
-    background-color: var(--color-background);
-    border-radius: var(--border-radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-light);
-    font-style: italic;
-    font-size: var(--font-size-sm);
-    /* Remove margin-bottom here, handled by wrapper */
-}
+/* Style for placeholder when no screenshot exists (used via JSX conditional, not needed here) */
+/* .noScreenshotPlaceholder { ... } */
+
 
 .context {
     font-size: var(--font-size-md);
     color: var(--color-text);
     line-height: var(--line-height-body);
-    margin-top: var(--space-md); /* Add margin if screenshot exists */
-    margin-bottom: 0; /* Remove margin-bottom here, handled by wrapper */
+    margin-top: var(--space-md); /* Add margin only if screenshot/context above */
+    margin-bottom: 0; /* Margin handled by wrapper/container */
     white-space: pre-wrap;
-    overflow-wrap: break-word; /* Ensure long words wrap */
+    overflow-wrap: break-word;
 }
 
-/* --- Line Clamp for Context when Collapsed --- */
+/* Line Clamp for Context when Collapsed */
 .card:not(.expanded) .contentWrapper .context {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3; /* Show N lines */
+    line-clamp: 3;         /* Standard property */
     -webkit-box-orient: vertical;
-    /* Provide fallback for non-webkit? Max-height handled by wrapper */
 }
 
 
@@ -157,8 +137,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
-    margin-top: var(--space-md); /* Add margin if context exists */
-    /* Remove margin-bottom here, handled by wrapper */
+    margin-top: var(--space-md); /* Add margin if context/screenshot above */
 }
 
 .additionalImageWrapper {
@@ -184,12 +163,12 @@
 .actions {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    gap: var(--space-sm); /* Consistent gap */
     border-top: var(--border-width) solid var(--color-border);
     padding-top: var(--space-md);
-    position: relative; /* For share popup */
-    z-index: 2; /* Above content fade */
+    position: relative; /* For absolute positioned children like popups */
+    z-index: 2; /* Ensure actions are above content fade */
 }
 
 .actionButton {
@@ -204,7 +183,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-xs);
-    line-height: 1;
+    line-height: 1; /* Prevent extra height */
 }
 .actionButton:hover:not(:disabled) {
     background-color: var(--color-background);
@@ -222,104 +201,259 @@
     margin-left: 2px;
 }
 
-/* --- Specific Button Styles --- */
-/* .liked is handled by LikeButton.module.css */
-/* .favorited styling */
-.favorited { color: var(--color-primary); border-color: var(--color-primary); }
-.favorited:hover:not(:disabled) { background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.1); border-color: var(--color-primary); }
-
-/* .shareButton styling */
-.shareButton { color: var(--color-info); border-color: var(--color-info); }
-.shareButton:hover:not(:disabled) { background-color: rgba(var(--color-info-rgb, 23, 162, 184), 0.1); border-color: var(--color-info); color: var(--color-info); }
-
-/* --- NEW: Expand Button Styles --- */
-.expandButton {
-    /* Inherits base .actionButton styles */
-    /* Add specific styles if needed */
-    margin-left: auto; /* Push towards the right, before delete */
+/* Specific Button States/Types */
+.favorited {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
 }
+.favorited:hover:not(:disabled) {
+    background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.1);
+    border-color: var(--color-primary);
+}
+
+.shareButton {
+    color: var(--color-info);
+    border-color: var(--color-info);
+}
+.shareButton:hover:not(:disabled) {
+    background-color: rgba(var(--color-info-rgb, 23, 162, 184), 0.1);
+    border-color: var(--color-info);
+    color: var(--color-info); /* Keep icon color consistent on hover */
+}
+
+/* --- REMOVED Empty .expandButton rule --- */
+/* .expandButton { } */
+
 .expandText {
     margin-left: var(--space-xxs);
     font-size: var(--font-size-xs);
-    /* Optional: Hide text on small screens */
 }
 
-/* --- Delete Button Styles --- */
 .deleteButton {
-    /* margin-left: auto; Removed - expand button pushes it */
-    margin-left: var(--space-sm); /* Add some space */
-    color: var(--color-error); border-color: var(--color-error);
+    color: var(--color-error);
+    border-color: var(--color-error);
 }
-.deleteButton:hover:not(:disabled) { background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1); border-color: var(--color-error); color: var(--color-error); }
+.deleteButton:hover:not(:disabled) {
+    background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
+    border-color: var(--color-error);
+    color: var(--color-error); /* Keep icon color consistent on hover */
+}
 
-.actionError { color: var(--color-error); font-size: var(--font-size-xs); margin-left: var(--space-sm); }
-
-
-/* --- Share Options Styles (Unchanged) --- */
-.shareActionWrapper { position: relative; display: inline-block; }
-.shareOptionsPopup { /* ... */ animation: fadeIn 0.15s ease-out; }
-@keyframes fadeIn { /* ... */ }
-.shareOptionButton { /* ... */ }
-.shareOptionButton:hover { /* ... */ }
-.shareIcon { /* ... */ }
-.closeShareButton { /* ... */ }
-.closeShareButton:hover { /* ... */ }
-/* --- END Share Options Styles --- */
+.actionError {
+    color: var(--color-error);
+    font-size: var(--font-size-xs);
+    margin-left: var(--space-sm);
+    /* Optional: align with right buttons if needed */
+    /* width: 100%; text-align: right; */
+}
 
 
-/* --- UPDATED Comments Section Styles --- */
-/* Wrapper controls expansion */
+/* Share Options Styles (Consistent with TextConnectionCard) */
+.shareActionWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.shareOptionsPopup {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-background);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-xs);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xxs);
+    margin-bottom: var(--space-sm);
+    min-width: 150px;
+    animation: fadeIn 0.15s ease-out;
+    border: 1px solid var(--color-border);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.shareOptionButton {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: var(--space-sm) var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-align: left;
+    width: 100%;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.shareOptionButton:hover {
+    background-color: var(--color-background-hover);
+    color: var(--color-primary);
+}
+
+.shareIcon {
+    font-size: 1.1em;
+    color: var(--color-icon);
+    flex-shrink: 0;
+}
+
+.shareOptionButton:hover .shareIcon {
+    color: var(--color-primary);
+}
+
+.closeShareButton {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    padding: var(--space-xs);
+    background: none;
+    border: none;
+    color: var(--color-icon);
+    cursor: pointer;
+    line-height: 0;
+    width: auto;
+}
+
+.closeShareButton:hover {
+    color: var(--color-error);
+    background-color: transparent;
+}
+/* END Share Options Styles */
+
+
+/* Wrapper for right-aligned action buttons */
+.endButtonsWrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm); /* Default gap between More/Delete */
+    margin-left: auto; /* Push this group to the right */
+}
+
+
+/* Comments Section Styles */
 .commentsSectionWrapper {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out, padding-top 0.4s ease-in-out;
-    /* Negative margin to counteract padding */
-    margin-left: calc(-1 * var(--space-md));
+    margin-left: calc(-1 * var(--space-md)); /* Counteract parent padding */
     margin-right: calc(-1 * var(--space-md));
     padding-left: var(--space-md);
     padding-right: var(--space-md);
-    border-top: none; /* Border applied inside .commentsSection when visible */
+    border-top: none; /* Border applied dynamically below */
 }
 .commentsSectionWrapper.commentsVisible {
-    max-height: 1000px; /* Allow comments to expand */
+    max-height: 1000px; /* Allow space for comments */
     margin-top: var(--space-md);
     padding-top: var(--space-md);
-    /* Border appears only when expanded AND comments are shown */
-    border-top: var(--border-width) solid var(--color-border);
+    border-top: var(--border-width) solid var(--color-border); /* Show border only when visible */
 }
 
-/* Inner section - content only, no expansion transition */
-.commentsSection {
-    /* Removed margin/padding/border here - handled by wrapper */
+.commentLoading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg) 0;
+    color: var(--color-text-light);
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
 }
-/* --- END Comments Section Styles --- */
+.commentError {
+    padding: var(--space-md);
+    color: var(--color-error);
+    background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
+    border: var(--border-width) solid var(--color-error);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-sm);
+}
+.noCommentsYet {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    font-style: italic;
+    text-align: center;
+    padding: var(--space-md) 0;
+    margin-top: var(--space-sm);
+}
 
-.commentLoading { display: flex; align-items: center; justify-content: center; padding: var(--space-lg) 0; color: var(--color-text-light); gap: var(--space-sm); font-size: var(--font-size-sm); }
-.commentError { padding: var(--space-md); color: var(--color-error); background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1); border: var(--border-width) solid var(--color-error); border-radius: var(--border-radius-md); text-align: center; font-size: var(--font-size-sm); margin-top: var(--space-sm); }
-.noCommentsYet { font-size: var(--font-size-sm); color: var(--color-text-light); font-style: italic; text-align: center; padding: var(--space-md) 0; margin-top: var(--space-sm); }
 
-
-/* --- Media Query for CARD styles --- */
+/* Media Queries for Mobile Responsiveness */
 @media (max-width: var(--breakpoint-md, 768px)) {
-    .card { padding: var(--space-sm); border-radius: var(--border-radius-md); }
-    .header h3 { font-size: var(--font-size-md); }
-    .meta { font-size: var(--font-size-xs); }
-    .context { font-size: var(--font-size-sm); }
-    .additionalImage { width: 60px; height: 90px; }
-    .actions { gap: var(--space-xs); padding-top: var(--space-sm); }
-    .actionButton { padding: var(--space-xxs) var(--space-xs); font-size: var(--font-size-sm); }
-    .count { font-size: var(--font-size-xs); }
+    .card {
+        padding: var(--space-sm);
+        border-radius: var(--border-radius-md); /* Optional: Adjust radius */
+    }
+    .header h3 {
+        font-size: var(--font-size-md);
+    }
+    .meta {
+        font-size: var(--font-size-xs);
+    }
+    .context {
+        font-size: var(--font-size-sm);
+    }
+    .additionalImage {
+        width: 60px;
+        height: 90px;
+    }
+    .actions {
+        gap: var(--space-xs); /* Reduce gap between buttons */
+        padding-top: var(--space-sm);
+    }
+    .actionButton {
+        padding: var(--space-xxs) var(--space-xs);
+        font-size: var(--font-size-sm); /* Optional: Adjust button font size */
+    }
+    .count {
+        font-size: var(--font-size-xs);
+    }
+    .contentWrapper {
+        max-height: 200px; /* Adjust collapsed height for mobile */
+    }
+    .card.expanded .contentWrapper {
+        max-height: 1500px; /* Adjust max expanded height for mobile */
+    }
+    .card:not(.expanded) .contentWrapper .context {
+        -webkit-line-clamp: 2; /* Show fewer lines on mobile */
+        line-clamp: 2;         /* Standard property */
+    }
+    .commentsSectionWrapper {
+        margin-left: calc(-1 * var(--space-sm)); /* Adjust negative margin */
+        margin-right: calc(-1 * var(--space-sm));
+        padding-left: var(--space-sm);
+        padding-right: var(--space-sm);
+    }
+    .commentsSectionWrapper.commentsVisible {
+        margin-top: var(--space-sm);
+        padding-top: var(--space-sm);
+    }
+    .commentLoading, .commentError, .noCommentsYet {
+        font-size: var(--font-size-xs);
+        padding: var(--space-md) 0;
+    }
+    .expandText {
+        display: none; /* Hide "More/Less" text */
+    }
 
-     /* --- Adjust wrapper/comments for mobile --- */
-    .contentWrapper { max-height: 200px; } /* Adjust collapsed height for mobile */
-    .card.expanded .contentWrapper { max-height: 1500px; }
-    .card:not(.expanded) .contentWrapper .context { -webkit-line-clamp: 2; } /* Show fewer lines */
-    .commentsSectionWrapper { margin-left: calc(-1 * var(--space-sm)); margin-right: calc(-1 * var(--space-sm)); padding-left: var(--space-sm); padding-right: var(--space-sm); }
-    .commentsSectionWrapper.commentsVisible { margin-top: var(--space-sm); padding-top: var(--space-sm); }
-    .commentLoading, .commentError, .noCommentsYet { font-size: var(--font-size-xs); padding: var(--space-md) 0; }
+    /* Adjust End Buttons Wrapper gap for mobile */
+    .endButtonsWrapper {
+        gap: var(--space-xs); /* Use smaller gap for mobile */
+    }
 
-    /* Optionally hide "More/Less" text on mobile */
-    .expandText { display: none; }
-    .expandButton { margin-left: auto; } /* Take up space if delete not present */
-    .deleteButton { margin-left: var(--space-xs); }
+    /* Adjust share popup size/padding for mobile */
+    .shareOptionsPopup {
+        min-width: 130px;
+    }
+    .shareOptionButton {
+        padding: var(--space-xs) var(--space-sm);
+        gap: var(--space-xs);
+    }
 }

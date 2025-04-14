@@ -4,13 +4,14 @@
     background-color: var(--color-card);
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--border-radius-md);
-    padding: var(--space-sm) var(--space-md); /* Less vertical padding than horizontal */
+    padding: var(--space-md); /* Kept uniform padding */
     margin-bottom: var(--space-lg); /* Space between cards */
     box-shadow: var(--shadow-sm);
     max-width: 600px; /* Or match your feed width */
-    margin-left: auto;
-    margin-right: auto;
     transition: background-color var(--transition-fast); /* Add transition */
+    width: 100%; /* Explicitly tell card to take full width of container up to max-width */
+    /* Add relative positioning if share popup needs it */
+    position: relative;
 }
 
 /* Optional hover effect */
@@ -72,7 +73,8 @@
 
 
 .context {
-    margin-top: var(--space-xs);
+    /* Remove top margin now padding handles it */
+    /* margin-top: var(--space-xs); */
     margin-bottom: var(--space-md);
     white-space: pre-wrap; /* Respect line breaks in context */
     word-wrap: break-word; /* Prevent long words from overflowing */
@@ -108,10 +110,14 @@
     align-items: center;
     /* justify-content: space-around; */ /* Let LikeButton handle its spacing */
     justify-content: flex-start; /* Align items to the start */
-    gap: var(--space-xl); /* Add more space between action buttons */
+    /* --- Adjusted Gap --- */
+    /* gap: var(--space-xl); Reduce gap to make space for share popup */
+    gap: var(--space-md);
+    /* ------------------- */
     padding-top: var(--space-xs); /* Less padding */
     margin-top: var(--space-xs);
     border-top: 1px solid var(--color-border-subtle);
+    position: relative; /* Needed for share popup positioning */
 }
 
 .actionButton {
@@ -128,9 +134,14 @@
     transition: var(--transition-fast);
 }
 
-.actionButton:hover {
+.actionButton:hover:not(:disabled) { /* Added :not(:disabled) */
     color: var(--color-primary);
     background-color: var(--color-background-hover);
+}
+
+.actionButton:disabled { /* Added disabled style */
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .actionButton .count {
@@ -140,28 +151,120 @@
 }
 
 /* Ensure LikeButton styles integrate well */
-/* If LikeButton has its own container/styles, adjust .actions if needed */
-/* ... (keep existing styles) ... */
+/* ... */
 
-/* --- Add Delete Button Styles --- */
-/* Position delete button to the right */
+/* --- Share Button Specific Style (Optional, for consistency) --- */
+.shareButton {
+    /* Inherits .actionButton styles */
+    /* Can add specific color if desired */
+     color: var(--color-info); /* Match ConnectionCard share button color */
+}
+.shareButton:hover:not(:disabled) {
+    color: var(--color-info-dark); /* Match hover state */
+    background-color: var(--color-background-hover);
+}
+/* -------------------------------------------------------------- */
+
+
+/* --- Delete Button Styles --- */
 .deleteButton {
     margin-left: auto; /* Push to the far right */
     color: var(--color-error);
-    /* Optional: Add border color if desired */
-    /* border-color: var(--color-error); */
 }
 
 .deleteButton:hover:not(:disabled) {
-    color: var(--color-error); /* Keep color on hover */
+    color: var(--color-error);
     background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
 }
 
-/* Optional: Style for local errors (if you uncomment the JSX) */
-/* .actionError {
+
+/* --- START: Styles copied from ConnectionCard.module.css for Share Popup --- */
+.shareActionWrapper {
+    position: relative; /* Contain the absolute positioned popup */
+    display: inline-block; /* Keep it inline with other action buttons */
+}
+
+.shareOptionsPopup {
+    position: absolute;
+    bottom: 100%; /* Position above the button */
+    left: 50%; /* Start positioning at the center of the button */
+    transform: translateX(-50%); /* Shift left by half its own width to truly center */
+    background-color: var(--color-background);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-xs); /* Reduced padding */
+    z-index: 10; /* Ensure it's above other card content */
+    display: flex; /* Use flex for better layout */
+    flex-direction: column; /* Stack options vertically */
+    gap: var(--space-xxs); /* Small gap between buttons */
+    margin-bottom: var(--space-sm); /* Space between popup and button */
+    min-width: 150px; /* Ensure enough width for options */
+    animation: fadeIn 0.15s ease-out; /* Add fade-in animation */
+    border: 1px solid var(--color-border);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(5px); } /* Fade in and slight upward move */
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.shareOptionButton {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: var(--space-sm) var(--space-sm); /* Adjust padding */
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm); /* Space between icon and text */
+    text-align: left;
+    width: 100%; /* Make buttons fill the popup width */
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.shareOptionButton:hover {
+    background-color: var(--color-background-hover);
+    color: var(--color-primary);
+}
+
+.shareIcon {
+    font-size: 1.1em; /* Make icons slightly larger */
+    color: var(--color-icon); /* Use icon color variable */
+    flex-shrink: 0; /* Prevent icons from shrinking */
+}
+
+.shareOptionButton:hover .shareIcon {
+    color: var(--color-primary); /* Icon color matches text on hover */
+}
+
+.closeShareButton {
+    /* Optional: Style the close button differently */
+    position: absolute; /* Position relative to popup */
+    top: 2px;
+    right: 2px;
+    padding: var(--space-xs); /* Smaller padding */
+    background: none;
+    border: none;
+    color: var(--color-icon);
+    cursor: pointer;
+    line-height: 0; /* Prevent extra height */
+    width: auto; /* Override width: 100% */
+}
+
+.closeShareButton:hover {
+    color: var(--color-error);
+    background-color: transparent; /* Override hover background */
+}
+/* --- END: Styles copied from ConnectionCard.module.css --- */
+
+
+/* Optional: Style for local errors */
+.actionError {
     color: var(--color-error);
     font-size: var(--font-size-xs);
     margin-left: var(--space-sm);
-    width: 100%; // Make error span full width potentially
-    text-align: right; // Align error text right
-} */
+    /* width: 100%; // Make error span full width potentially */
+    /* text-align: right; // Align error text right */
+}
