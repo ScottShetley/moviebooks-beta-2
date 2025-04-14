@@ -26,19 +26,35 @@ const UpdatesPage = () => {
 
       {/* --- LATEST UPDATE SECTION --- */}
       <section className={styles.updateSection}>
-        <h2>🚀 Latest Update ({formattedDate})</h2>
-        <p>We've just rolled out some exciting new features focused on user profiles and interaction:</p>
+        <h2>🚀 Latest Update ({formattedDate}) - Feed Revamp & Fixes!</h2>
+        <p>The main feed just got a significant upgrade and several usability fixes:</p>
         <ul>
-           <li><strong>Enhanced User Profiles:</strong> View richer profiles with Display Names, Bios, Locations, and Profile Pictures!</li>
-           <li><strong>Profile Editing:</strong> Customize your own profile, including text details and uploading your own avatar via the "Edit Profile" page.</li>
-           <li><strong>Clickable Notification Senders:</strong> Usernames within notification messages are now direct links to the sender's profile page.</li>
+            <li><strong>Text-Only Posts:</strong> You can now create connections with just context text, without needing to select a movie or book. Perfect for quick thoughts or general discussion!</li>
+            <li><strong>Collapsible Cards:</strong> Standard connection cards (with movie/book) now appear collapsed by default on the feed, saving space. Click to expand and see the full details!</li>
+            <li><strong>Text Post Deletion:</strong> Added the ability for users to delete their own text-only posts.</li>
+            <li><strong>Consistent Card Layout:</strong> Ensured both standard and text-only cards have the same width for a cleaner look.</li>
+            <li><strong>Placeholder Hiding:</strong> Removed the "No Screenshot Available" placeholder on standard cards when no context image is uploaded.</li>
+            <li><strong>Share Button Fixes:</strong> The enhanced share pop-up now works correctly on text-only posts, and the visual layout is fixed on standard posts.</li>
+            <li><strong>Mobile Layout Improvements:</strong> Adjusted the action button layout on standard cards for better usability on smaller screens.</li>
         </ul>
       </section>
 
-      {/* --- PREVIOUS MILESTONES SECTION --- */}
+      {/* --- PREVIOUS UPDATES SECTION --- */}
       <section className={styles.updateSection}>
-        <h2>✅ Previous Milestones (Before Latest Update)</h2>
-        <p>Key features that were established and deployed earlier:</p>
+        <h2>✅ Previous Updates</h2>
+
+        {/* --- Profile Enhancements Update --- */}
+        <h3 className={styles.subHeading}>User Profiles & Notifications (Previous Major Update)</h3>
+        <p>Features rolled out just before the Feed Revamp:</p>
+        <ul>
+           <li><strong>Enhanced User Profiles:</strong> View richer profiles with Display Names, Bios, Locations, and Profile Pictures.</li>
+           <li><strong>Profile Editing:</strong> Customize your own profile, including text details and uploading your own avatar via the "Edit Profile" page.</li>
+           <li><strong>Clickable Notification Senders:</strong> Usernames within notification messages became direct links to the sender's profile page.</li>
+        </ul>
+
+        {/* --- Earlier Milestones --- */}
+        <h3 className={styles.subHeading}>Earlier Milestones</h3>
+        <p>Key features established before the Profile update:</p>
         <ul>
             <li><strong>Sharing Enhancements:</strong> Implemented an improved share pop-up menu on connection cards and fixed default social media previews (site-wide logo and description).</li>
             <li><strong>Detail Pages:</strong> Launched dedicated pages for viewing individual Connections (`/connections/:id`), Movies (`/movies/:id`), and Books (`/books/:id`).</li>
@@ -50,7 +66,7 @@ const UpdatesPage = () => {
         </ul>
       </section>
 
-      {/* --- FUTURE PLANS SECTION --- */}
+      {/* --- FUTURE PLANS SECTION (Unchanged) --- */}
       <section className={styles.updateSection}>
         <h2>💡 Future Plans & Ideas</h2>
         <p>We're always thinking ahead! Here's a glimpse of what we're considering or actively working on next:</p>
