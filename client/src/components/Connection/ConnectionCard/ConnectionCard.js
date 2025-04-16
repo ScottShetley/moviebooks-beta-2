@@ -1,6 +1,6 @@
 // client/src/components/Connection/ConnectionCard/ConnectionCard.js
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Now SHOULD be used
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import api, { getCommentsForConnection, getStaticFileUrl } from '../../../services/api';
 import LoadingSpinner from '../../Common/LoadingSpinner/LoadingSpinner';
@@ -17,7 +17,6 @@ import {
 
 
 const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
-    // Auth Context, State Hooks, Refs
     const { user, updateUserFavorites } = useAuth();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isFavoriting, setIsFavoriting] = useState(false);
@@ -33,7 +32,6 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     const shareButtonRef = useRef(null);
     const shareOptionsRef = useRef(null);
 
-    // Effect for share popup closing
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (showShareOptions && shareButtonRef.current && !shareButtonRef.current.contains(event.target) && shareOptionsRef.current && !shareOptionsRef.current.contains(event.target)) {
@@ -45,7 +43,6 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
         return () => { document.removeEventListener('mousedown', handleClickOutside); };
     }, [showShareOptions]);
 
-    // Handlers
     const handleToggleExpand = () => setIsExpanded(prev => !prev);
     const handleToggleComments = useCallback(async () => {
         const currentConnectionId = connection?._id;
@@ -72,7 +69,7 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
         const currentConnectionId = connection?._id; if (!user || isFavoriting || !currentConnectionId) return;
         setIsFavoriting(true); setLocalError(null);
         try { const { data: updatedConnection } = await api.post(`/connections/${currentConnectionId}/favorite`); if (typeof updateUserFavorites === 'function') { updateUserFavorites(currentConnectionId); } else { console.warn("updateUserFavorites function not available from AuthContext"); } if (onUpdate) { onUpdate(updatedConnection); } }
-        catch (err) { console.error(`[handleFavoriteToggle - ${currentConnectionId}] Favorite toggle error:`, err); setLocalError("Failed to update favorite status."); }
+        catch (err) { console.error(`[%s - %s] Favorite toggle error:`, 'ConnectionCard', currentConnectionId, err); setLocalError("Failed to update favorite status."); }
         finally { setIsFavoriting(false); }
     };
 
@@ -80,13 +77,12 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
         const currentConnectionId = connection?._id; console.log('[handleDelete] Clicked. isOwner:', isOwner, 'isDeleting:', isDeleting, 'ID:', currentConnectionId); if (!isOwner || isDeleting || !currentConnectionId) { console.log('[handleDelete] Aborting - Pre-condition failed.'); return; } if (!window.confirm('Are you sure you want to delete this connection?')) { console.log('[handleDelete] Aborting - User cancelled confirm dialog.'); return; }
         setIsDeleting(true); setLocalError(null);
         try { console.log('[handleDelete] Sending DELETE request for ID:', currentConnectionId); await api.delete(`/connections/${currentConnectionId}`); console.log('[handleDelete] API call successful.'); if (user?.favorites?.includes(currentConnectionId)) { if (typeof updateUserFavorites === 'function') { updateUserFavorites(currentConnectionId); } else { console.warn("updateUserFavorites function not available from AuthContext for delete cleanup"); } } if (onDelete) { console.log('[handleDelete] Calling parent onDelete prop.'); onDelete(currentConnectionId); } else { console.warn('[handleDelete] onDelete prop is missing!'); } }
-        catch (err) { const msg = err.response?.data?.message || err.message || "Failed to delete connection."; console.error(`[handleDelete - ${currentConnectionId}] Error:`, err); setLocalError(msg); setIsDeleting(false); }
+        catch (err) { const msg = err.response?.data?.message || err.message || "Failed to delete connection."; console.error(`[%s - %s] Error:`, 'ConnectionCard', currentConnectionId, err); setLocalError(msg); setIsDeleting(false); }
     };
 
-    // SHARE ACTION HANDLERS
     const baseUrl = window.location.origin;
     const connectionUrl = `${baseUrl}/connections/${connection._id}`;
-    const shareTitle = `${connection.movieRef.title} & ${connection.bookRef.title} - MovieBooks Connection`;
+    const shareTitle = `${connection.movieRef?.title || 'Movie'} & ${connection.bookRef?.title || 'Book'} - MovieBooks Connection`;
     const shareDescription = `Check out this MovieBooks connection: ${connection.context?.substring(0, 100) || shareTitle}...`;
     const handleShareToggle = () => { setShowShareOptions(prev => !prev); setCopyStatus('Copy Link'); };
     const handleCopyToClipboard = async () => { try { await navigator.clipboard.writeText(connectionUrl); setCopyStatus('Copied!'); setTimeout(() => setCopyStatus('Copy Link'), 2000); } catch (err) { console.error('Failed to copy link: ', err); setCopyStatus('Failed!'); setTimeout(() => setCopyStatus('Copy Link'), 2000); } };
@@ -98,41 +94,38 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     const handleShareToWhatsApp = () => { const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareDescription + ' ' + connectionUrl)}`; window.open(whatsappUrl, '_blank', 'noopener,noreferrer'); setShowShareOptions(false); };
 
 
-    // Early return check
-    if (!connection || !connection.movieRef || !connection.bookRef || !connection.userRef || !connection.userRef.username) {
-        console.error("[ConnectionCard Render] Incomplete connection data, rendering error.", { connection });
+    // Early return for incomplete data (remains the same)
+    if (!connection || !connection.userRef || !connection.userRef.username) {
+        console.error("[ConnectionCard Render] Incomplete base connection data, rendering error.", { connection });
         return <div className={styles.card}>Error: Incomplete connection data for ID {connection?._id}. Check console.</div>;
     }
 
-    // Derived state
     const isFavoritedByCurrentUser = !!user && !!user.favorites && !!connection._id && user.favorites.includes(connection._id);
     const isOwner = !!user && user._id === connection.userRef._id;
+    const movieTitle = connection.movieRef?.title;
+    const bookTitle = connection.bookRef?.title;
 
-    // --- JSX Return (FULL STRUCTURE RESTORED) ---
     return (
         <article className={`${styles.card} ${isExpanded ? styles.expanded : ''}`}>
-            {/* --- Header with Link --- */}
             <header className={styles.header}>
                  <h3>
                      <Link to={`/connections/${connection._id}`} className={styles.titleLink}>
-                         {connection.movieRef.title} & {connection.bookRef.title}
+                         {movieTitle && bookTitle ? `${movieTitle} & ${bookTitle}` : (movieTitle || bookTitle || 'Connection')}
                      </Link>
                  </h3>
             </header>
-            {/* --- Meta with User Link --- */}
             <p className={styles.meta}> Added by{' '}
                  <Link to={`/users/${connection.userRef._id}`} className={styles.userLink}>
                      {connection.userRef.username}
                  </Link>
                  {' on '} {new Date(connection.createdAt).toLocaleDateString()}
             </p>
-            {/* --- Content Wrapper with Context, Screenshot Link, Additional Image Links --- */}
             <div className={styles.contentWrapper}>
                 <div onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "" : "Click to expand"}>
                     {connection.screenshotUrl ? (
                         <Link to={`/connections/${connection._id}`} className={styles.imageLink} onClick={(e) => e.stopPropagation()} >
                             <div className={styles.screenshotWrapper}>
-                                <img src={getStaticFileUrl(connection.screenshotUrl)} alt={`Scene from ${connection.movieRef.title} featuring ${connection.bookRef.title}`} className={styles.screenshot} loading="lazy" />
+                                <img src={getStaticFileUrl(connection.screenshotUrl)} alt={`Scene from ${movieTitle || 'Movie'} featuring ${bookTitle || 'Book'}`} className={styles.screenshot} loading="lazy" />
                             </div>
                         </Link>
                     ) : ( null )}
@@ -145,22 +138,20 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
                  {(connection.movieRef?.posterPath || connection.bookRef?.coverPath) && (
                      <div className={styles.additionalImagesContainer} onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "" : "Click to expand"}>
                          {connection.movieRef?.posterPath && (
-                             <Link to={`/movies/${connection.movieRef._id}`} title={connection.movieRef.title} className={styles.additionalImageWrapper} onClick={(e) => e.stopPropagation()}>
-                                 <img src={getStaticFileUrl(connection.movieRef.posterPath)} alt={`${connection.movieRef.title} Poster`} className={styles.additionalImage} loading="lazy" />
+                             <Link to={`/movies/${connection.movieRef._id}`} title={movieTitle} className={styles.additionalImageWrapper} onClick={(e) => e.stopPropagation()}>
+                                 <img src={getStaticFileUrl(connection.movieRef.posterPath)} alt={`${movieTitle} Poster`} className={styles.additionalImage} loading="lazy" />
                              </Link>
                          )}
                          {connection.bookRef?.coverPath && (
-                             <Link to={`/books/${connection.bookRef._id}`} title={connection.bookRef.title} className={styles.additionalImageWrapper} onClick={(e) => e.stopPropagation()}>
-                                 <img src={getStaticFileUrl(connection.bookRef.coverPath)} alt={`${connection.bookRef.title} Cover`} className={styles.additionalImage} loading="lazy" />
+                             <Link to={`/books/${connection.bookRef._id}`} title={bookTitle} className={styles.additionalImageWrapper} onClick={(e) => e.stopPropagation()}>
+                                 <img src={getStaticFileUrl(connection.bookRef.coverPath)} alt={`${bookTitle} Cover`} className={styles.additionalImage} loading="lazy" />
                              </Link>
                          )}
                      </div>
                  )}
             </div>
 
-            {/* --- Footer Actions (Corrected Structure) --- */}
             <footer className={styles.actions}>
-                {/* Left-aligned Buttons */}
                 <LikeButton connectionId={connection._id} initialLikes={connection.likes || []} onLikeUpdate={onUpdate} />
                 <button className={`${styles.actionButton} ${isFavoritedByCurrentUser ? styles.favorited : ''}`} onClick={handleFavoriteToggle} disabled={!user || isFavoriting} title={isFavoritedByCurrentUser ? "Remove from Favorites" : "Add to Favorites"} > {isFavoriting ? <LoadingSpinner size="small" inline /> : (isFavoritedByCurrentUser ? <FaStar /> : <FaRegStar />) } </button>
                 <button className={`${styles.actionButton} ${styles.commentButton}`} onClick={handleToggleComments} title={showComments ? "Hide Comments" : "Show Comments"} aria-expanded={showComments} > <FaRegCommentDots /> </button>
@@ -178,7 +169,6 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
                      </div> )}
                 </div>
 
-                {/* Wrapper for End Buttons */}
                 <div className={styles.endButtonsWrapper}>
                      <button className={`${styles.actionButton} ${styles.expandButton}`} onClick={handleToggleExpand} title={isExpanded ? "Show less" : "Show more"} aria-expanded={isExpanded} > {isExpanded ? <FaChevronUp /> : <FaChevronDown />} <span className={styles.expandText}>{isExpanded ? "Less" : "More"}</span> </button>
                      {isOwner && ( <button className={`${styles.actionButton} ${styles.deleteButton}`} onClick={handleDelete} disabled={isDeleting} title="Delete Connection" > {isDeleting ? <LoadingSpinner size="small" inline /> : <FaTrashAlt />} </button> )}
@@ -187,7 +177,6 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
                  {localError && <span className={styles.actionError}>{localError}</span>}
             </footer>
 
-            {/* --- Comments Section (Structure unchanged) --- */}
             <div className={`${styles.commentsSectionWrapper} ${isExpanded ? styles.commentsVisible : ''}`}>
                 <div hidden={!showComments}>
                     {showComments && (
