@@ -2,18 +2,19 @@
 import { v2 as cloudinary } from 'cloudinary'; // Use import and alias 'v2' to 'cloudinary'
 import dotenv from 'dotenv';                 // Use import
 
-// Load environment variables from .env file
+// Load environment variables from .env file, particularly CLOUDINARY_* variables
 dotenv.config();
 
-// Configure Cloudinary SDK
+// Configure the Cloudinary SDK with credentials from environment variables
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true // Ensures HTTPS URLs are generated
+  secure: true // Ensures that Cloudinary URLs are generated using HTTPS for security
 });
 
-console.log('Cloudinary Configured:', cloudinary.config().cloud_name ? 'Yes' : 'No');
+// --- Debug log removed for production ---
+// console.log('Cloudinary Configured:', cloudinary.config().cloud_name ? 'Yes' : 'No');
 
-// --- Use export default ---
-export default cloudinary; // Export the configured cloudinary instance as the default export
+// Export the configured Cloudinary instance for use in other parts of the application
+export default cloudinary;

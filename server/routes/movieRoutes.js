@@ -1,20 +1,28 @@
-// server/routes/movieRoutes.js (Corrected for ES Modules)
-import express from 'express'; // <-- Use import
+// server/routes/movieRoutes.js
+import express from 'express';
 import {
   getMovieById,
   getMovieConnections,
-} from '../controllers/movieController.js'; // <-- Use import
+} from '../controllers/movieController.js';
 
-const router = express.Router ();
+/**
+ * Defines routes related to fetching movie information and associated connections.
+ * Base Path: /api/movies (mounted in server.js or app.js)
+ */
+const router = express.Router(); // Consistent spacing
 
 // --- Routes for '/api/movies/:id' ---
 
 // GET /api/movies/:id: Get basic movie details (Public)
-router.get ('/:id', getMovieById);
+// Maps GET requests to /api/movies/:id to the getMovieById controller function.
+router.get('/:id', getMovieById); // Consistent spacing
 
 // GET /api/movies/:id/connections: Get all connections for a specific movie (Public)
-router.get ('/:id/connections', getMovieConnections);
+// Maps GET requests to /api/movies/:id/connections to the getMovieConnections controller function.
+router.get('/:id/connections', getMovieConnections); // Consistent spacing
 
 // Could add routes later for searching movies, etc.
+// Example: router.get('/search', searchMovies);
 
-export default router; // This was likely already correct
+// Export the router instance for mounting in the main application file.
+export default router;

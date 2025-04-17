@@ -9,14 +9,23 @@ import asyncHandler from 'express-async-handler';
 // @access  Public
 const getMovieById = asyncHandler(async (req, res) => {
     const movieId = req.params.id;
+
+    // Validate if the provided ID is a valid MongoDB ObjectId format.
     if (!mongoose.Types.ObjectId.isValid(movieId)) {
-        res.status(400); throw new Error('Invalid Movie ID format');
+        res.status(400);
+        throw new Error('Invalid Movie ID format');
     }
+
+    // Attempt to find the movie by its ID.
     const movie = await Movie.findById(movieId);
+
     if (movie) {
+        // If found, return the movie details.
         res.json(movie);
     } else {
-        res.status(404); throw new Error('Movie not found');
+        // If not found, return a 404 error.
+        res.status(404);
+        throw new Error('Movie not found');
     }
 });
 
@@ -25,20 +34,32 @@ const getMovieById = asyncHandler(async (req, res) => {
 // @access  Public
 const getMovieConnections = asyncHandler(async (req, res) => {
     const movieId = req.params.id;
+
+    // Validate if the provided ID is a valid MongoDB ObjectId format.
     if (!mongoose.Types.ObjectId.isValid(movieId)) {
-        res.status(400); throw new Error('Invalid Movie ID format');
+        res.status(400);
+        throw new Error('Invalid Movie ID format');
     }
+
+    // Check if the movie itself exists before fetching connections.
+    // This ensures a 404 is returned if the movie ID is valid but doesn't correspond to an existing movie.
     const movieExists = await Movie.findById(movieId);
     if (!movieExists) {
-        res.status(404); throw new Error('Movie not found');
+        res.status(404);
+        throw new Error('Movie not found');
     }
+
+    // Find all connections where the movieRef matches the provided movie ID.
     const connections = await Connection.find({ movieRef: movieId })
-        .populate('userRef', 'username _id') // <-- Updated to username
-        .populate('movieRef', 'title _id')
-        .populate('bookRef', 'title _id')
-        .sort({ createdAt: -1 });
+        // Populate referenced documents with specific fields for efficiency.
+        .populate('userRef', 'username _id') // Get username and ID from the User document.
+        .populate('movieRef', 'title _id')   // Get title and ID from the Movie document.
+        .populate('bookRef', 'title _id')    // Get title and ID from the Book document.
+        .sort({ createdAt: -1 }); // Sort connections by creation date, newest first.
+
     res.json(connections);
 });
 
 // --- Use NAMED exports ---
+// Export controller functions for use in route definitions.
 export { getMovieById, getMovieConnections };

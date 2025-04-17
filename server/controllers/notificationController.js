@@ -1,4 +1,4 @@
-// server/controllers/notificationController.js (Corrected)
+// server/controllers/notificationController.js
 import Notification from '../models/Notification.js'; // Use .js extension
 import mongoose from 'mongoose';
 import asyncHandler from 'express-async-handler';
@@ -7,49 +7,40 @@ import asyncHandler from 'express-async-handler';
 // @route   GET /api/notifications
 // @access  Private
 const getNotifications = asyncHandler(async (req, res) => {
-    // --- START DIAGNOSTIC LOGGING ---
-    console.log('[getNotifications] Controller invoked.');
-    if (req.user && req.user._id) {
-        console.log(`[getNotifications] Fetching notifications for user ID: ${req.user._id}`);
-    } else {
-        console.error('[getNotifications] User ID not found on request!');
+    // Ensure user is authenticated (primary check should be middleware)
+    if (!req.user || !req.user._id) {
+        // This case should ideally be prevented by the 'protect' middleware
         res.status(401); // Unauthorized
         throw new Error('User not authenticated');
     }
-    // --- END DIAGNOSTIC LOGGING ---
+    const userId = req.user._id;
 
     try {
-        const notifications = await Notification.find({
-            recipientRef: req.user._id // CORRECTED: Use recipientRef from model
-        })
-        .populate('senderRef', 'username _id') // CORRECTED: Use senderRef from model, populate username
-        .populate({
-            path: 'connectionRef',
-            select: 'movieRef bookRef context screenshotUrl', // CORRECTED: Use screenshotUrl (verify this field name in Connection model)
-            populate: [
-                { path: 'movieRef', select: 'title' },
-                { path: 'bookRef', select: 'title' }
-            ]
-         })
-        .sort({ createdAt: -1 })
-        .limit(30); // Limit the number of notifications returned
+        // Fetch notifications intended for the currently logged-in user.
+        const notifications = await Notification.find({ recipientRef: userId })
+            // Populate the sender's details (username and ID).
+            .populate('senderRef', 'username _id')
+            // Populate details from the related connection.
+            .populate({
+                path: 'connectionRef', // The field in Notification model linking to Connection
+                // Select specific fields from the Connection document.
+                select: 'movieRef bookRef context screenshotUrl', // Verify 'screenshotUrl' exists in Connection model
+                // Further populate references within the Connection document.
+                populate: [
+                    { path: 'movieRef', select: 'title _id' }, // Get title and ID from the linked Movie
+                    { path: 'bookRef', select: 'title _id' }  // Get title and ID from the linked Book
+                ]
+             })
+            .sort({ createdAt: -1 }) // Show newest notifications first.
+            .limit(30); // Limit the number of notifications returned for performance.
 
-        // --- START DIAGNOSTIC LOGGING ---
-        console.log(`[getNotifications] Found ${notifications.length} notifications.`);
-        // Optional: Log the fetched notifications if needed for deep debugging
-        // if (notifications.length > 0) {
-        //     console.log('[getNotifications] Notifications data:', JSON.stringify(notifications, null, 2));
-        // }
-        // --- END DIAGNOSTIC LOGGING ---
-
-        res.status(200).json(notifications); // Send 200 status with data
+        res.status(200).json(notifications); // Send the list of notifications.
 
     } catch (error) {
-        // --- START DIAGNOSTIC LOGGING ---
+        // Log unexpected errors during fetch operation.
         console.error('[getNotifications] Error fetching notifications:', error);
-        // --- END DIAGNOSTIC LOGGING ---
         res.status(500); // Internal Server Error
-        throw new Error('Server error fetching notifications'); // Let error handler manage response
+        throw new Error('Server error fetching notifications'); // Let global error handler manage response
     }
 });
 
@@ -58,55 +49,56 @@ const getNotifications = asyncHandler(async (req, res) => {
 // @access  Private
 const markNotificationAsRead = asyncHandler(async (req, res) => {
     const notificationId = req.params.id;
+    const userId = req.user._id; // Assumes auth middleware provides req.user
 
-    console.log(`[markNotificationAsRead] Attempting for ID: ${notificationId}, User: ${req.user?._id}`); // Logging
-
+    // Validate the notification ID format.
     if (!mongoose.Types.ObjectId.isValid(notificationId)) {
-        console.error('[markNotificationAsRead] Invalid ID format:', notificationId);
         res.status(400); throw new Error('Invalid Notification ID format');
     }
 
+    // Find the notification by its ID.
     const notification = await Notification.findById(notificationId);
 
+    // Handle case where notification doesn't exist.
     if (!notification) {
-        console.error('[markNotificationAsRead] Notification not found:', notificationId);
         res.status(404); throw new Error('Notification not found');
     }
 
-    // Ensure model uses 'recipientRef' field name
-    // CORRECTED: Use recipientRef
-    if (!notification.recipientRef.equals(req.user._id)) {
-        console.warn(`[markNotificationAsRead] Unauthorized attempt. Notif Recipient: ${notification.recipientRef}, User: ${req.user._id}`);
+    // Authorization check: Ensure the notification belongs to the logged-in user.
+    if (!notification.recipientRef.equals(userId)) {
+        // Log potential security issue: User trying to access another user's notification.
+        console.warn(`[markNotificationAsRead] Unauthorized attempt. Notif Recipient: ${notification.recipientRef}, User: ${userId}`);
         res.status(403); throw new Error('Not authorized to update this notification');
     }
 
+    // Only update if the notification is currently unread to avoid unnecessary DB writes.
     if (!notification.read) {
         notification.read = true;
         await notification.save();
-        console.log(`[markNotificationAsRead] Marked notification ${notificationId} as read.`); // Logging
-    } else {
-        console.log(`[markNotificationAsRead] Notification ${notificationId} was already read.`); // Logging
     }
 
-    res.status(200).json(notification); // Send 200 status with updated notification
+    // Return the updated (or unchanged if already read) notification.
+    res.status(200).json(notification);
 });
 
 // @desc    Mark all unread notifications for the user as read
 // @route   PATCH /api/notifications/read-all
 // @access  Private
 const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
-    // Ensure model uses 'recipientRef' field name
-    // CORRECTED: Use recipientRef
-    console.log(`[markAllNotificationsAsRead] Attempting for User: ${req.user?._id}`); // Logging
+    const userId = req.user._id; // Assumes auth middleware provides req.user
 
+    // Use updateMany to efficiently update all matching documents.
+    // Find all notifications for the user that are currently unread.
     const result = await Notification.updateMany(
-        { recipientRef: req.user._id, read: false }, // CORRECTED: Use recipientRef
-        { $set: { read: true } }
+        { recipientRef: userId, read: false },
+        { $set: { read: true } } // Set the 'read' field to true.
     );
 
-    console.log(`[markAllNotificationsAsRead] Marked ${result.modifiedCount} notifications as read for user ${req.user._id}`); // Logging
-
-    res.status(200).json({ message: 'All notifications marked as read', count: result.modifiedCount });
+    // Respond with success message and the count of notifications updated.
+    res.status(200).json({
+        message: 'All unread notifications marked as read',
+        count: result.modifiedCount // Number of documents actually modified.
+    });
 });
 
 // --- Use NAMED exports ---
