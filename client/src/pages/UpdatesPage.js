@@ -44,12 +44,16 @@ const UpdatesPage = () => {
       {/* Uses <section> to group related content */}
       <section className={styles.updateSection}>
         {/* Heading includes the dynamically formatted date */}
-        <h2>🚀 Latest Update ({formattedDate}) - Feed Revamp & Fixes!</h2>
-        <p>The main feed just got a significant upgrade and several usability fixes:</p>
+        <h2>🚀 Latest Update ({formattedDate}) - Code Cleanup & Feed Revamp!</h2>
+        <p>Performed a significant code quality pass and rolled out feed improvements:</p>
         {/* Unordered list (<ul>) for bullet points */}
         <ul>
             {/* List items (<li>) describing individual updates */}
+            <li><strong>Code Refactoring & Cleanup:</strong> Reviewed client-side code, removed debugging logs, enhanced comments for clarity, fixed linter warnings (unused variables, empty CSS rules), and improved code structure across components and pages for better maintainability.</li>
             <li><strong>Text-Only Posts:</strong> You can now create connections with just context text, without needing to select a movie or book. Perfect for quick thoughts or general discussion!</li>
+            {/* --- ADDED THIS ITEM --- */}
+            <li><strong>Text-Only Post Card UI Fixes:</strong> Updated the text-only connection card to use the correct comment icon, display the user's username instead of display name, and show the correct color for the favorite icon.</li>
+            {/* ----------------------- */}
             <li><strong>Collapsible Cards:</strong> Standard connection cards (with movie/book) now appear collapsed by default on the feed, saving space. Click to expand and see the full details!</li>
             <li><strong>Text Post Deletion:</strong> Added the ability for users to delete their own text-only posts.</li>
             <li><strong>Consistent Card Layout:</strong> Ensured both standard and text-only cards have the same width for a cleaner look.</li>
