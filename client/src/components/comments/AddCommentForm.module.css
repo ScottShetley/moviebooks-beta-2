@@ -1,68 +1,95 @@
-/* client/src/components/Comment/AddCommentForm.module.css */
+/* client/src/components/comments/AddCommentForm.module.css */
 
+/* Styles for the main form container */
 .commentForm {
-    margin-top: var(--spacing-m); /* Space above the form */
+    /* Adds space above the form, separating it from content above */
+    margin-top: var(--spacing-m); 
+    /* Adds padding inside the top border, creating space before the textarea */
     padding-top: var(--spacing-m);
-    border-top: 1px solid var(--color-border-subtle); /* Separator if needed */
+    /* A subtle line to visually separate the form */
+    border-top: 1px solid var(--color-border-subtle); 
 }
 
+/* Styles for the textarea input field */
 .commentInput {
+    /* Make the textarea take the full available width */
     width: 100%;
+    /* Inner spacing within the textarea */
     padding: var(--spacing-s);
+    /* Standard border styling */
     border: 1px solid var(--color-border-neutral);
     border-radius: var(--border-radius-m);
-    font-family: inherit; /* Use the standard body font */
+    /* Ensure it uses the same font as the rest of the application */
+    font-family: inherit; 
     font-size: var(--font-size-s);
     line-height: var(--line-height-m);
+    /* Background and text colors for the input */
     background-color: var(--color-background-input);
     color: var(--color-text-input);
-    resize: vertical; /* Allow vertical resizing only */
-    min-height: 60px; /* Minimum height */
+    /* Allow users to resize the textarea vertically, but not horizontally */
+    resize: vertical; 
+    /* Set a minimum height to prevent it from being too small initially */
+    min-height: 60px; 
+    /* Space below the textarea, before the action buttons */
     margin-bottom: var(--spacing-s);
+    /* Smooth transition for border color changes (e.g., on focus) */
     transition: border-color 0.2s ease;
 }
 
+/* Styles for the textarea when it receives focus (clicked into) */
 .commentInput:focus {
+    /* Remove the default browser outline */
     outline: none;
+    /* Change border color to primary color for visual feedback */
     border-color: var(--color-primary);
+    /* Add a subtle glow effect (focus ring) */
     box-shadow: 0 0 0 2px var(--color-focus-ring);
 }
 
+/* Styles for the textarea when it's disabled */
 .commentInput:disabled {
     background-color: var(--color-background-disabled);
-    cursor: not-allowed;
-    opacity: 0.7;
+    cursor: not-allowed; /* Indicate it's not interactive */
+    opacity: 0.7; /* Make it look faded */
 }
 
+/* Container for elements below the textarea (button, char count, etc.) */
 .formActions {
-    display: flex;
-    justify-content: flex-end; /* Align button to the right */
+    display: flex; /* Use flexbox for layout */
+    /* Align items (button, char count) to the right */
+    justify-content: flex-end; 
+    /* Vertically align items if they have different heights */
     align-items: center;
+    /* Add space between items in this container */
     gap: var(--spacing-s);
 }
 
+/* Styles for the submit button */
 .submitButton {
-    /* Using existing button styles - requires Button component or shared button CSS */
-    /* Assuming a primary button style exists */
+    /* These styles define the button's appearance. 
+       If using a reusable Button component, these might be defined there instead. */
     background-color: var(--color-primary);
     color: var(--color-text-on-primary);
     border: none;
-    padding: var(--spacing-xs) var(--spacing-l);
+    padding: var(--spacing-xs) var(--spacing-l); /* Vertical and horizontal padding */
     border-radius: var(--border-radius-m);
     font-weight: var(--font-weight-medium);
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease; /* Smooth background color change on hover */
+    /* Use inline-flex to allow alignment within .formActions */
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 120px; /* Give button some minimum width */
+    align-items: center; /* Center content (like spinner) vertically */
+    justify-content: center; /* Center content horizontally */
+    min-width: 120px; /* Ensure button isn't too small */
     text-align: center;
 }
 
+/* Darken the button background on hover when it's not disabled */
 .submitButton:hover:not(:disabled) {
     background-color: var(--color-primary-dark);
 }
 
+/* Styles for the submit button when it's disabled */
 .submitButton:disabled {
     background-color: var(--color-background-disabled);
     color: var(--color-text-secondary);
@@ -70,9 +97,12 @@
     opacity: 0.7;
 }
 
+/* Styles for the optional character count display */
 .charCount {
     font-size: var(--font-size-xs);
     color: var(--color-text-secondary);
 }
 
+/* Reminder comment: Ensure styles for any ErrorMessage component used here are consistent */
 /* Ensure ErrorMessage component styles align if used */
+

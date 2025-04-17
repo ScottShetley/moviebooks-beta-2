@@ -1,22 +1,40 @@
 /* client/src/pages/AboutPage/AboutPage.module.css */
+
+/* Styles for the main container of the About page content */
 .aboutContainer {
+    /* Limit the maximum width of the content area for better readability on wide screens */
     max-width: 800px;
-    margin: 40px auto; /* Center content */
+    /* Add vertical margin (top/bottom) and use 'auto' for horizontal margins to center the container */
+    margin: 40px auto; 
+    /* Add inner spacing (top/bottom and left/right) */
     padding: 20px 40px;
-    background-color: var(--color-background-primary); /* Or secondary */
+    /* Set the background color using a CSS variable */
+    background-color: var(--color-background-primary); /* Or use --color-background-secondary if preferred */
+    /* Apply large rounded corners */
     border-radius: var(--border-radius-large);
+    /* Add a subtle border */
     border: 1px solid var(--color-border-subtle);
+    /* Set the default text color for the content */
     color: var(--color-text-primary);
 }
 
+/* Styles for the main heading (<h1>) on the page */
 .aboutContainer h1 {
+    /* Use the accent color for the heading */
     color: var(--color-accent);
+    /* Add space below the heading */
     margin-bottom: 25px;
+    /* Center the heading text */
     text-align: center;
 }
 
+/* Styles for paragraph (<p>) elements within the container */
 .aboutContainer p {
+    /* Add space below each paragraph */
     margin-bottom: 15px;
+    /* Set the line height for better readability of paragraph text */
     line-height: 1.6;
+    /* Set the font size for paragraph text */
     font-size: var(--font-size-medium);
 }
+

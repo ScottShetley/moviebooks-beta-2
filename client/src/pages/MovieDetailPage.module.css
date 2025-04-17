@@ -1,16 +1,22 @@
 /* client/src/pages/MovieDetailPage.module.css (Wider Container) */
 
+/* Styles for the main page container */
 .pageContainer {
+    /* Increased max-width for a wider layout */
     max-width: 1400px;
-    /* <<< Increased Max Width */
+    /* Add vertical margin and center horizontally */
     margin: 2rem auto;
+    /* Add inner padding */
     padding: 1rem 2rem;
+    /* Set background color using a theme variable */
     background-color: var(--color-background);
-    /* Use theme variable */
+    /* Apply standard rounded corners */
     border-radius: 8px;
+    /* Optional shadow - uncomment if desired */
     /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
+/* Styles for the error message container */
 .errorContainer {
     text-align: center;
     padding: 3rem 1rem;
@@ -20,201 +26,222 @@
     border-radius: 8px;
 }
 
+/* Styles for the heading within the error container */
 .errorContainer h2 {
     color: var(--color-error);
     margin-bottom: 1rem;
 }
 
+/* Styles for buttons within the error container */
 .errorContainer .button {
     margin-top: 1.5rem;
 }
 
-/* --- Details Section --- */
+/* --- Details Section (Poster + Info) --- */
+/* Styles for the top section containing the movie image and details */
 .detailsSection {
+    /* Use flexbox for side-by-side layout */
     display: flex;
+    /* Allow items to wrap onto the next line on smaller screens */
     flex-wrap: wrap;
-    /* Allow wrapping on smaller screens */
+    /* Space between the image container and the info container */
     gap: 2rem;
-    /* Space between image and info */
+    /* Space below the details section, before the divider */
     margin-bottom: 2rem;
 }
 
+/* Styles for the container holding the movie poster image */
 .imageContainer {
+    /* Set a fixed width for the image container */
     flex: 0 0 250px;
-    /* Fixed width for the image container */
+    /* Ensure it doesn't overflow its parent on very small screens */
     max-width: 100%;
-    /* Ensure it doesn't overflow on very small screens */
 }
 
+/* Styles for the movie poster image itself */
 .posterImage {
-    /* Changed from coverImage to posterImage */
+    /* Make the image fill its container width */
     width: 100%;
+    /* Maintain aspect ratio */
     height: auto;
+    /* Prevent extra space below the image */
     display: block;
-    /* Prevents potential extra space below image */
+    /* Apply standard rounded corners */
     border-radius: 8px;
+    /* Scale image while maintaining aspect ratio, covering the container */
     object-fit: cover;
-    /* Scale while maintaining aspect ratio */
+    /* Add a shadow */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* Add a subtle border */
     border: 1px solid var(--color-border-subtle);
+    /* Background color shown if image fails to load */
     background-color: var(--color-background-muted);
-    /* Show background if image fails */
 }
 
+/* Styles for the container holding the movie's textual information */
 .infoContainer {
+    /* Allow this container to grow and take up remaining space */
     flex: 1;
-    /* Takes up remaining space */
+    /* Prevent info from getting too squished on medium screens */
     min-width: 280px;
-    /* Prevent info from getting too squished */
 }
 
+/* Styles for the movie title (h1) */
 .title {
-    font-size: 2.2rem;
+    font-size: 2.2rem; /* Large font size for movie title */
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--color-text-emphasis);
-    line-height: 1.2;
+    margin-bottom: 0.5rem; /* Space below title */
+    color: var(--color-text-emphasis); /* Emphasized text color */
+    line-height: 1.2; /* Adjust line height */
 }
 
+/* Styles for the meta information line (Year | Genres) */
 .meta {
-    font-size: 0.95rem;
-    color: var(--color-text-muted);
-    margin-bottom: 1rem;
+    font-size: 0.95rem; /* Slightly smaller font size */
+    color: var(--color-text-muted); /* Muted text color */
+    margin-bottom: 1rem; /* Space below meta line */
+    /* Keep year and genre on the same line if possible */
     display: inline;
-    /* Keep year and genre on same line if possible */
 }
 
+/* Ensure spans within meta behave like inline blocks */
 .meta span {
     display: inline-block;
-    /* Treat spans like inline blocks */
 }
 
+/* Styles for the separator between meta items */
 .metaSeparator {
-    margin: 0 0.4rem;
+    margin: 0 0.4rem; /* Horizontal spacing */
     color: var(--color-text-muted);
     display: inline-block;
 }
 
-
+/* Styles for general paragraphs within the info container */
 .infoContainer p {
-    margin-bottom: 0.75rem;
-    line-height: 1.6;
+    margin-bottom: 0.75rem; /* Space below paragraphs */
+    line-height: 1.6; /* Set line height for readability */
 }
 
+/* Styles for <strong> tags within the info container */
 .infoContainer strong {
-    color: var(--color-text-default);
+    color: var(--color-text-default); /* Default text color for strong tags */
 }
 
+/* Styles for the movie synopsis paragraph */
 .synopsis {
-    margin-top: 1rem;
-    font-size: 0.95rem;
-    color: var(--color-text-subtle);
+    margin-top: 1rem; /* Space above synopsis */
+    font-size: 0.95rem; /* Font size */
+    color: var(--color-text-subtle); /* Subtle text color */
 }
 
 
 /* --- Divider --- */
+/* Styles for the horizontal rule separating details from connections */
 .divider {
-    border: none;
+    border: none; /* Remove default border */
+    /* Create a custom border line */
     border-top: 1px solid var(--color-border-subtle);
+    /* Add vertical margin */
     margin: 2.5rem 0;
 }
 
 
 /* --- Connections Section --- */
+/* Styles for the section displaying related connections */
 .connectionsSection {
-    margin-top: 2rem;
+    margin-top: 2rem; /* Space above the section title */
 }
 
+/* Styles for the "Connections Featuring This Movie" title */
 .connectionsTitle {
-    font-size: 1.5rem;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    color: var(--color-text-default);
+    font-size: 1.5rem; /* Font size */
+    font-weight: 500; /* Medium font weight */
+    margin-bottom: 1.5rem; /* Space below title */
+    color: var(--color-text-default); /* Default text color */
+    /* Add an accent border below the title */
     border-bottom: 2px solid var(--color-accent-subtle);
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.5rem; /* Space between text and border */
+    /* Make border only underline the text, not the full width */
     display: inline-block;
-    /* Make border only underline text */
 }
 
-/* --- UPDATED GRID FOR SINGLE COLUMN --- */
+/* --- Grid for Connection Cards --- */
+/* Styles for the container holding the ConnectionCard components */
 .connectionsGrid {
-    /* display: grid; */
-    /* <<< Comment out */
+    /* Use standard block layout (cards stack vertically) */
     display: block;
-    /* <<< Add this */
-    /* grid-template-columns: 1fr; */
-    /* <<< Comment out (Not needed for block) */
-    gap: 1.5rem;
-    /* Note: gap has no effect on display:block */
-    /* justify-items: center; */
+    /* Note: 'gap' property has no effect on display:block elements.
+       Spacing is controlled by the margin-bottom on the card components themselves. */
+    /* gap: 1.5rem; */ /* Removed as it's ineffective */
 }
+/* --- END Grid --- */
 
-/* --- END UPDATED GRID --- */
 
-
+/* Styles for the message shown when no connections are found */
 .noItemsMessage {
-    /* Consistent naming with ProfilePage */
-    font-style: italic;
-    color: var(--color-text-muted);
-    padding: 2rem;
-    text-align: center;
-    background-color: var(--color-background-muted);
-    border-radius: 4px;
+    font-style: italic; /* Italic text */
+    color: var(--color-text-muted); /* Muted text color */
+    padding: 2rem; /* Inner padding */
+    text-align: center; /* Center text */
+    background-color: var(--color-background-muted); /* Muted background */
+    border-radius: 4px; /* Rounded corners */
 }
 
+/* Styles for links within the noItemsMessage */
 .noItemsMessage a {
-    color: var(--color-accent);
-    text-decoration: none;
-    font-weight: 500;
+    color: var(--color-accent); /* Accent color for link */
+    text-decoration: none; /* Remove underline */
+    font-weight: 500; /* Medium font weight */
 }
 
+/* Hover effect for links within noItemsMessage */
 .noItemsMessage a:hover {
-    text-decoration: underline;
+    text-decoration: underline; /* Add underline on hover */
 }
 
 
 /* --- Responsive Adjustments --- */
+/* Styles applied on screens 600px wide or smaller */
 @media (max-width: 600px) {
+    /* Reduce padding on the main container */
     .pageContainer {
         padding: 1rem;
-        /* max-width remains 1400px, but padding adjusted */
     }
 
+    /* Stack image and info vertically */
     .detailsSection {
         flex-direction: column;
-        /* Stack image and info vertically */
-        align-items: center;
         /* Center items when stacked */
-        gap: 1.5rem;
+        align-items: center;
+        gap: 1.5rem; /* Space between stacked items */
     }
 
+    /* Adjust image container size for mobile */
     .imageContainer {
-        flex-basis: auto;
-        /* Reset basis */
-        width: 80%;
-        /* Allow image to be wider */
-        max-width: 300px;
-        /* But not too wide */
+        flex-basis: auto; /* Reset flex basis */
+        width: 80%; /* Allow image to be wider relative to screen */
+        max-width: 300px; /* But limit maximum width */
     }
 
+    /* Adjust info container for mobile */
     .infoContainer {
-        min-width: unset;
-        /* Remove min-width */
-        text-align: center;
-        /* Center text */
+        min-width: unset; /* Remove minimum width */
+        text-align: center; /* Center text */
     }
 
+    /* Reduce title font size */
     .title {
         font-size: 1.8rem;
     }
 
+    /* Reduce connections title font size */
     .connectionsTitle {
         font-size: 1.3rem;
     }
 
-    /* No change needed for connectionsGrid on mobile, as it's already 1 column */
-    .connectionsGrid {
+    /* Adjust gap for connection cards (if using grid, otherwise margin on cards) */
+    /* If using display:block, adjust margin on ConnectionCard component's CSS instead */
+    /* .connectionsGrid {
         gap: 1rem;
-        /* Adjust gap for mobile */
-    }
+    } */
 }

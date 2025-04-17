@@ -1,15 +1,23 @@
 /* client/src/pages/BookDetailPage.module.css (Wider Container) */
 /* Reusing styles from MovieDetailPage, adjusted for Book context */
 
+/* Styles for the main page container */
 .pageContainer {
-    max-width: 1400px;
-    /* <<< Increased Max Width */
+    /* Increased max-width compared to standard pages for a wider layout */
+    max-width: 1400px; 
+    /* Add vertical margin and center horizontally */
     margin: 2rem auto;
+    /* Add inner padding (top/bottom and left/right) */
     padding: 1rem 2rem;
+    /* Set background color */
     background-color: var(--color-background);
+    /* Apply standard rounded corners */
     border-radius: 8px;
+    /* Optional shadow - uncomment if desired */
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
+/* Styles for the error message container (reused from MovieDetailPage) */
 .errorContainer {
     text-align: center;
     padding: 3rem 1rem;
@@ -19,93 +27,119 @@
     border-radius: 8px;
 }
 
+/* Styles for the heading within the error container */
 .errorContainer h2 {
     color: var(--color-error);
     margin-bottom: 1rem;
 }
 
+/* Styles for buttons within the error container */
 .errorContainer .button {
     margin-top: 1.5rem;
 }
 
-/* --- Details Section --- */
+/* --- Details Section (Book Cover + Info) --- */
+/* Styles for the top section containing the book image and details */
 .detailsSection {
+    /* Use flexbox for side-by-side layout of image and info */
     display: flex;
+    /* Allow items to wrap onto the next line on smaller screens */
     flex-wrap: wrap;
+    /* Space between the image container and the info container */
     gap: 2rem;
+    /* Space below the details section, before the divider */
     margin-bottom: 2rem;
 }
 
+/* Styles for the container holding the book cover image */
 .imageContainer {
-    flex: 0 0 200px;
-    /* Adjust size for typical book cover aspect ratio */
+    /* Set a fixed width for the image container, suitable for book covers */
+    flex: 0 0 200px; 
+    /* Ensure it doesn't overflow its parent on very small screens */
     max-width: 100%;
 }
 
-.coverImage {
-    /* Renamed from posterImage */
+/* Styles for the book cover image itself */
+.coverImage { /* Renamed from posterImage */
+    /* Make the image fill its container width */
     width: 100%;
+    /* Maintain aspect ratio */
     height: auto;
+    /* Prevent extra space below the image */
     display: block;
-    border-radius: 4px;
-    /* Slightly less rounded for books? */
+    /* Apply slightly less rounded corners, common for book covers */
+    border-radius: 4px; 
+    /* Ensure the image covers the container area */
     object-fit: cover;
+    /* Add a subtle shadow */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Add a border */
     border: 1px solid var(--color-border-subtle);
+    /* Background color shown if image fails to load */
     background-color: var(--color-background-muted);
 }
 
+/* Styles for the container holding the book's textual information */
 .infoContainer {
+    /* Allow this container to grow and take up remaining space */
     flex: 1;
+    /* Prevent the info section from getting too narrow on medium screens */
     min-width: 280px;
 }
 
+/* Styles for the book title (h1) */
 .title {
-    font-size: 2.0rem;
-    /* Slightly smaller for book titles? */
+    /* Slightly smaller font size compared to movie titles */
+    font-size: 2.0rem; 
     font-weight: 600;
-    margin-bottom: 0.25rem;
-    /* Less space before author */
+    /* Less space below the title, before the author */
+    margin-bottom: 0.25rem; 
     color: var(--color-text-emphasis);
     line-height: 1.2;
 }
 
+/* Styles specifically for the author's name */
 .author {
-    /* Style for the author */
     font-size: 1.1rem;
     font-weight: 500;
     color: var(--color-text-default);
     margin-bottom: 1rem;
 }
 
+/* Styles for the meta information line (Year | Genres) */
 .meta {
-    font-size: 0.9rem;
-    /* Slightly smaller meta */
+    /* Slightly smaller font size */
+    font-size: 0.9rem; 
     color: var(--color-text-muted);
     margin-bottom: 1rem;
-    display: inline;
+    /* Keep year and genre on the same line if possible */
+    display: inline; 
 }
 
+/* Ensure spans within meta behave like inline blocks */
 .meta span {
     display: inline-block;
 }
 
+/* Styles for the separator between meta items */
 .metaSeparator {
     margin: 0 0.4rem;
     color: var(--color-text-muted);
     display: inline-block;
 }
 
-
+/* Styles for general paragraphs within the info container */
 .infoContainer p {
     margin-bottom: 0.75rem;
     line-height: 1.6;
 }
 
+/* Styles for <strong> tags within the info container */
 .infoContainer strong {
     color: var(--color-text-default);
 }
 
+/* Styles for the book synopsis paragraph */
 .synopsis {
     margin-top: 1rem;
     font-size: 0.95rem;
@@ -114,43 +148,51 @@
 
 
 /* --- Divider --- */
+/* Styles for the horizontal rule separating details from connections */
 .divider {
-    border: none;
+    border: none; /* Remove default border */
+    /* Create a custom border line */
     border-top: 1px solid var(--color-border-subtle);
+    /* Add vertical margin */
     margin: 2.5rem 0;
 }
 
 
 /* --- Connections Section --- */
+/* Styles for the section displaying related connections */
 .connectionsSection {
-    margin-top: 2rem;
+    margin-top: 2rem; /* Space above the section title */
 }
 
+/* Styles for the "Connections Featuring This Book" title */
 .connectionsTitle {
     font-size: 1.5rem;
     font-weight: 500;
     margin-bottom: 1.5rem;
     color: var(--color-text-default);
+    /* Add an accent border below the title */
     border-bottom: 2px solid var(--color-accent-subtle);
     padding-bottom: 0.5rem;
-    display: inline-block;
+    /* Make border only underline the text, not the full width */
+    display: inline-block; 
 }
 
-/* --- UPDATED GRID FOR SINGLE COLUMN --- */
+/* --- Grid for Connection Cards --- */
+/* Styles for the grid containing the ConnectionCard components */
 .connectionsGrid {
+    /* Use CSS Grid layout */
     display: grid;
-    grid-template-columns: 1fr;
-    /* Force a single column that fills the container */
-    gap: 1.5rem;
-    /* Vertical gap between cards */
-    /* Optional: Add max-width to cards if needed, but container max-width might suffice */
-    /* justify-items: center; */
-    /* Uncomment to center cards if container is wider */
+    /* Force a single column layout that fills the container width */
+    grid-template-columns: 1fr; 
+    /* Set the vertical gap between connection cards */
+    gap: 1.5rem; 
+    /* Optional: Center cards horizontally if the container is wider than the cards */
+    /* justify-items: center; */ 
 }
+/* --- END Grid --- */
 
-/* --- END UPDATED GRID --- */
 
-
+/* Styles for the message shown when no connections are found */
 .noItemsMessage {
     font-style: italic;
     color: var(--color-text-muted);
@@ -160,58 +202,65 @@
     border-radius: 4px;
 }
 
+/* Styles for links within the noItemsMessage */
 .noItemsMessage a {
     color: var(--color-accent);
     text-decoration: none;
     font-weight: 500;
 }
 
+/* Hover effect for links within noItemsMessage */
 .noItemsMessage a:hover {
     text-decoration: underline;
 }
 
 
 /* --- Responsive Adjustments --- */
+/* Styles applied on screens 600px wide or smaller */
 @media (max-width: 600px) {
+    /* Reduce padding on the main container */
     .pageContainer {
         padding: 1rem;
-        /* max-width remains 1400px, but padding adjusted */
     }
 
+    /* Stack image and info vertically */
     .detailsSection {
         flex-direction: column;
+        /* Center items when stacked */
         align-items: center;
         gap: 1.5rem;
     }
 
+    /* Adjust image container size for mobile */
     .imageContainer {
-        flex-basis: auto;
-        width: 60%;
-        /* Adjust cover width on mobile */
-        max-width: 200px;
-        /* Max width */
+        flex-basis: auto; /* Reset flex basis */
+        width: 60%; /* Allow cover to be wider relative to screen */
+        max-width: 200px; /* But limit maximum width */
     }
 
+    /* Adjust info container for mobile */
     .infoContainer {
-        min-width: unset;
-        text-align: center;
+        min-width: unset; /* Remove minimum width */
+        text-align: center; /* Center text */
     }
 
+    /* Reduce title font size */
     .title {
         font-size: 1.7rem;
     }
 
+    /* Reduce author font size */
     .author {
         font-size: 1.0rem;
     }
 
+    /* Reduce connections title font size */
     .connectionsTitle {
         font-size: 1.3rem;
     }
 
-    /* No change needed for connectionsGrid on mobile, as it's already 1 column */
+    /* Adjust gap between connection cards on mobile */
     .connectionsGrid {
-        gap: 1rem;
-        /* Adjust gap for mobile */
+        gap: 1rem; 
     }
 }

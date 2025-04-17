@@ -1,4 +1,14 @@
-body {
+/* client/src/index.css */
+
+/*
+ * This file previously contained default Create React App styles
+ * for the body and code elements.
+ * These styles are overridden by more specific rules in global.css.
+ * The content can be removed, but was kept previously due to a rendering issue.
+ * Verify if removal still causes problems before deleting permanently.
+ */
+
+ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

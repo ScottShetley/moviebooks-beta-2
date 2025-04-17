@@ -1,121 +1,144 @@
 /* client/src/pages/EditProfilePage.module.css */
 
+/* Styles for the main container of the Edit Profile page */
 .pageContainer {
+    /* Limit the maximum width of the form area */
     max-width: 700px;
+    /* Add vertical margin and center horizontally */
     margin: 2rem auto;
+    /* Add inner padding */
     padding: 2rem;
+    /* Set background color */
     background-color: var(--color-background-alt);
+    /* Apply rounded corners */
     border-radius: var(--border-radius-medium);
+    /* Add a medium shadow */
     box-shadow: var(--shadow-medium);
 }
 
+/* Styles for the main page heading (h1) */
 .pageContainer h1 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    color: var(--color-text-primary);
+    margin-top: 0; /* Remove default top margin */
+    margin-bottom: 1.5rem; /* Space below heading */
+    text-align: center; /* Center the heading */
+    color: var(--color-text-primary); /* Set text color */
 }
 
+/* Styles for the form element itself */
 .profileForm {
+    /* Use flexbox to arrange form groups vertically */
     display: flex;
     flex-direction: column;
+    /* Set the space between form groups */
     gap: 1.25rem;
-    /* Space between form groups */
 }
 
+/* Styles for each group containing a label and input/textarea */
 .formGroup {
+    /* Use flexbox to arrange label and input vertically */
     display: flex;
     flex-direction: column;
 }
 
+/* Styles for the label within a form group */
 .formGroup label {
+    /* Space below the label, before the input */
     margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
+    font-weight: 600; /* Bold label text */
+    color: var(--color-text-secondary); /* Use secondary text color */
 }
 
+/* Base styles for text inputs and textareas */
 .formGroup input[type="text"],
 .formGroup textarea {
+    /* Inner padding */
     padding: 0.8rem 1rem;
+    /* Standard border */
     border: 1px solid var(--color-border);
+    /* Rounded corners */
     border-radius: var(--border-radius-small);
+    /* Background color */
     background-color: var(--color-background);
+    /* Text color */
     color: var(--color-text-primary);
+    /* Font size */
     font-size: 1rem;
-    transition: border-color 0.2s ease;
+    /* Smooth transition for border color changes */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Styles for text inputs and textareas when focused */
 .formGroup input[type="text"]:focus,
 .formGroup textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
+    outline: none; /* Remove default browser outline */
+    border-color: var(--color-primary); /* Change border color */
+    /* Add a subtle focus glow */
     box-shadow: 0 0 0 2px var(--color-primary-lightest);
 }
 
+/* Styles specific to textareas */
 .formGroup textarea {
-    resize: vertical;
-    /* Allow vertical resize */
-    min-height: 80px;
+    resize: vertical; /* Allow vertical resizing only */
+    min-height: 80px; /* Set a minimum height */
+    font-family: inherit; /* Ensure consistent font */
 }
 
+/* Styles for the container holding the form action buttons */
 .formActions {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: flex-end;
-    /* Align buttons to the right */
-    gap: 1rem;
+    margin-top: 1.5rem; /* Space above the buttons */
+    display: flex; /* Use flexbox for layout */
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 1rem; /* Space between buttons */
 }
 
+/* Base styles shared by submit and cancel buttons */
 .submitButton,
 .cancelButton {
+    /* Inner padding */
     padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius-small);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
+    border: none; /* Remove default border */
+    border-radius: var(--border-radius-small); /* Rounded corners */
+    font-size: 1rem; /* Font size */
+    font-weight: 600; /* Bold text */
+    cursor: pointer; /* Pointer cursor */
+    /* Smooth transitions */
     transition: background-color 0.2s ease, opacity 0.2s ease;
-    min-width: 100px;
-    /* Ensure buttons have some width */
-    text-align: center;
+    min-width: 100px; /* Ensure buttons have a minimum width */
+    text-align: center; /* Center text */
 }
 
+/* Styles specific to the submit button */
 .submitButton {
-    background-color: var(--color-primary);
-    color: var(--color-button-text-primary);
+    background-color: var(--color-primary); /* Primary background */
+    color: var(--color-button-text-primary); /* Text color for primary button */
 }
 
+/* Hover effect for the submit button (when not disabled) */
 .submitButton:hover:not(:disabled) {
-    background-color: var(--color-primary-dark);
+    background-color: var(--color-primary-dark); /* Darken background */
 }
 
+/* Styles for the submit button when disabled */
 .submitButton:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+    opacity: 0.7; /* Reduce opacity */
+    cursor: not-allowed; /* Indicate non-interactive state */
 }
 
+/* Styles specific to the cancel button */
 .cancelButton {
-    background-color: var(--color-background-muted);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border-light);
+    background-color: var(--color-background-muted); /* Muted background */
+    color: var(--color-text-secondary); /* Secondary text color */
+    border: 1px solid var(--color-border-light); /* Light border */
 }
 
+/* Hover effect for the cancel button */
 .cancelButton:hover {
-    background-color: var(--color-background-hover);
+    background-color: var(--color-background-hover); /* Subtle hover background */
 }
 
-/* Optional Avatar Preview Style */
-.avatarPreview {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-top: 0.75rem;
-    border: 2px solid var(--color-border-light);
-}
-
+/* Styles for the "Retry" button (used on error) */
 .retryButton {
-    /* Style similarly to cancelButton or create unique style */
+    /* Style similarly to cancelButton */
     margin-top: 1rem;
     background-color: var(--color-background-muted);
     color: var(--color-text-secondary);
@@ -128,34 +151,38 @@
     transition: background-color 0.2s ease;
 }
 
+/* Hover effect for the retry button */
 .retryButton:hover {
     background-color: var(--color-background-hover);
 }
-/* Add these styles to client/src/pages/EditProfilePage.module.css */
 
-/* --- NEW Styles for Avatar Upload --- */
+/* --- Styles for Avatar Upload Section --- */
+/* Container for the avatar preview and "Change Picture" button */
 .avatarUploadContainer {
-    display: flex;
+    display: flex; /* Use flexbox for layout */
     align-items: center; /* Vertically align image and button */
     gap: 1rem; /* Space between image and button */
     margin-top: 0.5rem; /* Space below the label */
 }
 
+/* Styles for the large avatar preview image */
 .avatarPreviewLarge {
-    width: 100px; /* Larger preview on edit page */
+    width: 100px; /* Set preview size */
     height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--color-border-light);
+    border-radius: 50%; /* Make it circular */
+    object-fit: cover; /* Ensure image covers the area */
+    border: 3px solid var(--color-border-light); /* Add a border */
     cursor: pointer; /* Indicate it's clickable */
-    transition: filter 0.2s ease;
-    background-color: var(--color-background); /* Ensure background */
+    transition: filter 0.2s ease; /* Smooth transition for hover effect */
+    background-color: var(--color-background); /* Background if image is transparent */
 }
 
+/* Hover effect for the avatar preview */
 .avatarPreviewLarge:hover {
-    filter: brightness(0.9); /* Slight dim effect on hover */
+    filter: brightness(0.9); /* Slightly dim the image on hover */
 }
 
+/* Styles for the "Change Picture" button */
 .changePictureButton {
     padding: 0.6rem 1rem;
     background-color: var(--color-background-muted);
@@ -168,36 +195,22 @@
     transition: background-color 0.2s ease;
 }
 
+/* Hover effect for the "Change Picture" button (when not disabled) */
 .changePictureButton:hover:not(:disabled) {
     background-color: var(--color-background-hover);
 }
 
+/* Styles for the "Change Picture" button when disabled */
 .changePictureButton:disabled {
     opacity: 0.7;
     cursor: not-allowed;
 }
 
+/* Styles for the hint text below the avatar upload area */
 .fieldHint {
-    font-size: 0.85rem;
-    color: var(--color-text-tertiary);
-    margin-top: 0.5rem;
+    font-size: 0.85rem; /* Small font size */
+    color: var(--color-text-tertiary); /* Use tertiary text color */
+    margin-top: 0.5rem; /* Space above the hint */
     display: block; /* Ensure it takes its own line */
 }
-
-/* --- END NEW Avatar Styles --- */
-
-
-/* --- Existing Styles Below --- */
-/* Keep .pageContainer, .profileForm, .formGroup, label, input, textarea, */
-/* .formActions, .submitButton, .cancelButton, .retryButton etc. */
-
-.pageContainer {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: var(--color-background-alt);
-  border-radius: var(--border-radius-medium);
-  box-shadow: var(--shadow-medium);
-}
-
-/* ... rest of your existing styles ... */
+/* --- END Avatar Styles --- */

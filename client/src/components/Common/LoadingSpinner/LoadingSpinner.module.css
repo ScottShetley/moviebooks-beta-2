@@ -1,62 +1,67 @@
 /* client/src/components/Common/LoadingSpinner/LoadingSpinner.module.css */
+
+/* Base styles for the spinner element */
 .spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  /* Light grey border */
-  border-left-color: var(--color-primary);
-  /* Spinner color using primary */
+  /* The border creates the circle. 
+     The main border is a very light, almost transparent grey. */
+  border: 4px solid rgba(0, 0, 0, 0.1); 
+  /* One segment of the border (the left side) is colored, creating the spinning effect. 
+     It uses the primary color variable by default. */
+  border-left-color: var(--color-primary); 
+  /* Makes the element a perfect circle */
   border-radius: 50%;
-  width: 36px;
-  /* Size of the spinner */
+  /* Default size of the spinner */
+  width: 36px; 
   height: 36px;
-  animation: spin 1s linear infinite;
-  /* Animation properties */
-  margin: var(--space-md) auto;
-  /* Center horizontally if needed */
+  /* Apply the 'spin' animation defined below */
+  animation: spin 1s linear infinite; 
+  /* Default margin: adds space above/below and centers horizontally 
+     (useful if the spinner is the only element in a block container) */
+  margin: var(--space-md) auto; 
 }
 
+/* Defines the rotation animation */
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
+  /* Start rotation at 0 degrees */
+  0% { 
+    transform: rotate(0deg); 
   }
-
-  100% {
-    transform: rotate(360deg);
+  /* End rotation at 360 degrees (one full circle) */
+  100% { 
+    transform: rotate(360deg); 
   }
 }
 
-/* Optional: Small variant */
+/* Modifier class for a smaller spinner variant */
 .small {
   width: 20px;
   height: 20px;
-  border-width: 3px;
+  /* Use a slightly thinner border for the smaller size */
+  border-width: 3px; 
 }
 
-/* Optional: Inline variant */
+/* Modifier class for displaying the spinner inline with other content */
 .inline {
-  display: inline-block;
-  margin: 0 var(--space-xs);
-  vertical-align: middle;
-  /* Align with text */
-}
+  /* Change display from default (block) to inline-block */
+  display: inline-block; 
+  /* Remove vertical margin, add small horizontal margin */
+  margin: 0 var(--space-xs); 
+  /* Align the spinner vertically with the middle of surrounding text/elements */
+  vertical-align: middle; 
 
-/* client/src/components/Common/LoadingSpinner/LoadingSpinner.module.css */
-
-/* ... existing .spinner, @keyframes, .small styles ... */
-
-.inline {
-  display: inline-block;
-  margin: 0 var(--space-xs);
-  vertical-align: middle;
-  /* Align with text */
-}
-
-/* --- ADD THIS RULE --- */
-/* Override color for inline spinners (e.g., inside buttons) */
-.inline {
-  border-left-color: var(--color-text-on-primary, white);
-  /* Use text-on-primary or fallback to white */
-  /* Optional: Make the transparent part slightly darker/lighter for better contrast */
+  /* --- Color Override for Inline Spinners --- */
+  /* This assumes inline spinners are often used inside buttons or contexts 
+     where the primary color might not contrast well. */
+  /* Sets the colored segment to the text color used on primary backgrounds (e.g., white) */
+  border-left-color: var(--color-text-on-primary, white); 
+  /* Optional: Make the transparent parts slightly visible for better contrast 
+     against potentially dark backgrounds (like a primary button). 
+     Uses semi-transparent white. Adjust alpha (0.2) as needed. */
   border-top-color: rgba(255, 255, 255, 0.2);
   border-right-color: rgba(255, 255, 255, 0.2);
   border-bottom-color: rgba(255, 255, 255, 0.2);
+  /* Note: If using inline spinners in contexts other than on primary backgrounds, 
+     this color override might need adjustment or removal, potentially relying 
+     on parent element styles or using 'currentColor'. */
 }
+

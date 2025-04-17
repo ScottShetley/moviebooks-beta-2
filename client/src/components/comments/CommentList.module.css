@@ -1,28 +1,38 @@
 /* client/src/components/Comment/CommentList.module.css */
 
+/* Styles for the container holding the entire comment section (title and list) */
 .commentListContainer {
-    margin-top: var(--spacing-m); /* Space above the comment section */
-    padding-top: var(--spacing-m); /* Padding inside the container */
-    border-top: 1px solid var(--color-border-neutral); /* Separator line from card content */
+    /* Adds space above the comment section, separating it from content above (like the AddCommentForm or card actions) */
+    margin-top: var(--spacing-m); 
+    /* Adds padding inside the top border, creating space before the title */
+    padding-top: var(--spacing-m); 
+    /* A subtle line to visually separate the comment section from the content above */
+    border-top: 1px solid var(--color-border-neutral); 
 }
 
+/* Styles for the "Comments" title (usually an <h4>) */
 .listTitle {
-    font-size: var(--font-size-m);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-s);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-m); /* Set the font size for the title */
+    color: var(--color-text-primary); /* Use the primary text color */
+    /* Space below the title, before the list starts or the 'no comments' message */
+    margin-bottom: var(--spacing-s); 
+    font-weight: var(--font-weight-semibold); /* Make the title semi-bold */
 }
 
+/* Styles applied to the <ul> element that holds the CommentItem components */
 .commentList {
-    padding: 0; /* Remove default ul padding */
-    margin: 0; /* Remove default ul margin */
-    list-style: none; /* Ensure no list bullets */
+    padding: 0; /* Remove default browser padding (usually on the left) for <ul> */
+    margin: 0; /* Remove default browser margin for <ul> */
+    list-style: none; /* Ensure no list bullets (like •) are displayed */
 }
 
+/* Styles for the message shown when there are no comments */
 .noCommentsMessage {
-    font-size: var(--font-size-s);
-    color: var(--color-text-secondary);
-    font-style: italic;
-    text-align: center; /* Center the message */
-    padding: var(--spacing-m) 0; /* Add some padding */
+    font-size: var(--font-size-s); /* Use a standard small font size */
+    color: var(--color-text-secondary); /* Use a lighter text color for less emphasis */
+    font-style: italic; /* Italicize the text for visual distinction */
+    text-align: center; /* Center the message within its container */
+    /* Add vertical padding (top/bottom) to give the message some space */
+    padding: var(--spacing-m) 0; 
 }
+

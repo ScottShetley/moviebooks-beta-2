@@ -1,22 +1,36 @@
 /* client/src/components/Common/Tag/Tag.module.css */
 
+/* Base styles for the tag element (usually a <span>) */
 .tag {
-    display: inline-block; /* Allows padding and margins */
-    padding: var(--space-xxs) var(--space-sm); /* Small padding */
-    background-color: var(--color-grey-light); /* Default background */
-    color: var(--color-text-secondary); /* Default text color */
-    border-radius: var(--border-radius-lg); /* Pill shape */
-    font-size: var(--font-size-xs); /* Small font */
+    /* Use inline-block so the tag flows with text but allows setting padding, margins, and width/height */
+    display: inline-block; 
+    /* Add small vertical (top/bottom) and slightly larger horizontal (left/right) padding */
+    padding: var(--space-xxs) var(--space-sm); 
+    /* Set the default background color */
+    background-color: var(--color-grey-light); 
+    /* Set the default text color */
+    color: var(--color-text-secondary); 
+    /* Use a large border-radius to create a pill shape */
+    border-radius: var(--border-radius-lg); 
+    /* Use a small font size for the tag text */
+    font-size: var(--font-size-xs); 
+    /* Set the font weight */
     font-weight: var(--font-weight-medium);
+    /* Adjust line height for the small font size */
     line-height: 1.4;
-    text-decoration: none; /* Ensure no underline if wrapped in a link */
+    /* Ensure no underline appears, especially if the tag is wrapped in a link */
+    text-decoration: none; 
+    /* Add smooth transitions for color changes on hover (if hover styles are added) */
     transition: background-color 0.2s ease, color 0.2s ease;
-    cursor: default; /* Default cursor, override if wrapped in button/link */
-    white-space: nowrap; /* Prevent tag text wrapping */
+    /* Set the default cursor (usually an arrow). This should be overridden by a parent Link/Button if the tag is interactive. */
+    cursor: default; 
+    /* Prevent the tag text itself from wrapping onto multiple lines */
+    white-space: nowrap; 
   }
   
   /* Add a hover effect if needed, typically applied to the parent Link/Button */
-  /* Example:
+  /* Example: This CSS rule would style the .tag when its parent <a> or <button> is hovered */
+  /*
   a:hover .tag,
   button:hover .tag {
       background-color: var(--color-primary-light);

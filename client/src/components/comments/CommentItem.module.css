@@ -1,15 +1,17 @@
 /* client/src/components/Comment/CommentItem.module.css */
 
+/* Styles for each individual comment list item */
 .commentItem {
-    list-style-type: none; /* Remove default list bullet */
-    padding: var(--spacing-s) 0; /* Padding top/bottom */
-    border-bottom: 1px solid var(--color-border-subtle); /* Separator line */
+    list-style-type: none; /* Ensure no default list bullets (e.g., •) are shown */
+    padding: var(--spacing-s) 0; /* Add vertical padding (top/bottom), no horizontal padding */
+    border-bottom: 1px solid var(--color-border-subtle); /* A subtle line separating comments */
     /* Optional: Add a subtle background on hover */
     /* transition: background-color 0.2s ease; */
 }
 
+/* Target the very last comment item in a list */
 .commentItem:last-child {
-    border-bottom: none; /* No border for the last item */
+    border-bottom: none; /* Remove the separator line for the final comment */
 }
 
 /* Removed hover effect for simplicity, can be added back if desired */
@@ -17,36 +19,49 @@
     background-color: var(--color-background-hover-subtle);
 } */
 
+/* Styles for the header section of the comment (contains username and timestamp) */
 .commentHeader {
-    display: flex;
-    justify-content: space-between; /* Push username and timestamp apart */
-    align-items: baseline; /* Align text baselines */
+    display: flex; /* Use flexbox for layout */
+    /* Push username (start) and timestamp (end) to opposite sides */
+    justify-content: space-between; 
+    /* Align the text baselines of username and timestamp, looks better if font sizes differ */
+    align-items: baseline; 
+    /* Space below the header, before the comment text */
     margin-bottom: var(--spacing-xs);
-    flex-wrap: wrap; /* Allow wrapping on small screens */
-    gap: var(--spacing-s); /* Gap between username and timestamp if they wrap */
+    /* Allow items to wrap onto the next line if the container is too narrow */
+    flex-wrap: wrap; 
+    /* Add space between username and timestamp if they wrap to the next line */
+    gap: var(--spacing-s); 
 }
 
+/* Styles for the username link */
 .username {
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-link); /* Use link color */
-    text-decoration: none;
-    font-size: var(--font-size-s); /* Slightly smaller font */
+    font-weight: var(--font-weight-bold); /* Make username bold */
+    color: var(--color-text-link); /* Use the standard link color */
+    text-decoration: none; /* Remove default underline from the link */
+    font-size: var(--font-size-s); /* Use a slightly smaller font size */
 }
 
+/* Add underline when hovering over the username link */
 .username:hover {
     text-decoration: underline;
 }
 
+/* Styles for the comment timestamp */
 .timestamp {
-    font-size: var(--font-size-xs); /* Even smaller for timestamp */
-    color: var(--color-text-secondary);
-    white-space: nowrap; /* Prevent timestamp from breaking line */
+    font-size: var(--font-size-xs); /* Use an even smaller font size for the timestamp */
+    color: var(--color-text-secondary); /* Use a lighter text color */
+    /* Prevent the timestamp text itself from breaking onto multiple lines */
+    white-space: nowrap; 
 }
 
+/* Styles for the main comment text paragraph */
 .commentText {
-    font-size: var(--font-size-s); /* Match username size or keep default */
-    color: var(--color-text-primary);
-    margin: 0; /* Reset paragraph margin */
-    word-wrap: break-word; /* Prevent long words from overflowing */
-    white-space: pre-wrap; /* Respect line breaks and whitespace in comment */
+    font-size: var(--font-size-s); /* Match username size or use application default */
+    color: var(--color-text-primary); /* Standard text color */
+    margin: 0; /* Remove default margins from the <p> tag */
+    /* Allow long words (like URLs) to break and wrap onto the next line */
+    word-wrap: break-word; 
+    /* Preserve line breaks and sequences of spaces entered by the user in the comment */
+    white-space: pre-wrap; 
 }

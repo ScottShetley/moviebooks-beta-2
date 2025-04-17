@@ -1,38 +1,68 @@
 /* client/src/pages/HelpPage/HelpPage.module.css */
+
+/* Styles for the main container of the Help page content */
 .helpContainer {
+    /* Limit the maximum width for readability */
     max-width: 800px;
+    /* Center the container horizontally with vertical margins */
     margin: 40px auto;
+    /* Add inner spacing */
     padding: 20px 40px;
+    /* Set background color */
     background-color: var(--color-background-primary);
+    /* Apply large rounded corners */
     border-radius: var(--border-radius-large);
+    /* Add a subtle border */
     border: 1px solid var(--color-border-subtle);
+    /* Set default text color */
     color: var(--color-text-primary);
 }
 
+/* Styles for the main page heading (<h1>) */
 .helpContainer h1 {
+    /* Use accent color for the main title */
     color: var(--color-accent);
+    /* Add space below the heading */
     margin-bottom: 25px;
+    /* Center the heading text */
     text-align: center;
 }
 
+/* Styles for each <section> element grouping Q&A */
 .helpContainer section {
+    /* Add space below each section to separate topics */
     margin-bottom: 30px;
 }
 
+/* Styles for the section headings (<h2>) */
 .helpContainer h2 {
+    /* Use primary text color for section titles */
     color: var(--color-text-primary);
+    /* Add a subtle line below the heading */
     border-bottom: 1px solid var(--color-border-subtle);
+    /* Add padding below the text, before the border */
     padding-bottom: 5px;
+    /* Add space below the heading (and its border), before the paragraphs */
     margin-bottom: 15px;
+    /* Set the font size for section headings */
     font-size: var(--font-size-large);
 }
 
+/* Styles for paragraph (<p>) elements within the container */
 .helpContainer p {
+    /* Add space below each paragraph */
     margin-bottom: 10px;
+    /* Set line height for readability */
     line-height: 1.6;
+    /* Set font size for paragraph text */
     font-size: var(--font-size-medium);
 }
 
+/* Styles for <strong> elements (used for the questions) */
 .helpContainer strong {
-    color: var(--color-text-primary); /* Make questions stand out slightly */
+    /* Use primary text color to make questions stand out slightly more than regular text */
+    /* Note: This might not be necessary if the default color is already --color-text-primary */
+    color: var(--color-text-primary); 
+    /* Ensure strong tags are bold (usually default, but explicit here) */
+    font-weight: var(--font-weight-bold); 
 }

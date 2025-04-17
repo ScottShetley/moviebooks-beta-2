@@ -1,268 +1,202 @@
 /* client/src/pages/ProfilePage.module.css */
-.profilePage {
-    padding: 1rem;
-    max-width: 900px;
-    margin: 1rem auto;
-    background-color: var(--color-background-alt);
-    border-radius: var(--border-radius-medium);
-    box-shadow: var(--shadow-medium);
-  }
-  
-  .viewToggleContainer {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border-light);
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-  }
-  
-  .toggleButton {
-    padding: 0.6rem 1.2rem;
-    border: 1px solid var(--color-primary-dark); /* Keep original border */
-    background-color: var(--color-background);
-    color: var(--color-primary-dark); /* Keep original text color */
-    border-radius: var(--border-radius-small);
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600; /* Base weight */
-    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, font-weight 0.2s ease; /* Added font-weight */
-    box-shadow: var(--shadow-small);
-    display: flex; /* Align icon and text */
-    align-items: center;
-    gap: 0.5rem; /* Space between text and spinner */
-  }
-  
-  .toggleButton:hover {
-    background-color: var(--color-primary-lightest); /* Keep existing subtle hover */
-    box-shadow: var(--shadow-medium);
-  }
-  
-  /* --- MODIFIED RULE TO MATCH SIDEBAR ACTIVE NAVLINK --- */
-  .toggleButton.active {
-    /* Use variables from .navLink.active in Sidebar.module.css */
-    background-color: var(--color-accent-hover);    /* Use Accent Hover background */
-    color: var(--color-button-text-primary);      /* Use Button Text Primary color */
-    border-color: var(--color-accent-hover);        /* Match border to background */
-    font-weight: 500;                             /* Use same font-weight as active navLink */
-    box-shadow: none;
-    cursor: default; /* Indicate it's the active state */
-  }
-  /* --- END MODIFIED RULE --- */
-  
-  
-  .toggleButton:disabled:not(.active) {
-      cursor: not-allowed;
-      opacity: 0.6;
-      background-color: var(--color-background-disabled);
-  }
-  
-  .sectionTitle {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    color: var(--color-text-primary);
-    font-size: 1.4rem;
-  }
-  
-  .loadingSection {
-      margin-top: 2rem;
-      text-align: center;
-      color: var(--color-text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      min-height: 100px; /* Give it some space */
-  }
-  
-  .emptyMessage {
-      margin-top: 1rem;
-      padding: 1rem;
-      background-color: var(--color-background);
-      border: 1px dashed var(--color-border-light);
-      border-radius: var(--border-radius-small);
-      color: var(--color-text-secondary);
-      text-align: center;
-  }
-  /* client/src/pages/ProfilePage.module.css */
 
-/* --- NEW: Profile Header Styles --- */
+/* Styles for the main container of the profile page */
+.profilePage {
+  padding: 1rem; /* Inner padding */
+  max-width: 900px; /* Limit content width */
+  margin: 1rem auto; /* Center horizontally with vertical margin */
+  background-color: var(--color-background-alt); /* Alternate background color */
+  border-radius: var(--border-radius-medium); /* Rounded corners */
+  box-shadow: var(--shadow-medium); /* Add shadow */
+}
+
+/* --- Profile Header Styles --- */
+/* Container for the avatar and user info */
 .profileHeader {
-  display: flex;
-  align-items: flex-start; /* Align items to the top */
-  gap: 1.5rem; /* Space between avatar and info */
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--color-border-light);
+display: flex; /* Use flexbox for side-by-side layout */
+align-items: flex-start; /* Align items to the top */
+gap: 1.5rem; /* Space between avatar and info */
+margin-bottom: 2rem; /* Space below the header */
+padding-bottom: 1.5rem; /* Space before the bottom border */
+border-bottom: 1px solid var(--color-border-light); /* Separator line */
 }
 
+/* Styles for the user's avatar image */
 .profileAvatar {
-  width: 100px; /* Adjust size as needed */
-  height: 100px;
-  border-radius: 50%; /* Make it circular */
-  object-fit: cover; /* Ensure image covers the area well */
-  border: 3px solid var(--color-background-body); /* Optional: small border */
-  box-shadow: var(--shadow-medium);
-  background-color: var(--color-background); /* Background for transparency */
+width: 100px; /* Set avatar size */
+height: 100px;
+border-radius: 50%; /* Make it circular */
+object-fit: cover; /* Ensure image covers the area */
+border: 3px solid var(--color-background-body); /* Optional border */
+box-shadow: var(--shadow-medium); /* Add shadow */
+background-color: var(--color-background); /* Background if image is transparent */
 }
 
+/* Container for the textual profile information */
 .profileInfo {
-  flex-grow: 1; /* Allow info section to take remaining space */
+flex-grow: 1; /* Allow info section to take remaining space */
 }
 
+/* Styles for the main profile name (Display Name or Username) */
 .profileName {
-  margin-top: 0;
-  margin-bottom: 0.25rem;
-  font-size: 1.8rem; /* Larger name */
-  color: var(--color-text-primary);
+margin-top: 0; /* Remove default top margin */
+margin-bottom: 0.25rem; /* Space below name */
+font-size: 1.8rem; /* Larger font size */
+color: var(--color-text-primary); /* Primary text color */
 }
 
+/* Styles for the username (@username) */
 .profileUsername {
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
-  color: var(--color-text-secondary);
+margin-top: 0; /* Remove default top margin */
+margin-bottom: 0.75rem; /* Space below username */
+font-size: 1rem; /* Standard font size */
+color: var(--color-text-secondary); /* Secondary text color */
 }
 
+/* Styles for the user's bio */
 .profileBio {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-  color: var(--color-text-primary);
-  white-space: pre-wrap; /* Respect line breaks in bio */
+margin-top: 0; /* Remove default top margin */
+margin-bottom: 0.5rem; /* Space below bio */
+font-size: 0.95rem; /* Slightly smaller font size */
+color: var(--color-text-primary); /* Primary text color */
+white-space: pre-wrap; /* Respect line breaks entered in the bio */
 }
 
+/* Styles for the user's location */
 .profileLocation {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
+margin-top: 0; /* Remove default top margin */
+margin-bottom: 0.5rem; /* Space below location */
+font-size: 0.9rem; /* Small font size */
+color: var(--color-text-secondary); /* Secondary text color */
 }
 
+/* Styles for the "Joined" date */
 .profileJoined {
-  margin-top: 0;
-  margin-bottom: 1rem; /* Space before edit button or toggles */
-  font-size: 0.85rem;
-  color: var(--color-text-tertiary);
+margin-top: 0; /* Remove default top margin */
+margin-bottom: 1rem; /* Space before edit button or toggles */
+font-size: 0.85rem; /* Very small font size */
+color: var(--color-text-tertiary); /* Tertiary text color */
 }
 
-/* Placeholder style for edit button - will be used later */
+/* Styles for the "Edit Profile" button/link */
 .editProfileButton {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-  background-color: transparent;
-  border-radius: var(--border-radius-small);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
+display: inline-block; /* Allow padding and margins */
+padding: 0.5rem 1rem; /* Inner padding */
+border: 1px solid var(--color-primary); /* Primary color border */
+color: var(--color-primary); /* Primary color text */
+background-color: transparent; /* Transparent background */
+border-radius: var(--border-radius-small); /* Rounded corners */
+text-decoration: none; /* Remove underline from link */
+font-size: 0.9rem; /* Small font size */
+transition: all 0.2s ease; /* Smooth transition for hover effects */
 }
+/* Hover effect for the "Edit Profile" button */
 .editProfileButton:hover {
-  background-color: var(--color-primary-lightest);
-  border-color: var(--color-primary-dark);
-  color: var(--color-primary-dark);
+background-color: var(--color-primary-lightest); /* Very light primary background */
+border-color: var(--color-primary-dark); /* Darker border */
+color: var(--color-primary-dark); /* Darker text */
 }
-/* --- END NEW Profile Header Styles --- */
+/* --- END Profile Header Styles --- */
 
 
-/* Existing styles below... */
-
-.profilePage {
-    padding: 1rem;
-    max-width: 900px;
-    margin: 1rem auto;
-    background-color: var(--color-background-alt);
-    border-radius: var(--border-radius-medium);
-    box-shadow: var(--shadow-medium);
-}
-
-/* --- NEW: Connections Section Wrapper --- */
-.connectionsSection {
-    margin-top: 1.5rem;
-}
-
-/* --- NEW: Optional Grid for Connection Cards --- */
-.connectionsGrid {
-    display: grid;
-    /* grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Example: Responsive columns */
-    gap: 1rem; /* Space between cards */
-    /* If not using grid, ConnectionCards will stack vertically by default */
-}
-
-
+/* --- View Toggle Styles --- */
+/* Container for the "My Creations" / "My Favorites" buttons */
 .viewToggleContainer {
-  margin-bottom: 1.5rem;
-  /* padding-bottom: 1rem; */ /* Removed bottom padding, header has border now */
-  /* border-bottom: 1px solid var(--color-border-light); */ /* Removed bottom border */
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+margin-bottom: 1.5rem; /* Space below the toggle buttons */
+display: flex; /* Use flexbox for layout */
+gap: 0.5rem; /* Space between buttons */
+flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
 }
 
-/* Styles for toggleButton, active, disabled, sectionTitle, loadingSection, emptyMessage remain the same */
-/* ... (keep the rest of your existing styles) ... */
-
+/* Base styles for the toggle buttons */
 .toggleButton {
-    padding: 0.6rem 1.2rem;
-    border: 1px solid var(--color-primary-dark);
-    background-color: var(--color-background);
-    color: var(--color-primary-dark);
-    border-radius: var(--border-radius-small);
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, font-weight 0.2s ease;
-    box-shadow: var(--shadow-small);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+padding: 0.6rem 1.2rem; /* Inner padding */
+border: 1px solid var(--color-primary-dark); /* Default border */
+background-color: var(--color-background); /* Default background */
+color: var(--color-primary-dark); /* Default text color */
+border-radius: var(--border-radius-small); /* Rounded corners */
+cursor: pointer; /* Pointer cursor */
+font-size: 0.9rem; /* Font size */
+font-weight: 600; /* Bold text */
+/* Smooth transitions for various properties */
+transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, font-weight 0.2s ease;
+box-shadow: var(--shadow-small); /* Add small shadow */
+display: flex; /* Align icon (spinner) and text */
+align-items: center;
+gap: 0.5rem; /* Space between text and spinner */
+}
 
-  .toggleButton:hover {
-    background-color: var(--color-primary-lightest);
-    box-shadow: var(--shadow-medium);
-  }
+/* Hover effect for inactive toggle buttons */
+.toggleButton:hover {
+background-color: var(--color-primary-lightest); /* Subtle background change */
+box-shadow: var(--shadow-medium); /* Increase shadow slightly */
+}
 
-  .toggleButton.active {
-    background-color: var(--color-accent-hover);
-    color: var(--color-button-text-primary);
-    border-color: var(--color-accent-hover);
-    font-weight: 500;
-    box-shadow: none;
-    cursor: default;
-  }
+/* Styles for the currently active toggle button */
+.toggleButton.active {
+/* Use variables matching the active sidebar nav link for consistency */
+background-color: var(--color-accent-hover);    /* Accent background */
+color: var(--color-button-text-primary);      /* Text color for contrast */
+border-color: var(--color-accent-hover);        /* Match border to background */
+font-weight: 500;                             /* Standard weight for active state */
+box-shadow: none; /* Remove shadow for active state */
+cursor: default; /* Indicate it's the active state */
+}
 
-  .toggleButton:disabled:not(.active) {
-      cursor: not-allowed;
-      opacity: 0.6;
-      background-color: var(--color-background-disabled);
-  }
+/* Styles for disabled toggle buttons (that are not the active one) */
+.toggleButton:disabled:not(.active) {
+  cursor: not-allowed; /* Indicate non-interactive */
+  opacity: 0.6; /* Reduce opacity */
+  background-color: var(--color-background-disabled); /* Disabled background color */
+}
+/* --- END View Toggle Styles --- */
 
-  .sectionTitle {
-    margin-top: 1rem; /* Reset top margin slightly */
-    margin-bottom: 1rem;
-    color: var(--color-text-primary);
-    font-size: 1.4rem;
-  }
 
-  .loadingSection {
-      margin-top: 2rem;
-      text-align: center;
-      color: var(--color-text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      min-height: 100px;
-  }
+/* --- Connections Section Styles --- */
+/* Container for the list of connections */
+.connectionsSection {
+  margin-top: 1.5rem; /* Space above the connections list/title */
+}
 
-  .emptyMessage {
-      margin-top: 1rem;
-      padding: 1rem;
-      background-color: var(--color-background);
-      border: 1px dashed var(--color-border-light);
-      border-radius: var(--border-radius-small);
-      color: var(--color-text-secondary);
-      text-align: center;
-  }
+/* Styles for the title above the connection list (e.g., "My Creations") */
+.sectionTitle {
+margin-top: 1rem; /* Space above title */
+margin-bottom: 1rem; /* Space below title */
+color: var(--color-text-primary); /* Primary text color */
+font-size: 1.4rem; /* Font size */
+}
+
+/* Optional Grid layout for connection cards (currently commented out in JS) */
+/* If enabled, cards will appear in a responsive grid */
+.connectionsGrid {
+  display: grid;
+  /* Example: Responsive columns - fit cards with min width 300px */
+  /* grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); */
+  gap: 1rem; /* Space between cards in the grid */
+  /* If not using grid, ConnectionCards will stack vertically by default */
+}
+
+/* Styles for the loading indicator section */
+.loadingSection {
+  margin-top: 2rem; /* Space above */
+  text-align: center; /* Center content */
+  color: var(--color-text-secondary); /* Secondary text color */
+  display: flex; /* Use flexbox */
+  align-items: center; /* Vertically align spinner and text */
+  justify-content: center; /* Horizontally center */
+  gap: 0.5rem; /* Space between spinner and text */
+  min-height: 100px; /* Ensure it takes up some vertical space */
+}
+
+/* Styles for the message shown when no connections are found */
+.emptyMessage {
+  margin-top: 1rem; /* Space above */
+  padding: 1rem; /* Inner padding */
+  background-color: var(--color-background); /* Standard background */
+  border: 1px dashed var(--color-border-light); /* Dashed border */
+  border-radius: var(--border-radius-small); /* Rounded corners */
+  color: var(--color-text-secondary); /* Secondary text color */
+  text-align: center; /* Center text */
+}
+/* --- END Connections Section Styles --- */
+

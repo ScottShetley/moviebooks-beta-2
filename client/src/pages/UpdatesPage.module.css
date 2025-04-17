@@ -1,52 +1,79 @@
 /* client/src/pages/UpdatesPage.module.css */
 
+/* Styles for the main container of the Updates page */
 .updatesContainer {
-    padding: var(--space-lg);
-    max-width: 800px; /* Adjust max-width as needed */
-    margin: var(--space-lg) auto; /* Center the content */
-    background-color: var(--color-background-light); /* Or your preferred background */
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .updatesContainer h1 {
-    color: var(--color-primary);
-    margin-bottom: var(--space-md);
-    text-align: center;
-    border-bottom: 1px solid var(--color-border-light);
-    padding-bottom: var(--space-sm);
-  }
-  
-  .updateSection {
-    margin-bottom: var(--space-xl);
-  }
-  
-  .updateSection h2 {
-    color: var(--color-text-strong);
-    margin-bottom: var(--space-sm);
-    border-bottom: 1px dashed var(--color-border-subtle);
-    padding-bottom: var(--space-xs);
-  }
-  
-  .updateSection p,
-  .updateSection ul {
-    color: var(--color-text-default);
-    line-height: 1.6;
-    margin-bottom: var(--space-sm);
-  }
-  
-  .updateSection ul {
-    list-style: disc;
-    padding-left: var(--space-lg); /* Indent list items */
-  }
-  
-  .updateSection li {
-    margin-bottom: var(--space-xs);
-  }
-  
-  .updateSection strong {
-      font-weight: var(--font-weight-bold);
-      color: var(--color-text-accent); /* Or another highlight color */
-  }
-  
-  /* Add more specific styles as needed */
+  /* Add inner padding */
+  padding: var(--space-lg);
+  /* Limit the maximum width for readability */
+  max-width: 800px; /* Adjust max-width as needed */
+  /* Center the content horizontally with vertical margin */
+  margin: var(--space-lg) auto;
+  /* Set background color */
+  background-color: var(--color-background-light); /* Or your preferred background */
+  /* Apply rounded corners */
+  border-radius: var(--border-radius-md);
+  /* Add a subtle shadow */
+  box-shadow: var(--shadow-sm);
+}
+
+/* Styles for the main page heading (h1) */
+.updatesContainer h1 {
+  color: var(--color-primary); /* Use primary color */
+  margin-bottom: var(--space-md); /* Space below heading */
+  text-align: center; /* Center the heading */
+  border-bottom: 1px solid var(--color-border-light); /* Add separator line */
+  padding-bottom: var(--space-sm); /* Space between text and line */
+}
+
+/* Styles for each major section (e.g., Latest Update, Previous Updates) */
+.updateSection {
+  /* Space below each section */
+  margin-bottom: var(--space-xl);
+}
+
+/* Styles for the main headings within each section (h2) */
+.updateSection h2 {
+  color: var(--color-text-strong); /* Use strong text color */
+  margin-bottom: var(--space-sm); /* Space below heading */
+  border-bottom: 1px dashed var(--color-border-subtle); /* Dashed separator line */
+  padding-bottom: var(--space-xs); /* Space between text and line */
+}
+
+/* Styles for paragraphs and unordered lists within sections */
+.updateSection p,
+.updateSection ul {
+  color: var(--color-text-default); /* Default text color */
+  line-height: 1.6; /* Set line height for readability */
+  margin-bottom: var(--space-sm); /* Space below paragraphs/lists */
+}
+
+/* Styles specific to unordered lists (<ul>) */
+.updateSection ul {
+  list-style: disc; /* Use standard disc bullet points */
+  /* Add indentation to the left for list items */
+  padding-left: var(--space-lg);
+}
+
+/* Styles specific to list items (<li>) */
+.updateSection li {
+  /* Space below each list item */
+  margin-bottom: var(--space-xs);
+}
+
+/* Styles for <strong> tags used for highlighting within lists/paragraphs */
+.updateSection strong {
+    font-weight: var(--font-weight-bold); /* Ensure text is bold */
+    color: var(--color-text-accent); /* Use an accent color for highlighting */
+}
+
+/* Styles for subheadings (h3) used within sections */
+.subHeading { /* Added this class based on UpdatesPage.js usage */
+  margin-top: var(--space-lg); /* Space above subheading */
+  margin-bottom: var(--space-xs); /* Space below subheading */
+  font-size: var(--font-size-large); /* Slightly smaller than h2 */
+  color: var(--color-text-strong); /* Strong text color */
+  font-weight: var(--font-weight-semibold); /* Semi-bold weight */
+}
+
+/* Placeholder comment - can be removed if no further styles are planned */
+/* Add more specific styles as needed */

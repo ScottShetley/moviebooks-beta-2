@@ -1,50 +1,71 @@
+/* client/src/pages/LandingPage/LandingPage.module.css */
 /* Using variables from your tokens.css / global.css */
 
+/* Styles for the main container of the landing page */
 .landingContainer {
+    /* Use flexbox to arrange child sections vertically */
     display: flex;
     flex-direction: column;
+    /* Center items horizontally within the container */
     align-items: center;
-    padding: var(--space-xl) var(--space-md); /* Use spacing tokens */
+    /* Add padding (top/bottom and left/right) */
+    padding: var(--space-xl) var(--space-md);
+    /* Limit the maximum width of the content */
     max-width: 900px;
-    margin: var(--space-xl) auto; /* Use spacing tokens */
-    gap: var(--space-xl); /* Use spacing tokens */
+    /* Add vertical margin and center horizontally */
+    margin: var(--space-xl) auto;
+    /* Add space between the direct child elements (header, sections) */
+    gap: var(--space-xl);
+    /* Center text within the container by default */
     text-align: center;
+    /* Set default text color */
     color: var(--color-text);
-    background-color: var(--color-background); /* Consistent background */
-    border-radius: var(--border-radius-md); /* Use border token */
-    box-shadow: var(--shadow-md); /* Use shadow token */
+    /* Set background color */
+    background-color: var(--color-background);
+    /* Apply rounded corners */
+    border-radius: var(--border-radius-md);
+    /* Add a subtle shadow */
+    box-shadow: var(--shadow-md);
 }
 
+/* Styles for the top header section (Hero) */
 .heroHeader {
+    /* Ensure header takes full width within the container */
     width: 100%;
-    padding-bottom: var(--space-md); /* Use spacing tokens */
-    /* border-bottom: var(--border-width) solid var(--color-border); */ /* Optional separator */
+    /* Add space below the header */
+    padding-bottom: var(--space-md);
+    /* Optional separator line */
+    /* border-bottom: var(--border-width) solid var(--color-border); */
 }
 
+/* Styles for the main heading (<h1>) in the hero section */
 .heroHeader h1 {
-    font-size: var(--font-size-xxl); /* Use font size token */
-    margin-bottom: var(--space-xs); /* Use spacing tokens */
-    /* --- THIS IS THE CHANGED LINE --- */
-    color: var(--color-primary); /* Use correct primary color variable */
-    /* --- END CHANGE --- */
-    font-weight: 700; /* Use font weight consistent with global h1 */
-    font-family: var(--font-heading); /* Ensure heading font */
-    line-height: var(--line-height-heading); /* Ensure heading line height */
+    font-size: var(--font-size-xxl); /* Large font size for impact */
+    margin-bottom: var(--space-xs); /* Small space below heading */
+    color: var(--color-primary); /* Use primary color for the main heading */
+    font-weight: 700; /* Bold font weight */
+    font-family: var(--font-heading); /* Use designated heading font */
+    line-height: var(--line-height-heading); /* Use designated heading line height */
 }
 
+/* Styles for the subtitle paragraph below the main heading */
 .subtitle {
-    font-size: var(--font-size-lg); /* Use font size token */
-    color: var(--color-text-light); /* Use light text color token */
-    font-weight: 400; /* Standard weight */
+    font-size: var(--font-size-lg); /* Large font size */
+    color: var(--color-text-light); /* Lighter text color */
+    font-weight: 400; /* Standard font weight */
 }
 
+/* Styles for the "About" section */
 .aboutSection {
+    /* Limit the width of the text for better readability */
     max-width: 700px;
-    line-height: var(--line-height-body); /* Use body line height token */
+    /* Use standard body text line height */
+    line-height: var(--line-height-body);
 }
 
-/* Headings within sections use global styles by default (color: var(--color-secondary)) */
-/* If you want them primary, uncomment below */
+/* Comment explaining default heading styles */
+/* Headings within sections (h2) use global styles by default (e.g., color: var(--color-secondary)) */
+/* If you want them primary, uncomment the rule below */
 /*
 .aboutSection h2,
 .ctaSection h2 {
@@ -52,101 +73,127 @@
 }
 */
 
+/* Styles for paragraphs within the "About" section */
 .aboutSection p {
-    margin-bottom: var(--space-md); /* Use spacing tokens */
-    font-size: var(--font-size-md); /* Consistent base font size */
-    color: var(--color-text); /* Use standard text color */
+    margin-bottom: var(--space-md); /* Space below paragraphs */
+    font-size: var(--font-size-md); /* Standard font size */
+    color: var(--color-text); /* Standard text color */
 }
 
+/* Styles for an optional concept image */
 .conceptImage {
-    max-width: 100%;
-    height: auto;
-    margin-top: var(--space-lg); /* Use spacing tokens */
-    border-radius: var(--border-radius-md); /* Use border token */
+    max-width: 100%; /* Ensure image scales down */
+    height: auto; /* Maintain aspect ratio */
+    margin-top: var(--space-lg); /* Space above the image */
+    border-radius: var(--border-radius-md); /* Apply rounded corners */
 }
 
+/* Styles for the Call to Action (CTA) section */
 .ctaSection {
-    width: 100%;
-    padding-top: var(--space-lg); /* Use spacing tokens */
-    margin-top: var(--space-lg); /* Use spacing tokens */
-    border-top: var(--border-width) solid var(--color-border); /* Use border tokens */
+    width: 100%; /* Take full width */
+    padding-top: var(--space-lg); /* Space above the content */
+    margin-top: var(--space-lg); /* Space above the section */
+    border-top: var(--border-width) solid var(--color-border); /* Separator line */
 }
 
+/* Styles for the group containing the CTA buttons and 'or' text */
 .buttonGroup {
+    /* Use flexbox for layout */
     display: flex;
+    /* Center buttons horizontally */
     justify-content: center;
+    /* Align items vertically */
     align-items: center;
-    gap: var(--space-lg); /* Use spacing tokens */
-    margin-top: var(--space-md); /* Use spacing tokens */
+    /* Space between buttons and 'or' text */
+    gap: var(--space-lg);
+    /* Space above the button group */
+    margin-top: var(--space-md);
+    /* Allow items to wrap onto the next line on smaller screens */
     flex-wrap: wrap;
 }
 
+/* Styles for the 'or' text between buttons */
 .orText {
-    font-style: italic;
-    color: var(--color-text-light); /* Use light text color token */
-    margin: 0 var(--space-xs); /* Use spacing tokens */
+    font-style: italic; /* Italicize */
+    color: var(--color-text-light); /* Lighter text color */
+    margin: 0 var(--space-xs); /* Add horizontal spacing */
 }
 
+/* Helper class to remove underline from Links wrapping buttons */
 .linkNoUnderline {
     text-decoration: none;
 }
 
+/* Comment indicating button styles are handled elsewhere */
 /* Styling for custom <Button/> component is handled within Button.module.css */
 /* Assuming Button uses var(--color-primary) and var(--color-secondary) correctly */
 
+/* Styles for the optional footer section */
 .landingFooter {
-    margin-top: var(--space-xl); /* Use spacing tokens */
-    padding-top: var(--space-md); /* Use spacing tokens */
-    border-top: var(--border-width) solid var(--color-border); /* Use border tokens */
-    font-size: var(--font-size-sm); /* Use font size token */
-    color: var(--color-text-light); /* Use light text color token */
-    width: 100%;
+    margin-top: var(--space-xl); /* Space above footer */
+    padding-top: var(--space-md); /* Space above footer text */
+    border-top: var(--border-width) solid var(--color-border); /* Separator line */
+    font-size: var(--font-size-sm); /* Small font size */
+    color: var(--color-text-light); /* Lighter text color */
+    width: 100%; /* Take full width */
 }
 
-/* Responsive Adjustments */
+/* --- Responsive Adjustments --- */
+/* Styles applied when screen width is below the medium breakpoint */
 @media (max-width: var(--breakpoint-md)) {
+    /* Adjust container margins, padding, and remove shadow for mobile */
     .landingContainer {
-        margin: var(--space-md); /* Use spacing tokens */
-        padding: var(--space-lg) var(--space-sm); /* Use spacing tokens */
-        gap: var(--space-lg); /* Use spacing tokens */
+        margin: var(--space-md);
+        padding: var(--space-lg) var(--space-sm);
+        gap: var(--space-lg);
         box-shadow: none;
-        border: var(--border-width) solid var(--color-border); /* Use border tokens */
+        border: var(--border-width) solid var(--color-border); /* Add border on mobile */
     }
 
+    /* Reduce heading size */
     .heroHeader h1 {
-        font-size: var(--font-size-xl); /* Use font size token */
+        font-size: var(--font-size-xl);
     }
 
+    /* Reduce subtitle size */
     .subtitle {
-        font-size: var(--font-size-md); /* Use font size token */
+        font-size: var(--font-size-md);
     }
 
+    /* Comment indicating H2 size is handled globally */
     /* Section Headings H2 already have responsive size via global.css */
 
+    /* Reduce paragraph text size */
     .aboutSection p {
-        font-size: var(--font-size-sm); /* Use font size token */
+        font-size: var(--font-size-sm);
     }
 
+    /* Stack buttons vertically */
     .buttonGroup {
         flex-direction: column;
-        gap: var(--space-md); /* Use spacing tokens */
+        gap: var(--space-md); /* Adjust gap for vertical stacking */
         width: 100%;
+        /* Stretch buttons to container width (within their parent link) */
         align-items: stretch;
     }
 
+    /* Make links and buttons take up a percentage of the width and center them */
     .buttonGroup > .linkNoUnderline,
     .buttonGroup > .linkNoUnderline > button {
-        width: 80%;
-        margin: 0 auto;
-        display: block;
+        width: 80%; /* Adjust width as desired */
+        margin: 0 auto; /* Center the link/button block */
+        display: block; /* Ensure link takes block layout */
     }
 
+    /* Ensure the Button component itself fills the width of its parent link */
+    /* Uses attribute selector to target the button class robustly */
     .buttonGroup > .linkNoUnderline > *[class*="Button_button"] {
          width: 100%;
-         padding-left: var(--space-sm); /* Use spacing tokens */
-         padding-right: var(--space-sm); /* Use spacing tokens */
+         padding-left: var(--space-sm); /* Adjust padding if needed */
+         padding-right: var(--space-sm);
      }
 
+    /* Hide the 'or' text when buttons are stacked */
     .orText {
         display: none;
     }

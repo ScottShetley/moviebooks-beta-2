@@ -1,19 +1,36 @@
 /* client/src/components/Common/ErrorMessage/ErrorMessage.module.css */
+
+/* Base styles for the error message container */
 .errorMessage {
-    /* Use error colors defined in tokens.css */
+    /* Set the text color using the error color variable */
     color: var(--color-error);
-    /* Optional: Add a light background/border for more emphasis */
-    background-color: rgba(var(--color-error-rgb, 211, 47, 47), 0.1); /* Light error background */
+    
+    /* Optional: Add a light background and border for more visual emphasis. */
+    /* Uses rgba() to create a semi-transparent background color based on the error color. 
+       'var(--color-error-rgb, 211, 47, 47)' attempts to use an RGB variable, 
+       falling back to specific RGB values if the variable isn't defined. 
+       '0.1' sets the opacity to 10%. */
+    background-color: rgba(var(--color-error-rgb, 211, 47, 47), 0.1); 
+    /* Similar rgba() usage for a slightly less transparent border */
     border: 1px solid rgba(var(--color-error-rgb, 211, 47, 47), 0.3);
+    
+    /* Apply standard rounded corners */
     border-radius: var(--border-radius-sm);
-    padding: var(--space-sm); /* Padding inside the message box */
-    margin: var(--space-md) 0; /* Default margin above/below */
-    font-size: var(--font-size-sm); /* Slightly smaller font size */
-    text-align: left; /* Default text alignment */
-    word-wrap: break-word; /* Ensure long errors wrap */
+    /* Add padding inside the message box */
+    padding: var(--space-sm); 
+    /* Add margin above and below the message box by default */
+    margin: var(--space-md) 0; 
+    /* Use a slightly smaller font size for error messages */
+    font-size: var(--font-size-sm); 
+    /* Align text to the left by default */
+    text-align: left; 
+    /* Ensure long error messages without spaces can wrap onto the next line */
+    word-wrap: break-word; 
   }
   
-  /* Optional: Style for centering the text if needed */
+  /* Optional modifier class to center the error message text */
+  /* This class can be added alongside .errorMessage (e.g., className={`${styles.errorMessage} ${styles.textCenter}`) 
+     if centered text is needed in specific contexts. */
   .textCenter {
       text-align: center;
   }

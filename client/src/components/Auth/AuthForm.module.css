@@ -1,52 +1,73 @@
 /* client/src/components/Auth/AuthForm.module.css */
 
+/* This wrapper holds the password Input component and the toggle icon */
 .passwordWrapper {
-    position: relative; /* Keep relative positioning on the wrapper */
-    /* This wrapper now directly contains the Input component */
-    /* Input component's internal .inputGroup provides spacing, so margin-bottom here might not be needed */
-     margin-bottom: var(--space-md); /* Or rely on Input.module.css's .inputGroup margin */
-  }
+  /* position: relative allows absolute positioning of child elements (like the icon) 
+     relative to this wrapper */
+  position: relative; 
+
+  /* The Input component used inside likely has its own bottom margin (.inputGroup).
+     This margin might be redundant. Review if extra space appears below the password field. */
+  margin-bottom: var(--space-md); 
+}
+
+/* This class is specifically added to the <input> element itself 
+   (via the inputClassName prop in the Input component) */
+.passwordInputWithIcon {
+  /* Add padding on the right side of the input field to prevent text 
+     from overlapping with the visibility toggle icon */
+  /* Using !important suggests this style might be overridden by another rule. 
+     It forces this padding to apply, but it's often better to increase 
+     specificity if possible rather than relying on !important. */
+  padding-right: 40px !important; 
+}
+
+/* Styles for the show/hide password icon button */
+.passwordToggle {
+  /* position: absolute takes the element out of the normal document flow 
+     and positions it relative to the nearest ancestor with position: relative (the .passwordWrapper) */
+  position: absolute;
+
+  /* Vertical positioning: Align the icon within the input field area. */
+  /* Since the Input component includes a label above the input, simply using 'top: 50%' 
+     of the wrapper height won't center it vertically within the input itself. */
+  /* This 'top' value positions the icon from the top edge of the .passwordWrapper. 
+     You'll likely need to adjust this pixel value based on visual inspection 
+     to get perfect vertical alignment inside the input field. */
+  top: 38px; /* TWEAK THIS VALUE AS NEEDED */
   
-  /* --- NEW: Class specifically for the password input element --- */
-  /* This class will be passed via the inputClassName prop to Input.js */
-  .passwordInputWithIcon {
-    padding-right: 40px !important; /* Add space for the icon; !important may be needed */
-  }
-  /* --- End of NEW --- */
+  /* Alternatively, positioning from the bottom might be easier if label heights vary: */
+  /* bottom: 10px; */ 
+
+  /* Horizontal positioning: Place the icon near the right edge of the wrapper */
+  right: 10px; /* Adjust space from the right edge */
+
+  /* We are using a fixed 'top' value, so transforms are not needed for vertical centering here. */
+  transform: none; 
+  /* Example of centering if 'top: 50%' was used: */
+  /* transform: translateY(-50%); */ 
+
+  /* Styling for the button itself */
+  background: none; /* Make button background transparent */
+  border: none; /* Remove button border */
+  padding: 5px; /* Add some clickable area around the icon */
+  cursor: pointer; /* Show a pointer cursor on hover */
+  color: var(--color-text-light); /* Default icon color */
+  display: flex; /* Helps center the icon within the button padding */
+  align-items: center;
+  justify-content: center;
   
-  
-  .passwordToggle {
-    position: absolute;
-    /* Position relative to the .passwordWrapper div */
-  
-    /* Try to align vertically with the input field inside the Input component */
-    /* Since label is above input, 50% of the wrapper height might be too high. */
-    /* Start by trying to align based on assumed input height + label offset */
-    /* Adjust this value based on visual testing */
-    top: 38px; /* Example: Approximate position - TWEAK THIS AS NEEDED */
-    /* Alternatively, using bottom might be easier if label height varies */
-    /* bottom: 10px; */ /* TWEAK THIS AS NEEDED */
-  
-    right: 10px; /* Adjust space from edge */
-    /* transform: translateY(-50%); */ /* Remove transform if using fixed top/bottom */
-    transform: none; /* Reset transform if using fixed top */
-  
-    background: none;
-    border: none;
-    padding: 5px; /* Clickable area */
-    cursor: pointer;
-    color: var(--color-text-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2; /* Ensure icon is above the input field */
-  }
-  
-  .passwordToggle:hover {
-    color: var(--color-text);
-  }
-  
-  /* NOTE: The 'top' value for .passwordToggle is the most likely thing */
-  /* you'll need to adjust slightly after seeing it visually. */
-  /* Measure the distance from the top of the Input component's wrapper */
-  /* to the middle of the input field itself. */
+  /* z-index controls the stacking order. A higher value means it appears 
+     'on top' of elements with lower values. Ensures the icon isn't hidden 
+     behind the input field. */
+  z-index: 2; 
+}
+
+/* Darken the icon color slightly on hover for visual feedback */
+.passwordToggle:hover {
+  color: var(--color-text);
+}
+
+/* NOTE: Fine-tuning the 'top' value for .passwordToggle is crucial for visual alignment. 
+   Inspect the element in your browser's developer tools to measure the distance needed. */
+

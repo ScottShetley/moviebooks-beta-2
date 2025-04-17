@@ -1,208 +1,258 @@
 /* client/src/pages/ConnectionDetailPage.module.css */
 
+/* Styles for the main page container */
 .pageContainer {
+    /* Add inner padding (top/bottom and left/right) */
     padding: var(--space-md) var(--space-lg);
+    /* Set a maximum width for the content */
     max-width: 1100px;
+    /* Add vertical margin and center horizontally */
     margin: var(--space-lg) auto;
+    /* Set background color */
     background-color: var(--color-background-light);
+    /* Apply rounded corners */
     border-radius: var(--border-radius-md);
+    /* Add a medium shadow */
     box-shadow: var(--shadow-medium);
 }
 
+/* Styles for the header section (title and creator meta) */
 .connectionHeader {
+    /* Add a border line below the header */
     border-bottom: 1px solid var(--color-grey-light);
+    /* Space below the header */
     margin-bottom: var(--space-lg);
+    /* Padding below the content, before the border */
     padding-bottom: var(--space-md);
 }
 
+/* Styles for the main page title (h1) */
 .title {
     color: var(--color-primary-dark);
     font-size: var(--font-size-xxl);
+    /* Space below the title, before the meta info */
     margin-bottom: var(--space-xs);
 }
 
+/* Styles for the meta text (creator, date) */
 .meta {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
 }
 
+/* Styles for links within the meta text */
 .meta a {
     color: var(--color-primary);
-    text-decoration: none;
+    text-decoration: none; /* Remove default underline */
     font-weight: var(--font-weight-bold);
 }
 
+/* Add underline on hover for meta links */
 .meta a:hover {
     text-decoration: underline;
 }
 
-/* --- Correct Grid Layout for Detail Page --- */
+/* --- Grid Layout for Detail Page Content --- */
 .contentGrid {
+    /* Use CSS Grid for layout */
     display: grid;
-    /* Define 2 equal columns */
+    /* Define 2 equal-width columns */
     grid-template-columns: 1fr 1fr;
+    /* Set the gap between grid items (columns and rows) */
     gap: var(--space-lg);
+    /* Space below the grid, before the back button */
     margin-bottom: var(--space-xl);
 }
 
+/* Base styles for the movie and book sections */
 .movieSection,
 .bookSection {
     background-color: var(--color-background);
     padding: var(--space-md);
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--color-grey-lighter);
+    /* Allow long words to break and wrap within the container */
     overflow-wrap: break-word;
-    /* No specific grid-column needed, they fit in the 1fr 1fr */
+    /* By default, these will each occupy one cell in the 1fr 1fr grid */
 }
 
+/* Styles for the context section */
 .contextSection {
     background-color: var(--color-background);
-    padding: var(--space-lg);
+    padding: var(--space-lg); /* Larger padding for context */
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--color-grey-lighter);
     overflow-wrap: break-word;
+    /* Make this section span across both columns (from grid line 1 to 3) */
     grid-column: 1 / 3;
-    /* Span across both columns */
-    margin-top: 0;
+    margin-top: 0; /* Reset margin if needed */
 }
 
+/* Styles for the tags section */
 .tagsSection {
     background-color: var(--color-background);
     padding: var(--space-md);
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--color-grey-lighter);
     overflow-wrap: break-word;
+    /* Make this section also span across both columns */
     grid-column: 1 / 3;
-    /* Span across both columns */
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for the grid */
 @media (max-width: 768px) {
     .contentGrid {
+        /* Switch to a single column layout on smaller screens */
         grid-template-columns: 1fr;
-        /* Stack to single column */
-        gap: var(--space-md);
+        gap: var(--space-md); /* Reduce gap for stacked layout */
     }
 
+    /* Reset column spanning for all sections in single-column layout */
     .movieSection,
     .bookSection,
     .contextSection,
     .tagsSection {
-        grid-column: 1 / 2;
-        /* Reset span for single column */
+        grid-column: 1 / 2; /* Each item takes one column */
     }
 
+    /* Reduce padding for context section on smaller screens */
     .contextSection {
         padding: var(--space-md);
     }
 }
+/* --- End Grid Layout --- */
 
-/* --- End Correct Grid Layout --- */
 
+/* --- Styling Refinements (Float, Text, Screenshot, etc.) --- */
 
-/* Styling Refinements (Float, Text, Screenshot, etc.) */
+/* Styles for section titles (h2) */
 .sectionTitle {
     font-size: var(--font-size-lg);
     color: var(--color-primary-dark);
-    margin-top: 0;
+    margin-top: 0; /* Remove default top margin */
     margin-bottom: var(--space-md);
     border-bottom: 1px solid var(--color-grey-light);
     padding-bottom: var(--space-sm);
 }
 
+/* Styles for the link wrapping movie/book titles */
 .itemTitleLink {
-    text-decoration: none;
-    color: var(--color-text-primary);
+    text-decoration: none; /* Remove underline */
+    color: var(--color-text-primary); /* Inherit text color */
 }
 
+/* Styles for movie/book titles (h3) within the link */
 .itemTitleLink h3 {
     font-size: var(--font-size-lg);
     color: var(--color-primary);
     margin-top: var(--space-sm);
     margin-bottom: var(--space-sm);
-    transition: color 0.2s ease;
+    transition: color 0.2s ease; /* Smooth color transition on hover */
 }
 
+/* Hover effect for movie/book titles */
 .itemTitleLink:hover h3 {
-    color: var(--color-accent);
-    text-decoration: underline;
+    color: var(--color-accent); /* Change color on hover */
+    text-decoration: underline; /* Add underline on hover */
 }
 
+/* Styles for images (poster, cover) within movie/book sections */
 .image {
-    display: block;
+    display: block; /* Treat image as a block element */
+    /* Float the image to the left, allowing text to wrap around it */
     float: left;
-    max-width: 150px;
-    height: auto;
+    max-width: 150px; /* Limit image width */
+    height: auto; /* Maintain aspect ratio */
+    /* Add space to the right and bottom of the image */
     margin-right: var(--space-md);
     margin-bottom: var(--space-sm);
     border-radius: var(--border-radius-sm);
     box-shadow: var(--shadow-light);
+    /* Background color shown if image fails to load */
     background-color: var(--color-grey-light);
 }
 
+/* Styles for the main context text paragraph */
 .contextText {
     font-size: var(--font-size-md);
-    line-height: 1.7;
+    line-height: 1.7; /* Increase line height for readability */
+    /* Preserve line breaks and spaces entered by the user */
     white-space: pre-wrap;
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-xl); /* Space below the context */
     color: var(--color-text-primary);
 }
 
-.contextSection>*:not(.sectionTitle) {
+/* Clear the float: Ensures elements after the floated image within the context section
+   start below the floated image, preventing layout issues. */
+/* This targets all direct children of .contextSection EXCEPT the .sectionTitle */
+.contextSection > *:not(.sectionTitle) {
     clear: both;
 }
 
+/* Styles for the "Screenshot" subheading (h3) */
 .screenshotTitle {
-    margin-top: 0;
+    margin-top: 0; /* Reset top margin */
     margin-bottom: var(--space-md);
     font-size: var(--font-size-md);
     color: var(--color-text-secondary);
     font-weight: var(--font-weight-bold);
+    /* Add a line above the screenshot title */
     border-top: 1px solid var(--color-grey-light);
     padding-top: var(--space-lg);
+    /* Ensure this title also clears the floated image if context was short */
     clear: both;
 }
 
+/* Styles for the screenshot image itself */
 .screenshotImage {
-    display: block;
-    max-width: 80%;
-    height: auto;
-    max-height: 500px;
-    object-fit: contain;
+    display: block; /* Treat as block element */
+    max-width: 80%; /* Limit width relative to container */
+    height: auto; /* Maintain aspect ratio */
+    max-height: 500px; /* Limit maximum height */
+    object-fit: contain; /* Scale image down to fit within bounds */
+    /* Center the image horizontally and add bottom margin */
     margin: 0 auto var(--space-lg) auto;
     border-radius: var(--border-radius-sm);
     box-shadow: var(--shadow-light);
+    /* Background color shown if image fails to load */
     background-color: var(--color-grey-lighter);
 }
 
+/* Styles for synopsis paragraphs (used in movie/book sections) */
 .synopsis {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     line-height: 1.5;
     margin-top: var(--space-sm);
+    /* Ensure synopsis text starts below the floated image */
     clear: both;
 }
 
+/* Styles for the container holding the tags */
 .tagsContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-    margin-top: var(--space-sm);
+    display: flex; /* Use flexbox for layout */
+    flex-wrap: wrap; /* Allow tags to wrap onto multiple lines */
+    gap: var(--space-xs); /* Space between tags */
+    margin-top: var(--space-sm); /* Space above the tags */
 }
 
+/* Styles for the link wrapping each tag */
 .tagLink {
-    text-decoration: none;
+    text-decoration: none; /* Remove underline from link */
 }
 
+/* Styles for the container holding the back button */
 .backLinkContainer {
-    margin-top: var(--space-lg);
-    text-align: center;
+    margin-top: var(--space-lg); /* Space above the button */
+    text-align: center; /* Center the button */
 }
 
+/* Styles for the "Go Back" button */
 .backButton {
+    /* Use reusable Button component styles if available, otherwise define here */
     padding: var(--space-sm) var(--space-md);
     background-color: var(--color-primary);
-    color: var(--color-white);
+    color: var(--color-white); /* Assuming white text on primary */
     border: none;
     border-radius: var(--border-radius-sm);
     cursor: pointer;
@@ -210,6 +260,7 @@
     transition: background-color 0.2s ease;
 }
 
+/* Hover effect for the back button */
 .backButton:hover {
     background-color: var(--color-primary-dark);
 }

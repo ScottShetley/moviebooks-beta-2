@@ -1,248 +1,284 @@
 /* client/src/pages/HomePage.module.css */
-/* Define the main content area properties */
+
+/* Styles for the main content area container */
 .mainContentArea {
-    flex-grow: 1; /* Ensure it tries to grow if inside a flex container (like AppLayout) */
-    padding: 20px; /* Padding around the main content */
-    max-width: 900px; /* Optional: Constrain the width of the feed/filter area */
-    margin-left: auto; /* Center the main content if max-width is less than available space */
+    /* Allows this area to grow if its parent is a flex container */
+    flex-grow: 1; 
+    /* Padding around the content */
+    padding: 20px; 
+    /* Limit the maximum width of the feed and filters */
+    max-width: 900px; 
+    /* Center the content area horizontally */
+    margin-left: auto; 
     margin-right: auto;
-    min-width: 0; /* Prevent flexbox overflow issues */
+    /* Prevents potential overflow issues in flex layouts */
+    min-width: 0; 
 }
 
-/* --- NEW: Filter Tab Styles --- */
+/* --- Filter Tab Styles --- */
+/* Container for the filter toggle button */
 .filterTabContainer {
+    /* Allows absolute positioning of the panel relative to this container if needed */
     position: relative;
+    /* Space below the filter toggle area */
     margin-bottom: 20px;
 }
 
+/* Styles for the "Filters" toggle button */
 .filterTab {
-    position: relative;
-    display: flex;
+    position: relative; /* For positioning the active indicator */
+    display: flex; /* Align text and indicator */
     align-items: center;
-    background-color: var(--color-background-secondary);
-    border: 1px solid var(--color-border-subtle);
-    border-top: none; /* Remove top border to connect with navbar */
+    background-color: var(--color-background-secondary); /* Background color */
+    border: 1px solid var(--color-border-subtle); /* Subtle border */
+    border-top: none; /* Remove top border (visual connection to navbar/header) */
+    /* Remove top corner rounding */
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+    /* Round bottom corners */
     border-bottom-left-radius: var(--border-radius-medium);
     border-bottom-right-radius: var(--border-radius-medium);
-    padding: 8px 16px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 8px 16px; /* Inner padding */
+    font-weight: 600; /* Bold text */
+    color: var(--color-text-primary); /* Text color */
+    cursor: pointer; /* Pointer cursor */
+    transition: all 0.2s ease; /* Smooth transition for hover effects */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow */
 }
 
+/* Hover effect for the filter toggle button */
 .filterTab:hover {
-    background-color: var(--color-background-hover);
+    background-color: var(--color-background-hover); /* Change background on hover */
 }
 
+/* Styles applied to the filter toggle button when local filters are active */
 .filterTabActive {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
+    color: var(--color-primary); /* Change text color */
+    border-color: var(--color-primary); /* Change border color */
 }
 
+/* Styles for the small dot indicating active local filters */
 .filterActiveIndicator {
     width: 8px;
     height: 8px;
-    background-color: var(--color-primary);
-    border-radius: 50%;
-    margin-left: 8px;
+    background-color: var(--color-primary); /* Use primary color */
+    border-radius: 50%; /* Make it a circle */
+    margin-left: 8px; /* Space between text and dot */
 }
 
+/* Styles for the panel containing the advanced filter inputs */
 .filterPanel {
-    margin-top: 10px;
-    width: 100%;
-    background-color: var(--color-background-secondary);
-    border-radius: var(--border-radius-medium);
-    box-shadow: var(--shadow-md);
-    transition: all 0.3s ease-in-out;
-    animation: slideDown 0.3s ease-in-out;
+    margin-top: 10px; /* Space above the panel */
+    width: 100%; /* Take full width */
+    background-color: var(--color-background-secondary); /* Background color */
+    border-radius: var(--border-radius-medium); /* Rounded corners */
+    box-shadow: var(--shadow-md); /* Add shadow */
+    transition: all 0.3s ease-in-out; /* Smooth transition (though animation handles appearance) */
+    /* Apply the slideDown animation defined below */
+    animation: slideDown 0.3s ease-in-out; 
 }
 
+/* Defines the slide-down animation for the filter panel */
 @keyframes slideDown {
     from {
-        opacity: 0;
-        transform: translateY(-10px);
+        opacity: 0; /* Start transparent */
+        transform: translateY(-10px); /* Start slightly shifted up */
     }
     to {
-        opacity: 1;
-        transform: translateY(0);
+        opacity: 1; /* End fully opaque */
+        transform: translateY(0); /* End in final position */
     }
 }
-/* --- END NEW Filter Tab Styles --- */
+/* --- END Filter Tab Styles --- */
 
 /* --- Styles for Global Tag Filter Status --- */
+/* Container for displaying the active global tag filter */
 .filterStatus {
-  margin-bottom: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  background-color: var(--color-background-muted); /* Default background */
-  border-radius: var(--border-radius-medium);
-  font-size: var(--font-size-small);
-  display: flex; /* Use flex for alignment */
-  gap: var(--space-md);
-  align-items: center;
-  flex-wrap: wrap; /* Allow wrapping */
+  margin-bottom: var(--space-md); /* Space below the status bar */
+  padding: var(--space-sm) var(--space-md); /* Inner padding */
+  background-color: var(--color-background-muted); /* Muted background */
+  border-radius: var(--border-radius-medium); /* Rounded corners */
+  font-size: var(--font-size-small); /* Small font size */
+  display: flex; /* Use flexbox for layout */
+  gap: var(--space-md); /* Space between items if multiple statuses were shown */
+  align-items: center; /* Vertically align items */
+  flex-wrap: wrap; /* Allow content to wrap */
 }
 
-/* Specific style for the global tag filter display */
+/* Specific style for the text showing the active global tag */
 .activeTagFilter {
-  /* Inherits background from .filterStatus by default, but override for emphasis */
-  background-color: var(--color-accent-subtle);
-  color: var(--color-accent-dark); /* Adjust color for readability */
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--border-radius-small);
-  display: inline-flex; /* Align button nicely */
+  background-color: var(--color-accent-subtle); /* Use subtle accent background */
+  color: var(--color-accent-dark); /* Darker accent text color */
+  padding: var(--space-xs) var(--space-sm); /* Inner padding */
+  border-radius: var(--border-radius-small); /* Rounded corners */
+  display: inline-flex; /* Align clear button nicely */
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-xs); /* Space between text and clear button */
 }
 
+/* Style for the tag name itself within the status */
 .activeTagFilter strong {
-    color: var(--color-accent-darker); /* Adjust color */
+    color: var(--color-accent-darker); /* Even darker accent color */
 }
 
-/* Style for the clear button (used for both global tag and local filters potentially) */
+/* Style for the 'x' button used to clear filters */
 .clearFilterButton {
-  background: none;
-  border: none;
-  color: var(--color-accent-dark); /* Match the filter text color */
+  background: none; /* No background */
+  border: none; /* No border */
+  color: inherit; /* Inherit color from parent (.activeTagFilter or .filterActions) */
   font-size: 1.2em; /* Make cross slightly larger */
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 0 0 2px; /* Fine-tune padding */
-  /* margin-left: var(--space-xs); */ /* Added dynamically via inline style or specific class if needed */
+  line-height: 1; /* Prevent extra vertical space */
+  cursor: pointer; /* Pointer cursor */
+  padding: 0 0 0 2px; /* Adjust padding */
 }
+/* Hover effect for the clear button */
 .clearFilterButton:hover {
-  color: var(--color-error); /* Indicate removal action */
+  color: var(--color-error); /* Change to error color on hover */
 }
 
 
 /* --- Styles for Local Filters (Advanced) --- */
+/* Styles for the form containing local filters */
 .filterForm {
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* Space below the form (if panel stays open) */
 }
 
+/* Styles for the fieldset wrapping the local filter inputs */
 .filterFieldset {
-    padding: 15px 20px 20px 20px;
-    background-color: var(--color-background-secondary);
-    border-radius: var(--border-radius-medium);
-    border: 1px solid var(--color-border-subtle);
+    padding: 15px 20px 20px 20px; /* Inner padding */
+    background-color: var(--color-background-secondary); /* Background */
+    border-radius: var(--border-radius-medium); /* Rounded corners */
+    border: 1px solid var(--color-border-subtle); /* Subtle border */
 }
 
+/* Styles for the legend (title) of the fieldset */
 .filterFieldset legend {
-    font-weight: bold;
-    padding: 0 10px;
-    color: var(--color-text-primary);
-    font-size: var(--font-size-medium);
+    font-weight: bold; /* Bold text */
+    padding: 0 10px; /* Horizontal padding */
+    color: var(--color-text-primary); /* Text color */
+    font-size: var(--font-size-medium); /* Font size */
 }
 
+/* Styles for the grid containing the filter input fields */
 .filterGrid {
-    display: grid;
+    display: grid; /* Use CSS Grid */
+    /* Create responsive columns: fit as many as possible with min width 180px */
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    margin-top: 10px;
-    margin-bottom: 20px;
+    gap: 15px; /* Space between grid items */
+    margin-top: 10px; /* Space above grid */
+    margin-bottom: 20px; /* Space below grid */
 }
 
+/* Styles for the container holding the filter action buttons */
 .filterActions {
-    display: flex;
-    justify-content: flex-start;
-    gap: 10px;
-    flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+    display: flex; /* Use flexbox */
+    justify-content: flex-start; /* Align buttons to the start */
+    gap: 10px; /* Space between buttons */
+    flex-wrap: wrap; /* Allow buttons to wrap */
 }
 
+/* Comment indicating filter buttons use the reusable Button component */
 /* Specific styles for filter buttons if needed, inherit from Button component otherwise */
-.filterButton {
-    /* Add specific styles if Button component isn't sufficient */
-}
+
 /* Reusing .clearFilterButton style defined above for the 'Clear Advanced Filters' button */
 
 
-/* Info text for active LOCAL filters */
+/* Styles for the text displaying currently active LOCAL filters */
 .activeFilterInfo {
-    margin-top: -10px; /* Pull up slightly below the fieldset */
-    margin-bottom: 20px;
-    font-style: italic;
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-small);
-    word-break: break-word; /* Prevent long filter strings from overflowing */
+    margin-top: -10px; /* Pull up slightly below the filter panel */
+    margin-bottom: 20px; /* Space below */
+    font-style: italic; /* Italic text */
+    color: var(--color-text-secondary); /* Secondary text color */
+    font-size: var(--font-size-small); /* Small font size */
+    /* Allow long filter strings to break onto the next line */
+    word-break: break-word; 
     padding: 0 5px; /* Align slightly with fieldset padding */
 }
 
 /* --- Styles for Feed List & Items --- */
+/* Container for the list of connection cards */
 .feedList {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Space between ConnectionCards */
+    display: flex; /* Use flexbox */
+    flex-direction: column; /* Stack cards vertically */
+    gap: 20px; /* Space between cards */
 }
 
+/* Styles for the message shown when no connections are found */
 .noResults {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--color-text-secondary);
-    background-color: var(--color-background-secondary);
-    border-radius: var(--border-radius-medium);
-    margin-top: 20px; /* Add some space if filters are present */
+    text-align: center; /* Center text */
+    padding: 40px 20px; /* Inner padding */
+    color: var(--color-text-secondary); /* Secondary text color */
+    background-color: var(--color-background-secondary); /* Background color */
+    border-radius: var(--border-radius-medium); /* Rounded corners */
+    margin-top: 20px; /* Space above */
 }
 
 /* --- Styles for Pagination --- */
+/* Container for pagination controls */
 .paginationControls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 30px;
-    padding: 10px;
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center controls horizontally */
+    align-items: center; /* Align items vertically */
+    gap: 15px; /* Space between buttons and page info */
+    margin-top: 30px; /* Space above pagination */
+    padding: 10px; /* Inner padding */
 }
 
+/* Styles for the "Page X of Y" text */
 .pageInfo {
-    font-weight: bold;
-    color: var(--color-text-primary);
+    font-weight: bold; /* Bold text */
+    color: var(--color-text-primary); /* Text color */
 }
 
 /* --- Styles for Loading/Centered Content --- */
+/* Utility class for centering content (like the loading spinner) */
 .centered {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px; /* Ensure loading spinner has space */
-    width: 100%;
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    min-height: 200px; /* Ensure container has some height */
+    width: 100%; /* Take full width */
 }
 
 /* --- Media Queries --- */
-/* Adjustments primarily for filter layout and padding within the main content area */
+/* Adjustments primarily for filter layout and padding */
 
+/* Applied when screen width is 992px or less */
 @media (max-width: 992px) {
-    /* On screens where sidebar might be overlaid, adjust padding */
+    /* Reduce padding when sidebar might overlay */
     .mainContentArea {
         padding: 15px;
     }
 }
 
+/* Applied when screen width is 768px or less */
 @media (max-width: 768px) {
+     /* Adjust filter grid columns */
      .filterGrid {
-        /* Make filter grid adapt sooner */
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
 }
 
+/* Applied when screen width is 600px or less */
 @media (max-width: 600px) {
+    /* Further reduce padding on small screens */
     .mainContentArea {
-         padding: 10px; /* Further reduce padding on small mobile */
+         padding: 10px; 
      }
 
+    /* Stack filter inputs vertically */
     .filterGrid {
-        grid-template-columns: 1fr; /* Stack inputs fully */
+        grid-template-columns: 1fr; 
     }
 
+    /* Stack filter action buttons vertically */
     .filterActions {
-        flex-direction: column; /* Stack buttons */
-        align-items: stretch; /* Make buttons full width */
+        flex-direction: column; 
+        align-items: stretch; /* Make buttons take full width */
     }
 
     /* Ensure buttons within stacked actions take full width */
-    .filterActions > * { /* Target direct children */
+    .filterActions > * { 
         width: 100%;
     }
 }

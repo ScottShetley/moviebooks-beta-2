@@ -1,91 +1,157 @@
 /* client/src/styles/tokens.css */
-:root {
-  /* Colors */
-  --color-primary: #8B1E3F;                /* Burgundy */
-  --color-primary-rgb: 139, 30, 63;          /* RGB version for box-shadow */
-  --color-primary-dark: #6d1732;            /* Darker Burgundy */
-  --color-secondary: #0A1929;               /* Dark blue */
-  --color-accent: #E3B23C;                 /* Gold */
 
-  --color-background: #F4F4F4;             /* Main page background */
-  --color-card: #FFFFFF;                   /* Card/Surface background */
-  --color-background-secondary: var(--color-card); /* Sidebar Background - White */ /* << ADDED */
+/* 
+ * ==========================================================================
+ * Design Tokens
+ * ==========================================================================
+ * This file defines the core visual design values for the application
+ * as CSS Custom Properties (variables). Using these tokens ensures
+ * consistency across all components and makes future design updates easier.
+ */
 
-  --color-text: #333333;                   /* Primary text */
-  --color-text-light: #666666;             /* Secondary/Subtle text */
-  --color-text-on-primary: #FFFFFF;        /* Text on primary background */
-  --color-text-on-secondary: #FFFFFF;       /* Text on secondary background */
+ :root {
+  /* --- Colors --- */
+  /* Define the primary color palette and variations */
+  --color-primary: #8B1E3F;                /* Burgundy - Main brand color */
+  --color-primary-rgb: 139, 30, 63;          /* RGB version for use with rgba() (e.g., box-shadow, backgrounds) */
+  --color-primary-dark: #6d1732;            /* Darker shade for hover/active states */
+  --color-secondary: #0A1929;               /* Dark blue - Often used for headers or secondary elements */
+  --color-accent: #E3B23C;                 /* Gold - Used for highlighting, accents, calls to action */
+  --color-accent-hover: #d4a130;            /* Darker gold for hover states */
+  --color-accent-subtle: #fff8e1;           /* Very light gold, useful for subtle backgrounds or highlights */
 
-  --color-border: #DDDDDD;                 /* Default border */
-  --color-border-subtle: #EEEEEE;          /* Lighter border (adjust if needed) */
+  /* Background Colors */
+  --color-background: #F4F4F4;             /* Main page background (often body) */
+  --color-card: #FFFFFF;                   /* Card/Surface background (components like cards, modals) */
+  --color-background-secondary: var(--color-card); /* Sidebar Background - Aliased to card color */
+  --color-background-hover: #f0f0f0;        /* Subtle background color for hover states on light surfaces */
+  --color-background-muted: #f8f9fa;        /* Muted background for less important areas or separators */
+  --color-background-alt: var(--color-card); /* Alternate background, currently same as card */
+  --color-background-light: var(--color-card); /* Light background, currently same as card */
+  --color-background-disabled: #e9ecef;     /* Background for disabled elements */
 
-  --color-background-hover: #f0f0f0;        /* Subtle hover background */
-  --color-background-muted: #f8f9fa;        /* Muted background (e.g., for tags count) */
-  --color-accent-hover: #d4a130;            /* Darker gold for hover */
-  --color-accent-subtle: #fff8e1;           /* Very light gold background */
+  /* Text Colors */
+  --color-text: #333333;                   /* Primary text color for body content */
+  --color-text-primary: var(--color-text); /* Alias for primary text */
+  --color-text-strong: var(--color-text);  /* Alias for strong text, currently same as primary */
+  --color-text-default: var(--color-text); /* Alias for default text */
+  --color-text-emphasis: var(--color-text); /* Alias for emphasized text */
+  --color-text-light: #666666;             /* Secondary/Subtle text color (e.g., timestamps, placeholders) */
+  --color-text-secondary: #555555;         /* Slightly darker secondary text */
+  --color-text-tertiary: #777777;          /* Even lighter text, for less important info */
+  --color-text-muted: var(--color-text-light); /* Alias for muted text */
+  --color-text-subtle: var(--color-text-light); /* Alias for subtle text */
+  --color-text-disabled: #aaaaaa;          /* Text color for disabled elements */
+  --color-text-link: var(--color-primary); /* Default link color */
+  --color-text-accent: var(--color-accent); /* Text using the accent color */
+  --color-text-on-primary: #FFFFFF;        /* Text color designed to be readable on primary background */
+  --color-text-on-secondary: #FFFFFF;       /* Text color designed to be readable on secondary background */
+  --color-button-text-primary: #FFFFFF;    /* Text color for primary buttons (often same as text-on-primary) */
 
-  --color-text-secondary: #555555;         /* Adjusted from text-light, maybe slightly darker */
-  --color-text-disabled: #aaaaaa;          /* Disabled text color */
-  --color-button-text-primary: #FFFFFF;    /* Text on solid buttons (e.g., accent) */
+  /* Border Colors */
+  --color-border: #DDDDDD;                 /* Default border color */
+  --color-border-light: #e0e0e0;           /* Lighter border */
+  --color-border-lighter: #e9e9e9;         /* Even lighter border */
+  --color-border-subtle: #EEEEEE;          /* Very subtle border, often for separators */
+  --color-border-neutral: var(--color-border); /* Alias for neutral border */
 
-
+  /* Status & Notification Colors */
   --color-error: #D32F2F;                  /* Error red */
-  --color-error-rgb: 211, 47, 47;           /* RGB version for box-shadow */
+  --color-error-rgb: 211, 47, 47;           /* RGB version for rgba() */
+  --color-error-muted: #fdecea;            /* Light background for error messages */
   --color-success: #388E3C;                /* Success green */
-  --color-notification-bg: #FFFDE7;         /* Light yellow for notifications */
-  --color-notification-border: #FFEE58;     /* Slightly darker yellow border */
-  --color-unread-indicator: var(--color-primary); /* Unread notification dot color */
+  --color-notification-bg: #FFFDE7;         /* Light yellow background for notifications */
+  --color-notification-border: #FFEE58;     /* Slightly darker yellow border for notifications */
+  --color-unread-indicator: var(--color-primary); /* Color for unread notification dots */
+
+  /* Greys (Example - Define if needed for more nuanced UI) */
+  --color-grey-light: #f1f3f5;
+  --color-grey-lighter: #e9ecef;
+  --color-white: #FFFFFF; /* Explicit white */
 
 
-  /* Typography */
-  --font-heading: 'Playfair Display', Georgia, serif;
-  --font-body: 'Source Sans Pro', Arial, sans-serif;
+  /* --- Typography --- */
+  /* Define font families */
+  --font-heading: 'Playfair Display', Georgia, serif; /* Font for headings */
+  --font-body: 'Source Sans Pro', Arial, sans-serif; /* Font for body text */
 
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-md: 1rem;       /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.5rem;     /* 24px */
-  --font-size-xxl: 2rem;      /* 32px */
-  --font-size-extra-small: 0.7rem; /* For tag counts */
+  /* Define font sizes using relative units (rem) */
+  --font-size-xxs: 0.65rem;   /* ~10.4px - Extra extra small (e.g., tiny labels) */
+  --font-size-xs: 0.75rem;    /* ~12px - Extra small (e.g., timestamps, tags) */
+  --font-size-sm: 0.875rem;   /* ~14px - Small (e.g., secondary text, labels) */
+  --font-size-md: 1rem;       /* ~16px - Medium (base body size) */
+  --font-size-lg: 1.125rem;   /* ~18px - Large (e.g., subheadings) */
+  --font-size-xl: 1.5rem;     /* ~24px - Extra large (e.g., h2 headings) */
+  --font-size-xxl: 2rem;      /* ~32px - Extra extra large (e.g., h1 headings) */
+  /* --font-size-extra-small: 0.7rem; /* Duplicate of xs? Renamed to xxs */
 
-  --line-height-heading: 1.3;
-  --line-height-body: 1.6;
+  /* Define font weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500; /* Added for potential use */
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 
-  /* Spacing */
-  --space-xxs: 0.25rem;   /* 4px */
-  --space-xs: 0.5rem;     /* 8px */
-  --space-sm: 0.75rem;    /* 12px */
-  --space-md: 1rem;       /* 16px */
-  --space-lg: 1.5rem;     /* 24px */
-  --space-xl: 2rem;       /* 32px */
-  --space-xxl: 3rem;      /* 48px */
+  /* Define line heights */
+  --line-height-heading: 1.3; /* Line height for headings */
+  --line-height-body: 1.6;    /* Line height for body text */
+  --line-height-tight: 1.2;   /* Tighter line height */
+  --line-height-relaxed: 1.8; /* More relaxed line height */
 
-  /* Borders */
-  --border-radius-small: 3px; /* Adjusted for tag counts */
-  --border-radius-medium: 6px; /* Adjusted from 8px for consistency */
+
+  /* --- Spacing --- */
+  /* Define consistent spacing units using relative units (rem) */
+  --space-xxxs: 0.125rem; /* ~2px - Tiny space */
+  --space-xxs: 0.25rem;   /* ~4px */
+  --space-xs: 0.5rem;     /* ~8px */
+  --space-sm: 0.75rem;    /* ~12px */
+  --space-md: 1rem;       /* ~16px - Base spacing unit */
+  --space-lg: 1.5rem;     /* ~24px */
+  --space-xl: 2rem;       /* ~32px */
+  --space-xxl: 3rem;      /* ~48px */
+
+
+  /* --- Borders --- */
+  /* Define border radius values */
+  --border-radius-small: 3px;
+  --border-radius-medium: 6px;
+  --border-radius-large: 12px; /* Added for larger rounding */
+  --border-radius-full: 9999px; /* For creating circles/pills */
+  /* Define border width */
   --border-width: 1px;
+  --border-width-thick: 2px; /* Added for thicker borders */
 
-  /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtler shadows */
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.10);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
 
-  /* Transitions */
-  --transition-fast: all 0.2s ease-in-out;
-  --transition-base: all 0.3s ease-in-out;
+  /* --- Shadows --- */
+  /* Define consistent box-shadow values */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08); /* Small, subtle shadow */
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.10); /* Medium shadow */
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12); /* Large shadow */
+  --shadow-focus-ring: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2); /* Focus ring shadow */
 
-  /* Z-index */
-  --z-index-dropdown: 1000;
-  --z-index-overlay: 1030;  /* Ensure overlay is below sidebar */
-  --z-index-sidebar: 1040;  /* Ensure sidebar is above overlay */
-  --z-index-modal: 1100;
-  --z-index-tooltip: 1200;
-  --z-index-header: 900;    /* Below dropdowns etc. */
 
-  /* Breakpoints (Align with CSS Module logic) */
-  --breakpoint-lg: 992px;  /* Breakpoint where sidebar hides */
-  --breakpoint-md: 768px;
-  --breakpoint-sm: 576px;
+  /* --- Transitions --- */
+  /* Define standard transition timings */
+  --transition-fast: all 0.2s ease-in-out; /* Fast transition */
+  --transition-base: all 0.3s ease-in-out; /* Standard transition */
+
+
+  /* --- Z-index --- */
+  /* Define stacking order levels */
+  --z-index-base: 1;
+  --z-index-content: 10;
+  --z-index-header: 900;    /* Header/Navbar */
+  --z-index-dropdown: 1000; /* Dropdown menus */
+  --z-index-overlay: 1030;  /* Modal backdrops, etc. */
+  --z-index-sidebar: 1040;  /* Sidebar */
+  --z-index-modal: 1100;    /* Modal dialogs */
+  --z-index-tooltip: 1200;  /* Tooltips */
+  --z-index-toast: 1300;    /* Toast notifications */
+
+
+  /* --- Breakpoints --- */
+  /* Define media query breakpoints for responsive design */
+  --breakpoint-lg: 992px;  /* Large screens (desktops) */
+  --breakpoint-md: 768px;  /* Medium screens (tablets) */
+  --breakpoint-sm: 576px;  /* Small screens (large phones) */
 
 }

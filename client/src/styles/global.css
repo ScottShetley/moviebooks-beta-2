@@ -4,90 +4,112 @@
 /* Optional: Import web fonts if needed (make sure they are linked in public/index.html or loaded via JS) */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@400;600;700&display=swap');
 
-/* Reset and Base Styles */
+/* --- Reset and Base Styles --- */
+/* Universal selector: Applies box-sizing to all elements, including pseudo-elements */
 *,
 *::before,
 *::after {
+  /* Changes the box model: padding and border are included within the element's total width and height */
   box-sizing: border-box;
+  /* Reset default browser margins and padding */
   margin: 0;
   padding: 0;
 }
 
+/* Styles for the root HTML element */
 html {
+  /* Sets the base font size for rem unit calculations (usually 16px by default) */
   font-size: 100%;
-  /* Base font size, typically 16px */
+  /* Enables smooth scrolling for anchor links (#) or JavaScript scroll methods */
   scroll-behavior: smooth;
 }
 
+/* Base styles for the body element */
 body {
+  /* Set the default font family from tokens */
   font-family: var(--font-body);
+  /* Set the default font size from tokens */
   font-size: var(--font-size-md);
+  /* Set the default line height for readability */
   line-height: var(--line-height-body);
+  /* Set the default text color */
   color: var(--color-text);
+  /* Set the default background color */
   background-color: var(--color-background);
+  /* Improve font rendering on macOS and iOS */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Ensure body takes at least the full viewport height (works with #root flex layout) */
   min-height: 100vh;
-  /* Ensure body takes at least full viewport height */
-  /* display: flex; <<< REMOVED */
-  /* flex-direction: column; <<< REMOVED */
+  /* display: flex; <<< REMOVED (Handled by #root now) */
+  /* flex-direction: column; <<< REMOVED (Handled by #root now) */
 }
 
-/* Headings */
+/* --- Typography --- */
+/* Base styles for all heading levels */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
+  /* Set the heading font family */
   font-family: var(--font-heading);
+  /* Set the heading line height */
   line-height: var(--line-height-heading);
+  /* Add default margins */
   margin-top: var(--space-lg);
   margin-bottom: var(--space-sm);
+  /* Set the default heading color */
   color: var(--color-secondary);
-  /* Darker headings */
+  /* Set the default heading font weight */
   font-weight: 700;
 }
 
+/* Specific styles for h1 */
 h1 {
   font-size: var(--font-size-xxl);
-  margin-top: 0;
+  margin-top: 0; /* Often the first h1 on a page needs no top margin */
 }
 
-/* Often first heading needs no top margin */
+/* Specific styles for h2 */
 h2 {
   font-size: var(--font-size-xl);
 }
 
+/* Specific styles for h3 */
 h3 {
   font-size: var(--font-size-lg);
 }
 
+/* Specific styles for h4 */
 h4 {
   font-size: var(--font-size-md);
-  font-weight: 600;
+  font-weight: 600; /* Slightly less bold than other headings */
 }
 
+/* Base styles for paragraphs */
 p {
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-md); /* Default space below paragraphs */
 }
 
-/* Links */
+/* Base styles for links */
 a {
-  color: var(--color-primary);
-  text-decoration: none;
-  transition: var(--transition-fast);
+  color: var(--color-primary); /* Use primary color for links */
+  text-decoration: none; /* Remove default underline */
+  transition: var(--transition-fast); /* Apply smooth transition on hover */
 }
 
+/* Hover and focus states for links */
 a:hover,
 a:focus {
-  color: var(--color-accent);
-  text-decoration: underline;
-  outline: none;
-  /* Improve focus visibility later if needed */
+  color: var(--color-accent); /* Change color on hover/focus */
+  text-decoration: underline; /* Add underline on hover/focus */
+  outline: none; /* Remove default browser focus outline (consider adding custom focus styles for accessibility) */
 }
 
-/* Basic Form Styles (can be overridden by components) */
+/* --- Form Elements --- */
+/* Ensure form elements inherit font styles */
 input,
 textarea,
 button,
@@ -98,47 +120,53 @@ select {
   color: inherit;
 }
 
+/* Base styles for buttons (can be overridden by Button component) */
 button {
-  cursor: pointer;
-  border: none;
-  background: none;
+  cursor: pointer; /* Set pointer cursor */
+  border: none; /* Remove default border */
+  background: none; /* Remove default background */
 }
 
+/* --- Media Elements --- */
+/* Base styles for images and SVGs */
 img,
 svg {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  /* Remove extra space below images */
+  max-width: 100%; /* Prevent images from exceeding their container width */
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Remove extra space below inline images */
 }
 
-/* Utility Classes (Optional, but helpful) */
+/* --- Utility Classes (Optional) --- */
+/* Centered container with max-width */
 .container {
   width: 100%;
-  max-width: 1200px;
-  /* Adjust max width as needed */
+  max-width: 1200px; /* Adjust max width as needed */
   margin-left: auto;
   margin-right: auto;
   padding-left: var(--space-md);
   padding-right: var(--space-md);
 }
 
+/* Text alignment utility */
 .text-center {
   text-align: center;
 }
 
+/* Basic error message styling */
 .error-message {
   color: var(--color-error);
   font-size: var(--font-size-sm);
   margin-top: var(--space-xxs);
 }
 
+/* Basic success message styling */
 .success-message {
   color: var(--color-success);
   font-size: var(--font-size-sm);
   margin-top: var(--space-xxs);
 }
 
+/* Accessibility utility: Hides content visually but keeps it accessible to screen readers */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -152,43 +180,45 @@ svg {
 }
 
 
-/* Basic Responsive */
+/* --- Basic Responsive Adjustments --- */
+/* Styles applied on screens 768px wide or smaller */
 @media (max-width: 768px) {
+  /* Reduce heading sizes */
   h1 {
     font-size: var(--font-size-xl);
   }
-
   h2 {
     font-size: var(--font-size-lg);
   }
-
+  /* Reduce container padding */
   .container {
     padding-left: var(--space-sm);
     padding-right: var(--space-sm);
   }
 }
 
-/* Root layout for sticky footer */
+/* --- Root Layout for Sticky Footer --- */
+/* Target the root element where your React app is mounted */
 #root {
-  display: flex;
-  /* <<< KEEP */
-  flex-direction: column;
-  /* <<< KEEP */
-  min-height: 100vh;
-  /* <<< KEEP */
+  display: flex;           /* Use flexbox */
+  flex-direction: column;  /* Stack children (Header, Main, Footer) vertically */
+  min-height: 100vh;       /* Ensure #root takes at least the full viewport height */
 }
 
-/* Main content area */
+/* Styles for the main content area (typically wrapping page content) */
 main {
+  /* flex: 1 0 auto; means:
+     - flex-grow: 1 (allow main to grow and take up available space)
+     - flex-shrink: 0 (prevent main from shrinking below its content size)
+     - flex-basis: auto (content size is the initial size) */
   flex: 1 0 auto;
-  /* Allow main to grow and shrink, but not shrink below content size */
+  /* Add default padding to the main content area */
   padding-top: var(--space-lg);
   padding-bottom: var(--space-lg);
 }
 
-/* Footer specific styling */
+/* Footer specific styling (commented out as it's better handled by a specific component/module) */
 /* Assuming a Footer component exists, handled via Layout/Footer.module.css is better */
 /* footer { */
-/* flex-shrink: 0; */
-/* Prevent footer from shrinking */
+/* flex-shrink: 0; */ /* Prevent footer from shrinking */
 /* } */

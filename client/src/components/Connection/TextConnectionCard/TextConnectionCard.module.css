@@ -150,8 +150,20 @@
     margin-left: var(--space-xxs);
 }
 
-/* Ensure LikeButton styles integrate well */
-/* ... */
+/* --- ADDED: Favorite Button Specific Styles --- */
+.favoriteButton.favorited,
+.favoriteButton.favorited svg { /* Target button and SVG when favorited */
+    color: darkred; /* Or use a specific hex like #B71C1C or a CSS variable */
+}
+
+/* Optional: Override hover for favorited state if needed */
+.favoriteButton.favorited:hover:not(:disabled) {
+    /* Keep the red color on hover, maybe adjust background */
+    color: darkred; /* Ensure color stays red */
+    background-color: rgba(139, 0, 0, 0.1); /* Example: subtle red background */
+}
+/* --------------------------------------------- */
+
 
 /* --- Share Button Specific Style (Optional, for consistency) --- */
 .shareButton {
@@ -268,3 +280,73 @@
     /* width: 100%; // Make error span full width potentially */
     /* text-align: right; // Align error text right */
 }
+
+/* --- ADDED: Style for Comment Button for consistency with ConnectionCard --- */
+.commentButton {
+    color: var(--color-text-light); /* Or your preferred comment icon color */
+}
+.commentButton:hover:not(:disabled) {
+    color: var(--color-primary); /* Or your preferred hover color */
+    background-color: var(--color-background-hover);
+}
+/* ----------------------------------------------------------------------- */
+
+/* --- ADDED: Style for the comment input section wrapper --- */
+.commentInputSection {
+    margin-top: 15px; /* Add space above the comment form */
+    padding-top: 15px; /* Add space inside the top border */
+    border-top: 1px solid var(--color-border-subtle); /* Add a separator line */
+}
+/* -------------------------------------------------------- */
+
+
+/* --- Media Queries for Mobile Responsiveness - ADDED FOR CONSISTENCY, ADAPT IF NEEDED --- */
+@media (max-width: var(--breakpoint-md, 768px)) {
+    .card {
+        padding: var(--space-sm);
+        border-radius: var(--border-radius-md); /* Optional: Adjust radius */
+    }
+    .userInfo .avatar {
+        width: 30px;
+        height: 30px;
+    }
+    .userInfo .nameLink {
+        font-size: var(--font-size-sm);
+    }
+    .userInfo .timestamp {
+        font-size: var(--font-size-xxs);
+    }
+    .context {
+        font-size: var(--font-size-sm);
+        margin-bottom: var(--space-sm);
+    }
+    .actions {
+        gap: var(--space-xs); /* Reduce gap between buttons */
+        padding-top: var(--space-sm);
+    }
+    .actionButton {
+        padding: var(--space-xxs) var(--space-xs);
+        font-size: 1rem; /* Optional: Adjust button font size */
+    }
+    .actionButton .count {
+        font-size: var(--font-size-xxs);
+    }
+
+    /* Adjust share popup size/padding for mobile if needed */
+    .shareOptionsPopup {
+        min-width: 130px;
+        padding: var(--space-xxs);
+        gap: var(--space-xxxs);
+        margin-bottom: var(--space-xs);
+    }
+    .shareOptionButton {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--font-size-xs);
+        gap: var(--space-xs);
+    }
+    .shareIcon {
+        font-size: 1em;
+    }
+}
+/* --- END Media Queries --- */
+

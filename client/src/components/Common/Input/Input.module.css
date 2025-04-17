@@ -1,71 +1,105 @@
 /* client/src/components/Common/Input/Input.module.css */
+
+/* Styles for the container wrapping the label, input/textarea, and error message */
 .inputGroup {
-    margin-bottom: var(--space-md); /* Space below the input group */
-    width: 100%; /* Inputs usually take full width of their container */
-    position: relative; /* For potential icon positioning later */
-  }
-  
-  .label {
-    display: block; /* Label on its own line */
-    margin-bottom: var(--space-xs);
-    font-weight: 600;
-    color: var(--color-text-light); /* Slightly lighter label text */
-    font-size: var(--font-size-sm);
-    cursor: pointer; /* Indicate it's clickable */
-  }
-  
-  /* Base styles for both input and textarea */
-  .input {
-    width: 100%;
-    padding: var(--space-xs) var(--space-sm);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--border-radius-sm);
-    font-size: var(--font-size-md);
-    background-color: var(--color-card); /* Usually white */
-    color: var(--color-text);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    line-height: 1.5; /* Ensure consistent line height */
-  }
-  
-  /* Focus state */
-  .input:focus {
-    outline: none; /* Remove default browser outline */
-    border-color: var(--color-primary); /* Highlight border with primary color */
-    /* Add a subtle box-shadow using RGB version of primary color */
-    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 139, 30, 63), 0.2);
-  }
-  
-  /* Disabled state */
-   .input:disabled {
-      background-color: var(--color-background); /* Slightly greyed out background */
-      cursor: not-allowed;
-      opacity: 0.7;
-   }
-  
-  
-  /* Error state */
-  .input.error {
-      border-color: var(--color-error); /* Use error color for border */
-  }
-   /* Error focus state */
-   .input.error:focus {
-       border-color: var(--color-error); /* Keep border red on focus */
-       /* Use error color for focus shadow */
-       box-shadow: 0 0 0 3px rgba(var(--color-error-rgb, 211, 47, 47), 0.2);
-   }
-  
-  /* Styles specifically for textarea */
-  .textarea {
-      min-height: 100px; /* Give textarea some default height */
-      resize: vertical; /* Allow users to resize vertically only */
-      font-family: inherit; /* Ensure font consistency */
-  }
-  
-  /* Error message associated with the input */
-  .errorMessage {
-      color: var(--color-error);
-      font-size: var(--font-size-sm);
-      margin-top: var(--space-xxs);
-      display: block; /* Ensure it takes space */
-      min-height: calc(var(--font-size-sm) * var(--line-height-body)); /* Reserve space even when empty? Optional */
-  }
+  /* Space below the entire input group */
+  margin-bottom: var(--space-md); 
+  /* Ensure the group takes the full width available in its parent container */
+  width: 100%; 
+  /* Allows absolute positioning of child elements (like icons, if added later) 
+     relative to this wrapper */
+  position: relative; 
+}
+
+/* Styles for the <label> element */
+.label {
+  /* Make the label appear on its own line above the input */
+  display: block; 
+  /* Space below the label, before the input field */
+  margin-bottom: var(--space-xs);
+  font-weight: 600; /* Make label text bold */
+  /* Use a slightly lighter text color for the label */
+  color: var(--color-text-light); 
+  font-size: var(--font-size-sm); /* Use a smaller font size for the label */
+  /* Change cursor to a pointer to indicate it's clickable (due to htmlFor linking) */
+  cursor: pointer; 
+}
+
+/* Base styles applied to both <input> and <textarea> elements */
+.input {
+  /* Make the input field take the full width of its container (.inputGroup) */
+  width: 100%;
+  /* Inner spacing within the input field */
+  padding: var(--space-xs) var(--space-sm);
+  /* Standard border styling */
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-sm); /* Apply rounded corners */
+  font-size: var(--font-size-md); /* Standard font size for input text */
+  /* Background color, usually white or light */
+  background-color: var(--color-card); 
+  color: var(--color-text); /* Text color for user input */
+  /* Smooth transition for border and shadow changes on focus/error */
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  /* Ensure consistent line height for the text inside the input */
+  line-height: 1.5; 
+}
+
+/* Styles for the input/textarea when it receives focus */
+.input:focus {
+  /* Remove the default browser focus outline (e.g., blue ring) */
+  outline: none; 
+  /* Change the border color to the primary color for visual feedback */
+  border-color: var(--color-primary); 
+  /* Add a subtle outer glow (focus ring) using the primary color with transparency.
+     'var(--color-primary-rgb, 139, 30, 63)' uses an RGB variable or falls back. 
+     '0.2' sets the opacity to 20%. */
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 139, 30, 63), 0.2);
+}
+
+/* Styles for the input/textarea when it's disabled */
+.input:disabled {
+  /* Use a slightly different background to indicate disabled state */
+  background-color: var(--color-background); 
+  /* Change cursor to 'not-allowed' */
+  cursor: not-allowed;
+  /* Reduce opacity to make it look faded */
+  opacity: 0.7;
+}
+
+/* Styles applied to the input/textarea when the 'error' class is present */
+.input.error {
+  /* Change the border color to the error color */
+  border-color: var(--color-error); 
+}
+
+/* Styles for the input/textarea when it has the 'error' class AND is focused */
+.input.error:focus {
+   /* Keep the border red even when focused */
+   border-color: var(--color-error); 
+   /* Use the error color for the focus glow */
+   box-shadow: 0 0 0 3px rgba(var(--color-error-rgb, 211, 47, 47), 0.2);
+}
+
+/* Styles applied only to the <textarea> element */
+.textarea {
+  /* Set a minimum height so it's not too small initially */
+  min-height: 100px; 
+  /* Allow users to resize the textarea vertically, but not horizontally */
+  resize: vertical; 
+  /* Ensure the textarea uses the same font as regular inputs and the rest of the app */
+  font-family: inherit; 
+}
+
+/* Styles for the error message displayed below the input */
+.errorMessage {
+  color: var(--color-error); /* Use the error text color */
+  font-size: var(--font-size-sm); /* Use a smaller font size */
+  /* Add a small space above the error message */
+  margin-top: var(--space-xxs);
+  /* Ensure the error message takes up its own line */
+  display: block; 
+  /* Optional: Reserve vertical space roughly equal to one line of text. 
+     This can prevent the layout from shifting up/down when an error message 
+     appears or disappears. Adjust multiplier based on actual line height. */
+  min-height: calc(var(--font-size-sm) * 1.4); 
+}

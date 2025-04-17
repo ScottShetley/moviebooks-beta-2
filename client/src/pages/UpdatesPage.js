@@ -1,34 +1,54 @@
 // client/src/pages/UpdatesPage.js
 import React from 'react';
 import styles from './UpdatesPage.module.css'; // Optional: Create this file for styling
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async'; // Used for setting page title and meta tags
 
+/**
+ * Renders the static "Updates & Roadmap" page.
+ * Displays information about recent changes and future plans for the application.
+ */
 const UpdatesPage = () => {
-  // Get today's date for the latest update section
+  // --- Date Formatting for Latest Update ---
+  // Get today's date object
   const today = new Date();
+  // Format the date into a readable string (e.g., "October 26, 2023")
   const formattedDate = today.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
 
+  // --- Render Logic ---
   return (
-    <div className={styles.updatesContainer || 'container'}> {/* Use styles or a default class */}
+    // Main container div for the page.
+    // Uses CSS module class if available, otherwise falls back to a generic 'container' class.
+    // Consider creating UpdatesPage.module.css if it doesn't exist.
+    <div className={styles.updatesContainer || 'container'}>
+      {/* --- Helmet for SEO and Browser Tab --- */}
+      {/* Sets the title that appears in the browser tab and search engine results. */}
+      {/* Sets the meta description used by search engines. */}
       <Helmet>
         <title>App Updates & Roadmap - MovieBooks</title>
         <meta name="description" content="Stay informed about the latest features, improvements, and future plans for the MovieBooks application." />
       </Helmet>
 
+      {/* Page Heading */}
       <h1>MovieBooks: Updates & Roadmap</h1>
+      {/* Subtitle Paragraph */}
+      {/* Consider moving this inline style to the CSS module (e.g., styles.subtitle) */}
       <p style={{ textAlign: 'center', marginBottom: 'var(--space-lg)' }}>
           Tracking the evolution of MovieBooks, from initial features to the latest enhancements.
       </p>
 
       {/* --- LATEST UPDATE SECTION --- */}
+      {/* Uses <section> to group related content */}
       <section className={styles.updateSection}>
+        {/* Heading includes the dynamically formatted date */}
         <h2>🚀 Latest Update ({formattedDate}) - Feed Revamp & Fixes!</h2>
         <p>The main feed just got a significant upgrade and several usability fixes:</p>
+        {/* Unordered list (<ul>) for bullet points */}
         <ul>
+            {/* List items (<li>) describing individual updates */}
             <li><strong>Text-Only Posts:</strong> You can now create connections with just context text, without needing to select a movie or book. Perfect for quick thoughts or general discussion!</li>
             <li><strong>Collapsible Cards:</strong> Standard connection cards (with movie/book) now appear collapsed by default on the feed, saving space. Click to expand and see the full details!</li>
             <li><strong>Text Post Deletion:</strong> Added the ability for users to delete their own text-only posts.</li>
@@ -44,6 +64,7 @@ const UpdatesPage = () => {
         <h2>✅ Previous Updates</h2>
 
         {/* --- Profile Enhancements Update --- */}
+        {/* Subheading (h3) for a specific past update */}
         <h3 className={styles.subHeading}>User Profiles & Notifications (Previous Major Update)</h3>
         <p>Features rolled out just before the Feed Revamp:</p>
         <ul>
@@ -66,7 +87,7 @@ const UpdatesPage = () => {
         </ul>
       </section>
 
-      {/* --- FUTURE PLANS SECTION (Unchanged) --- */}
+      {/* --- FUTURE PLANS SECTION --- */}
       <section className={styles.updateSection}>
         <h2>💡 Future Plans & Ideas</h2>
         <p>We're always thinking ahead! Here's a glimpse of what we're considering or actively working on next:</p>

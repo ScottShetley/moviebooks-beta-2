@@ -1,12 +1,20 @@
 // client/src/pages/CreateConnectionPage.js
 import React from 'react';
-import CreateConnectionForm from '../components/Connection/CreateConnectionForm/CreateConnectionForm'; // Import the form
+// Import the form component that contains the actual creation logic and UI
+import CreateConnectionForm from '../components/Connection/CreateConnectionForm/CreateConnectionForm';
 
+/**
+ * Renders the page dedicated to creating a new connection.
+ * This component primarily acts as a container for the CreateConnectionForm.
+ */
 const CreateConnectionPage = () => {
   return (
+    // Main container div for the page.
+    // Consider adding a CSS module and a container class (e.g., styles.createPageContainer)
+    // for consistent page layout and styling (max-width, padding, margins).
     <div>
-      {/* Maybe add a container or specific styling for the page later */}
-      <CreateConnectionForm /> {/* Render the form component */}
+      {/* Render the CreateConnectionForm component, which handles all the form fields and submission logic. */}
+      <CreateConnectionForm />
     </div>
   );
 };

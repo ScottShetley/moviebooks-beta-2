@@ -1,51 +1,79 @@
 /* client/src/components/Common/LikeButton/LikeButton.module.css */
 
+/* Base styles for the like button container */
 .actionButton {
+    /* Use transparent background by default */
     background-color: transparent;
-    /* Adapt styles from ConnectionCard.module.css or TextConnectionCard.module.css as needed */
-    /* These are styles commonly applied to action buttons */
-    border: var(--border-width, 1px) solid var(--color-border, #ccc);
-    color: var(--color-text-light, #666);
-    padding: var(--space-xs, 4px) var(--space-sm, 8px);
-    border-radius: var(--border-radius-md, 6px);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out; /* Use 'all' or specific properties */
-    font-size: var(--font-size-sm, 0.9rem); /* Adjust as needed */
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs, 4px);
-    line-height: 1;
+    
+    /* --- Base Button Styling --- */
+    /* These styles define the default appearance. 
+       They use CSS variables with fallback values (e.g., var(--border-width, 1px)). 
+       This means if the CSS variable isn't defined elsewhere, the fallback value will be used. 
+       Ensure these variables are defined in your global styles for consistency. */
+    border: var(--border-width, 1px) solid var(--color-border, #ccc); /* Default border */
+    color: var(--color-text-light, #666); /* Default text/icon color */
+    padding: var(--space-xs, 4px) var(--space-sm, 8px); /* Inner padding */
+    border-radius: var(--border-radius-md, 6px); /* Rounded corners */
+    font-size: var(--font-size-sm, 0.9rem); /* Font size */
+    /* --------------------------- */
+
+    cursor: pointer; /* Show pointer cursor on hover */
+    /* Transition specific properties for better performance instead of 'all' */
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out; 
+    
+    /* Use inline-flex for layout and alignment */
+    display: inline-flex; 
+    align-items: center; /* Vertically center icon and count */
+    gap: var(--space-xs, 4px); /* Space between icon and count */
+    line-height: 1; /* Set line height to prevent extra vertical space */
 }
+
+/* Styles for the button when hovered over (and not disabled) */
 .actionButton:hover:not(:disabled) {
+    /* Apply a subtle background color on hover */
     background-color: var(--color-background-hover, #f0f0f0);
-    border-color: var(--color-text-light, #666);
+    /* Optionally change border and text color on hover */
+    border-color: var(--color-text-light, #666); 
     color: var(--color-text, #333);
 }
+
+/* Styles for the button when it's disabled */
 .actionButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    opacity: 0.6; /* Make it look faded */
+    cursor: not-allowed; /* Indicate it's not interactive */
 }
 
+/* Styles for the like count number */
 .count {
-    font-size: var(--font-size-xs, 0.8rem);
-    font-weight: var(--font-weight-medium, 600);
-    margin-left: 2px;
+    font-size: var(--font-size-xs, 0.8rem); /* Smaller font size for the count */
+    font-weight: var(--font-weight-medium, 600); /* Make the count slightly bolder */
+    /* Add a tiny space to the left of the count */
+    margin-left: 2px; 
 }
 
-/* Styles for the 'liked' state */
+/* Styles applied to the button when it has the '.liked' class */
 .liked {
-    /* Use theme variables if available */
-    color: var(--color-accent, #e3b23c);
+    /* Change the text/icon color to the accent color when liked */
+    color: var(--color-accent, #e3b23c); 
+    /* Change the border color to match */
     border-color: var(--color-accent, #e3b23c);
 }
+
+/* Styles for the liked button when hovered over (and not disabled) */
 .liked:hover:not(:disabled) {
+    /* Add a very subtle background using the accent color with transparency */
     background-color: rgba(var(--color-accent-rgb, 227, 178, 60), 0.1);
-    border-color: var(--color-accent, #e3b23c); /* Ensure border stays colored */
+    /* Ensure the border stays the accent color on hover */
+    border-color: var(--color-accent, #e3b23c); 
+    /* Ensure the icon/text stays the accent color on hover */
+    color: var(--color-accent, #e3b23c); 
 }
 
-/* Optional: Inline error style */
+/* Styles for an optional inline error message (if displayed near the button) */
 .inlineError {
-    color: var(--color-error, red);
-    font-size: var(--font-size-xs, 0.75rem);
-    margin-left: var(--space-sm, 8px);
+    color: var(--color-error, red); /* Use error color */
+    font-size: var(--font-size-xs, 0.75rem); /* Small font size */
+    /* Add space to the left of the error message */
+    margin-left: var(--space-sm, 8px); 
 }
+
