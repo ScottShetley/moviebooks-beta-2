@@ -559,56 +559,72 @@
     }
 }
 
-/* --- START: NEW EXTREME NARROW FIX --- */
-/* This block remains untouched */
+/* --- START: NEW EXTREME NARROW FIX (Revision 2) --- */
 @media (max-width: 360px) {
     .actions {
         flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-sm);
+        /* Stack direct children vertically */
+        align-items: stretch;
+        /* Make children fill width (alternative to setting width: 100% below) */
+        gap: var(--space-xs);
+        /* Maybe smaller gap vertically */
     }
 
-    /* Make all direct children of .actions take full width */
+    /* Ensure ALL direct children behave like block elements in the column */
     .actions>* {
         width: 100%;
-        min-width: 0;
-        /* Already applied but good to keep */
-        /* Optional: Add margin if gap isn't enough */
-        /* margin-bottom: var(--space-xs); */
-    }
-
-    /* Remove individual button margin-bottom if using gap */
-    /* .actions > *:last-child { margin-bottom: 0; } */
-
-    .endButtonsWrapper {
+        /* Force full width */
         margin-left: 0;
-        /* It's now targeted by .actions > * so width: 100% applies */
-        /* Ensure internal flex alignment if needed */
-        display: flex;
-        /* Keep flex for internal alignment */
-        justify-content: space-between;
-        /* Example: Space out More/Delete */
-        /* Or align items normally if width: 100% on buttons below is enough */
-        /* justify-content: flex-start; */
+        /* Reset any auto margins */
+        margin-bottom: var(--space-xs);
+        /* Add space between stacked items */
+        /* min-width: 0; /* Keep allowing shrink */
     }
 
-    .actionButton {
-        padding: var(--space-xs) var(--space-sm);
-        /* Ensure button text/icon is centered or aligned left as desired within the 100% width */
-        justify-content: center;
-        /* Example: Center content */
-        /* Or justify-content: flex-start; */
+    .actions>*:last-child {
+        margin-bottom: 0;
+        /* No margin on the very last item */
+    }
+
+    /* Reset the endButtonsWrapper to just be a simple container */
+    .endButtonsWrapper {
+        display: block;
+        /* Override display: flex */
         width: 100%;
-        /* Explicitly set for button if .actions > * wasn't enough */
+        /* Ensure it takes full width (redundant but safe) */
+        margin-left: 0;
+        /* Ensure no auto margin */
     }
 
-    /* Target buttons inside the end wrapper specifically */
-    .endButtonsWrapper>.actionButton {
-        width: auto;
-        /* Let them size naturally within the full-width wrapper */
-        /* Or width: 100%; if you want More/Delete stacked */
-        /* Or adjust flex properties on .endButtonsWrapper */
+    /* Ensure ALL action buttons take full width and maybe align text left */
+    .actionButton {
+        width: 100%;
+        /* Force ALL buttons full width */
+        justify-content: flex-start;
+        /* Align button content (icon/text) to the left */
+        padding: var(--space-xs) var(--space-sm);
+        /* Adjust padding if needed */
+        margin-bottom: var(--space-xs);
+        /* Add space between buttons INSIDE the wrapper if it contains multiple */
     }
+
+    .actionButton:last-child {
+        margin-bottom: 0;
+        /* No margin on last button in any context */
+    }
+
+    /* Specifically override the width: auto for buttons inside the wrapper */
+    .endButtonsWrapper>.actionButton {
+        width: 100%;
+        /* Make buttons inside wrapper take full width too */
+        margin-bottom: var(--space-xs);
+        /* Ensure spacing if multiple buttons in wrapper */
+    }
+
+    .endButtonsWrapper>.actionButton:last-child {
+        margin-bottom: 0;
+    }
+
 }
 
-/* --- END: NEW EXTREME NARROW FIX --- */
+/* --- END: NEW EXTREME NARROW FIX (Revision 2) --- */
