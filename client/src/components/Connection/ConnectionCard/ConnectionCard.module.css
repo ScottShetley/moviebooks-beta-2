@@ -473,20 +473,20 @@
     /* Allow ALL direct children of .actions (buttons, wrappers) */
     /* to shrink below their content size if necessary */
     .actions>* {
-        min-width: 0;
+        /* min-width: 0; /* REMOVED FOR TESTING */
     }
 
     /* Explicitly target actionButtons if needed, though above should cover it */
     .actionButton {
         padding: var(--space-xxs) var(--space-xs);
         font-size: var(--font-size-sm);
-        min-width: 0;
+        /* min-width: 0; /* REMOVED FOR TESTING */
         /* Explicitly allow shrinking */
     }
 
     /* Ensure buttons inside the end wrapper can also shrink */
     .endButtonsWrapper>.actionButton {
-        min-width: 0;
+        /* min-width: 0; /* REMOVED FOR TESTING */
     }
 
     /* --- END: Overflow Fix --- */
@@ -560,6 +560,7 @@
 }
 
 /* --- START: NEW EXTREME NARROW FIX --- */
+/* This block remains untouched */
 @media (max-width: 360px) {
     .actions {
         flex-direction: column;
