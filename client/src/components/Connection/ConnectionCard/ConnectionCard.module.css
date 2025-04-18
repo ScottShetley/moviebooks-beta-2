@@ -560,26 +560,53 @@
 }
 
 /* --- START: NEW EXTREME NARROW FIX --- */
-/* Target screens smaller than common small phones */
 @media (max-width: 360px) {
     .actions {
-        /* Stack everything vertically */
         flex-direction: column;
         align-items: flex-start;
-        /* Align items to the start of the column */
         gap: var(--space-sm);
-        /* Increase gap slightly for vertical stack */
     }
 
-    /* Remove the push-right behavior when stacked */
+    /* Make all direct children of .actions take full width */
+    .actions>* {
+        width: 100%;
+        min-width: 0;
+        /* Already applied but good to keep */
+        /* Optional: Add margin if gap isn't enough */
+        /* margin-bottom: var(--space-xs); */
+    }
+
+    /* Remove individual button margin-bottom if using gap */
+    /* .actions > *:last-child { margin-bottom: 0; } */
+
     .endButtonsWrapper {
         margin-left: 0;
+        /* It's now targeted by .actions > * so width: 100% applies */
+        /* Ensure internal flex alignment if needed */
+        display: flex;
+        /* Keep flex for internal alignment */
+        justify-content: space-between;
+        /* Example: Space out More/Delete */
+        /* Or align items normally if width: 100% on buttons below is enough */
+        /* justify-content: flex-start; */
     }
 
-    /* Ensure buttons have reasonable padding if stacked */
     .actionButton {
         padding: var(--space-xs) var(--space-sm);
-        /* Ensure decent tap target */
+        /* Ensure button text/icon is centered or aligned left as desired within the 100% width */
+        justify-content: center;
+        /* Example: Center content */
+        /* Or justify-content: flex-start; */
+        width: 100%;
+        /* Explicitly set for button if .actions > * wasn't enough */
+    }
+
+    /* Target buttons inside the end wrapper specifically */
+    .endButtonsWrapper>.actionButton {
+        width: auto;
+        /* Let them size naturally within the full-width wrapper */
+        /* Or width: 100%; if you want More/Delete stacked */
+        /* Or adjust flex properties on .endButtonsWrapper */
     }
 }
 
