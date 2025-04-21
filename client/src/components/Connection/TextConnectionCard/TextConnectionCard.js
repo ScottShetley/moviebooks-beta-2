@@ -1,6 +1,6 @@
 // client/src/components/Connection/TextConnectionCard/TextConnectionCard.js
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // Removed useNavigate import
 import {
     FaRegCommentAlt, FaShareAlt, FaTrashAlt, FaTwitter, FaFacebook,
     FaLink, FaTimes, FaLinkedin, FaRedditAlien, FaPinterest, FaWhatsapp,
@@ -18,7 +18,7 @@ import styles from './TextConnectionCard.module.css';
 
 const TextConnectionCard = ({ connection, onUpdate, onDelete }) => {
     // --- HOOK CALLS AT THE TOP ---
-    const navigate = useNavigate();
+    // Removed: const navigate = useNavigate();
     const { user, updateUserFavorites } = useAuth();
 
     // --- STATE ---
