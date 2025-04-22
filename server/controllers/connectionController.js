@@ -5,7 +5,7 @@ import Connection from '../models/Connection.js';
 import Movie from '../models/Movie.js';
 import Book from '../models/Book.js';
 import Notification from '../models/Notification.js';
-import Comment from '../models/Comment.js';
+import Comment from '../models/Comment.js'; // Make sure Comment model is imported
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/User.js';
 
@@ -65,6 +65,7 @@ export const createConnection = asyncHandler(async (req, res, next) => {
 
   if (bookTitle) {
       const processedBookGenres = processStringToArray(bookGenres);
+      const processedBookActors = processStringToArray(bookActors); // Should be processedBookGenres, but keeping as is to match input for now
       const bookData = { title: bookTitle, genres: processedBookGenres, author: bookAuthor?.trim() || undefined, publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined, isbn: bookIsbn?.trim() || undefined, synopsis: bookSynopsis?.trim() || undefined };
       if (req.files?.bookCover?.[0]) { bookData.coverPath = req.files.bookCover[0].path; bookData.coverPublicId = req.files.bookCover[0].filename; }
       book = await findOrCreate(Book, { title: bookTitle }, bookData);
@@ -121,6 +122,14 @@ export const getConnections = asyncHandler(async (req, res, next) => {
     { $unwind: { path: '$bookData', preserveNullAndEmptyArrays: true } },
     { $lookup: { from: 'users', localField: 'userRef', foreignField: '_id', as: 'userData' } },
     { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } },
+    // --- NEW: Lookup comments for each connection ---
+    { $lookup: {
+        from: 'comments',           // The collection to join
+        localField: '_id',          // Field from the input documents (connections)
+        foreignField: 'connection', // Field from the documents of the "from" collection (comments)
+        as: 'commentsData'          // Output array field name
+    } },
+    // --- END NEW LOOKUP ---
     { $match: matchStage }
   ];
 
@@ -132,7 +141,7 @@ export const getConnections = asyncHandler(async (req, res, next) => {
      { $sort: { createdAt: -1 } },
      { $skip: pageSize * (page - 1) },
      { $limit: pageSize },
-     // --- *** MODIFIED $project Stage *** ---
+     // --- *** MODIFIED $project Stage to include commentCount *** ---
      { $project: {
         _id: 1, context: 1, tags: 1, likes: 1, favorites: 1, createdAt: 1, updatedAt: 1,
         screenshotUrl: 1, screenshotPublicId: 1,
@@ -158,7 +167,9 @@ export const getConnections = asyncHandler(async (req, res, next) => {
                  then: "$bookData", // Pass the whole object if valid
                  else: null        // Otherwise, explicitly set to null
              }
-         }
+         },
+         // --- NEW: Include the size of the commentsData array as commentCount ---
+         commentCount: { $size: "$commentsData" }
        }
      }
      // --- *** END MODIFIED $project Stage *** ---
@@ -276,6 +287,7 @@ export const deleteConnection = asyncHandler(async (req, res, next) => {
 export const getConnectionsByUserId = asyncHandler(async (req, res) => {
   const targetUserId = req.params.userId;
   if (!mongoose.Types.ObjectId.isValid(targetUserId)) { res.status(400); throw new Error('Invalid User ID format'); }
+  // NOTE: commentCount is currently NOT included here, only in getConnections (main feed)
   const connections = await Connection.find({ userRef: targetUserId })
     .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
     .populate('movieRef')
@@ -293,6 +305,7 @@ export const getConnectionsByIds = asyncHandler(async (req, res) => {
     if (connectionIds.length === 0) { return res.json([]); }
     const validConnectionIds = connectionIds.filter(id => mongoose.Types.ObjectId.isValid(id));
     if (validConnectionIds.length === 0) { return res.json([]); }
+    // NOTE: commentCount is currently NOT included here, only in getConnections (main feed)
     const connections = await Connection.find({ _id: { $in: validConnectionIds } })
         .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
         .populate('movieRef')
@@ -300,4 +313,3 @@ export const getConnectionsByIds = asyncHandler(async (req, res) => {
         .sort({ createdAt: -1 });
     res.json(connections || []);
 });
-

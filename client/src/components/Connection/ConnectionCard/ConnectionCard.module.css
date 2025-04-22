@@ -6,11 +6,14 @@
     padding: var(--space-md);
     margin-bottom: var(--space-lg);
     box-shadow: var(--shadow-md);
-    overflow: hidden; /* Keep hidden for collapse effect base state */
+    overflow: hidden;
+    /* Keep hidden for collapse effect base state */
     border: var(--border-width) solid var(--color-border);
     max-width: 600px;
-    position: relative; /* For absolute positioned children like popups */
-    width: 100%; /* Take full width up to max-width */
+    position: relative;
+    /* For absolute positioned children like popups */
+    width: 100%;
+    /* Take full width up to max-width */
 }
 
 /* Allow overflow when expanded for popups */
@@ -22,6 +25,7 @@
 .header {
     margin-bottom: var(--space-xs);
 }
+
 .header h3 {
     margin: 0 0 var(--space-xs) 0;
     font-size: var(--font-size-lg);
@@ -29,10 +33,12 @@
     color: var(--color-text);
     line-height: 1.3;
 }
+
 .titleLink {
     color: var(--color-primary);
     text-decoration: none;
 }
+
 .titleLink:hover {
     text-decoration: underline;
     color: var(--color-primary-dark);
@@ -49,17 +55,21 @@
     font-weight: var(--font-weight-medium, 600);
     text-decoration: none;
 }
+
 .userLink:hover {
     text-decoration: underline;
 }
 
 /* Styles for Content Wrapper (Collapsible Area) */
 .contentWrapper {
-    max-height: 250px; /* Initial collapsed height */
+    max-height: 250px;
+    /* Initial collapsed height */
     overflow: hidden;
-    position: relative; /* For the fade-out overlay */
+    position: relative;
+    /* For the fade-out overlay */
     transition: max-height 0.4s ease-in-out;
-    margin-bottom: var(--space-sm); /* Space before actions */
+    margin-bottom: var(--space-sm);
+    /* Space before actions */
 }
 
 /* Fade-out effect at the bottom when collapsed */
@@ -77,10 +87,13 @@
 
 /* Expanded state for content wrapper */
 .card.expanded .contentWrapper {
-    max-height: 2000px; /* Large enough for any content */
+    max-height: 2000px;
+    /* Large enough for any content */
 }
+
 .card.expanded .contentWrapper::before {
-    opacity: 0; /* Hide fade effect when expanded */
+    opacity: 0;
+    /* Hide fade effect when expanded */
 }
 
 
@@ -93,7 +106,8 @@
 .screenshotWrapper {
     position: relative;
     width: 100%;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    padding-top: 56.25%;
+    /* 16:9 Aspect Ratio */
     background-color: var(--color-background);
     border-radius: var(--border-radius-md);
     overflow: hidden;
@@ -117,8 +131,10 @@
     font-size: var(--font-size-md);
     color: var(--color-text);
     line-height: var(--line-height-body);
-    margin-top: var(--space-md); /* Add margin only if screenshot/context above */
-    margin-bottom: 0; /* Margin handled by wrapper/container */
+    margin-top: var(--space-md);
+    /* Add margin only if screenshot/context above */
+    margin-bottom: 0;
+    /* Margin handled by wrapper/container */
     white-space: pre-wrap;
     overflow-wrap: break-word;
 }
@@ -127,8 +143,10 @@
 .card:not(.expanded) .contentWrapper .context {
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* Show N lines */
-    line-clamp: 3;         /* Standard property */
+    -webkit-line-clamp: 3;
+    /* Show N lines */
+    line-clamp: 3;
+    /* Standard property */
     -webkit-box-orient: vertical;
 }
 
@@ -137,7 +155,8 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
-    margin-top: var(--space-md); /* Add margin if context/screenshot above */
+    margin-top: var(--space-md);
+    /* Add margin if context/screenshot above */
 }
 
 .additionalImageWrapper {
@@ -154,6 +173,7 @@
     border: var(--border-width) solid var(--color-border);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
+
 .additionalImage:hover {
     transform: scale(1.05);
     box-shadow: var(--shadow-md);
@@ -163,12 +183,16 @@
 .actions {
     display: flex;
     align-items: center;
-    flex-wrap: wrap; /* Allow buttons to wrap */
-    gap: var(--space-sm); /* Consistent gap */
+    flex-wrap: wrap;
+    /* Allow buttons to wrap */
+    gap: var(--space-sm);
+    /* Consistent gap */
     border-top: var(--border-width) solid var(--color-border);
     padding-top: var(--space-md);
-    position: relative; /* For absolute positioned children like popups */
-    z-index: 2; /* Ensure actions are above content fade */
+    position: relative;
+    /* For absolute positioned children like popups */
+    z-index: 2;
+    /* Ensure actions are above content fade */
 }
 
 .actionButton {
@@ -183,29 +207,107 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-xs);
-    line-height: 1; /* Prevent extra height */
+    line-height: 1;
+    /* Prevent extra height */
 }
+
 .actionButton:hover:not(:disabled) {
     background-color: var(--color-background);
     border-color: var(--color-text-light);
     color: var(--color-text);
 }
+
 .actionButton:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-.count { /* Style for like count (used by LikeButton) */
+.count {
+    /* Style for like count (used by LikeButton) */
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium, 600);
     margin-left: 2px;
 }
+
+/* --- NEW STYLES FOR VIEW DISCUSSION LINK --- */
+.viewDiscussionLink {
+    /* Inherit button-like appearance */
+    background-color: transparent;
+    border: var(--border-width) solid var(--color-border);
+    /* Similar border to buttons */
+    border-radius: var(--border-radius-md);
+    padding: var(--space-xs) var(--space-sm);
+    /* Similar padding to buttons */
+    cursor: pointer;
+    /* Indicate clickable */
+    transition: var(--transition-fast);
+    font-size: var(--font-size-sm);
+    /* Similar font size to buttons */
+    display: inline-flex;
+    /* Align icon and text */
+    align-items: center;
+    gap: var(--space-xs);
+    /* Space between icon and text/count */
+    line-height: 1;
+    /* Prevent extra height */
+
+    /* Specific link styles */
+    color: var(--color-primary);
+    /* Use primary color for distinctness */
+    border-color: var(--color-primary);
+    /* Match border color */
+    text-decoration: none;
+    /* Remove underline */
+}
+
+.viewDiscussionLink:hover {
+    background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.1);
+    /* Light background on hover */
+    border-color: var(--color-primary-dark);
+    /* Darken border */
+    color: var(--color-primary-dark);
+    /* Darken text/icon */
+}
+
+.viewDiscussionLink:active {
+    background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.2);
+    /* Slightly darker active state */
+    border-color: var(--color-primary-darker);
+    color: var(--color-primary-darker);
+}
+
+/* Style for the icon within the link */
+.viewDiscussionLink svg {
+    color: var(--color-primary);
+    /* Ensure icon uses primary color */
+}
+
+.viewDiscussionLink:hover svg {
+    color: var(--color-primary-dark);
+    /* Darken icon on hover */
+}
+
+/* Style for the count within the link */
+.viewDiscussionLink .count {
+    color: var(--color-primary);
+    /* Ensure count uses primary color */
+    font-weight: var(--font-weight-medium, 600);
+}
+
+.viewDiscussionLink:hover .count {
+    color: var(--color-primary-dark);
+    /* Darken count on hover */
+}
+
+/* --- END NEW STYLES --- */
+
 
 /* Specific Button States/Types */
 .favorited {
     color: var(--color-primary);
     border-color: var(--color-primary);
 }
+
 .favorited:hover:not(:disabled) {
     background-color: rgba(var(--color-primary-rgb, 0, 123, 255), 0.1);
     border-color: var(--color-primary);
@@ -215,10 +317,12 @@
     color: var(--color-info);
     border-color: var(--color-info);
 }
+
 .shareButton:hover:not(:disabled) {
     background-color: rgba(var(--color-info-rgb, 23, 162, 184), 0.1);
     border-color: var(--color-info);
-    color: var(--color-info); /* Keep icon color consistent on hover */
+    color: var(--color-info);
+    /* Keep icon color consistent on hover */
 }
 
 /* --- REMOVED Empty .expandButton rule --- */
@@ -233,10 +337,12 @@
     color: var(--color-error);
     border-color: var(--color-error);
 }
+
 .deleteButton:hover:not(:disabled) {
     background-color: rgba(var(--color-error-rgb, 220, 53, 69), 0.1);
     border-color: var(--color-error);
-    color: var(--color-error); /* Keep icon color consistent on hover */
+    color: var(--color-error);
+    /* Keep icon color consistent on hover */
 }
 
 .actionError {
@@ -274,8 +380,15 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(5px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 
 .shareOptionButton {
@@ -326,6 +439,7 @@
     color: var(--color-error);
     background-color: transparent;
 }
+
 /* END Share Options Styles */
 
 
@@ -333,8 +447,10 @@
 .endButtonsWrapper {
     display: flex;
     align-items: center;
-    gap: var(--space-sm); /* Default gap between More/Delete */
-    margin-left: auto; /* Push this group to the right */
+    gap: var(--space-sm);
+    /* Default gap between More/Delete */
+    margin-left: auto;
+    /* Push this group to the right */
 }
 
 
@@ -343,17 +459,22 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out, padding-top 0.4s ease-in-out;
-    margin-left: calc(-1 * var(--space-md)); /* Counteract parent padding */
+    margin-left: calc(-1 * var(--space-md));
+    /* Counteract parent padding */
     margin-right: calc(-1 * var(--space-md));
     padding-left: var(--space-md);
     padding-right: var(--space-md);
-    border-top: none; /* Border applied dynamically below */
+    border-top: none;
+    /* Border applied dynamically below */
 }
+
 .commentsSectionWrapper.commentsVisible {
-    max-height: 1000px; /* Allow space for comments */
+    max-height: 1000px;
+    /* Allow space for comments */
     margin-top: var(--space-md);
     padding-top: var(--space-md);
-    border-top: var(--border-width) solid var(--color-border); /* Show border only when visible */
+    border-top: var(--border-width) solid var(--color-border);
+    /* Show border only when visible */
 }
 
 .commentLoading {
@@ -365,6 +486,7 @@
     gap: var(--space-sm);
     font-size: var(--font-size-sm);
 }
+
 .commentError {
     padding: var(--space-md);
     color: var(--color-error);
@@ -375,6 +497,7 @@
     font-size: var(--font-size-sm);
     margin-top: var(--space-sm);
 }
+
 .noCommentsYet {
     font-size: var(--font-size-sm);
     color: var(--color-text-light);
@@ -389,69 +512,96 @@
 @media (max-width: var(--breakpoint-md, 768px)) {
     .card {
         padding: var(--space-sm);
-        border-radius: var(--border-radius-md); /* Optional: Adjust radius */
+        border-radius: var(--border-radius-md);
+        /* Optional: Adjust radius */
     }
+
     .header h3 {
         font-size: var(--font-size-md);
     }
+
     .meta {
         font-size: var(--font-size-xs);
     }
+
     .context {
         font-size: var(--font-size-sm);
     }
+
     .additionalImage {
         width: 60px;
         height: 90px;
     }
+
     .actions {
-        gap: var(--space-xs); /* Reduce gap between buttons */
+        gap: var(--space-xs);
+        /* Reduce gap between buttons */
         padding-top: var(--space-sm);
     }
+
     .actionButton {
         padding: var(--space-xxs) var(--space-xs);
-        font-size: var(--font-size-sm); /* Optional: Adjust button font size */
+        font-size: var(--font-size-sm);
+        /* Optional: Adjust button font size */
     }
+
     .count {
         font-size: var(--font-size-xs);
     }
+
     .contentWrapper {
-        max-height: 200px; /* Adjust collapsed height for mobile */
+        max-height: 200px;
+        /* Adjust collapsed height for mobile */
     }
+
     .card.expanded .contentWrapper {
-        max-height: 1500px; /* Adjust max expanded height for mobile */
+        max-height: 1500px;
+        /* Adjust max expanded height for mobile */
     }
+
     .card:not(.expanded) .contentWrapper .context {
-        -webkit-line-clamp: 2; /* Show fewer lines on mobile */
-        line-clamp: 2;         /* Standard property */
+        -webkit-line-clamp: 2;
+        /* Show fewer lines on mobile */
+        line-clamp: 2;
+        /* Standard property */
     }
+
     .commentsSectionWrapper {
-        margin-left: calc(-1 * var(--space-sm)); /* Adjust negative margin */
+        margin-left: calc(-1 * var(--space-sm));
+        /* Adjust negative margin */
         margin-right: calc(-1 * var(--space-sm));
         padding-left: var(--space-sm);
         padding-right: var(--space-sm);
     }
+
     .commentsSectionWrapper.commentsVisible {
         margin-top: var(--space-sm);
         padding-top: var(--space-sm);
     }
-    .commentLoading, .commentError, .noCommentsYet {
+
+    .commentLoading,
+    .commentError,
+    .noCommentsYet {
         font-size: var(--font-size-xs);
         padding: var(--space-md) 0;
     }
+
     .expandText {
-        display: none; /* Hide "More/Less" text */
+        display: none;
+        /* Hide "More/Less" text */
     }
 
     /* Adjust End Buttons Wrapper gap for mobile */
     .endButtonsWrapper {
-        gap: var(--space-xs); /* Use smaller gap for mobile */
+        gap: var(--space-xs);
+        /* Use smaller gap for mobile */
     }
 
     /* Adjust share popup size/padding for mobile */
     .shareOptionsPopup {
         min-width: 130px;
     }
+
     .shareOptionButton {
         padding: var(--space-xs) var(--space-sm);
         gap: var(--space-xs);

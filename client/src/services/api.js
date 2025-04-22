@@ -1,4 +1,4 @@
-// client/src/services/api.js (Added User Profile Functions)
+// client/src/services/api.js
 import axios from 'axios';
 
 // --- Configuration ---
@@ -82,7 +82,7 @@ export const getStaticFileUrl = (relativePath) => {
 };
 
 
-// --- User API Functions --- NEW SECTION ---
+// --- User API Functions ---
 
 /**
  * Fetches the detailed profile of the currently logged-in user. Requires authentication.
@@ -111,7 +111,7 @@ export const getPublicUserProfile = (userId) => api.get(`/users/${userId}/profil
  */
 export const getUserConnections = (userId) => api.get(`/users/${userId}/connections`);
 
-// --- Connection API Functions --- (Existing functions remain below)
+// --- Connection API Functions ---
 
 /**
  * Fetches a single connection by its ID. Public access.
@@ -154,11 +154,28 @@ export const getCommentsForConnection = (connectionId) =>
 /**
  * Creates a new comment on a specific connection. Requires authentication.
  * @param {string} connectionId - The ID of the connection to comment on.
- * @param {{ text: string }} commentData - An object containing the comment text.
+ * @param {string} commentText - The text of the comment.
  * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the newly created comment object (populated with user info).
  */
-export const createComment = (connectionId, commentData) =>
-    api.post(`/connections/${connectionId}/comments`, commentData);
+export const createComment = (connectionId, commentText) =>
+    api.post(`/connections/${connectionId}/comments`, { text: commentText });
+
+/**
+ * Updates the text of a specific comment. Requires authentication (and must be the author).
+ * @param {string} commentId - The ID of the comment to update.
+ * @param {string} newText - The new text for the comment.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the updated comment object (populated with user info).
+ */
+export const updateComment = (commentId, newText) =>
+    api.put(`/comments/${commentId}`, { text: newText }); // Use PUT to /api/comments/:commentId with { text: newText } body
+
+/**
+ * Deletes a specific comment. Requires authentication (and must be the author).
+ * @param {string} commentId - The ID of the comment to delete.
+ * @returns {Promise<axios.AxiosResponse<any>>} - Promise resolving to the Axios response. (Backend sends { message: 'Comment removed' })
+ */
+export const deleteComment = (commentId) =>
+    api.delete(`/comments/${commentId}`); // Use DELETE to /api/comments/:commentId
 
 
 // --- Movie/Book Detail API Functions ---
@@ -195,3 +212,9 @@ export const getConnectionsByBookId = (bookId) => api.get(`/books/${bookId}/conn
 // --- Default Export ---
 // Export the configured Axios instance as the default export
 export default api;
+
+// --- Named Exports (Corrected: Only include exports not defined with export const) ---
+// In this case, only the 'api' instance is not exported with 'export const'.
+// If you want to export 'api' as a named export *in addition* to default, you can
+// add it here. Otherwise, rely on the default export.
+// export { api }; // <--- Uncomment this line if you need 'api' as a named import elsewhere

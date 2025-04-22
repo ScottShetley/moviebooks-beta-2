@@ -1,16 +1,29 @@
 // client/src/index.js
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async'; // <-- Import HelmetProvider
+import { HelmetProvider } from 'react-helmet-async';
 
-// Import styles BEFORE App component to ensure correct cascade
-import './styles/tokens.css'; // Import tokens first
-import './styles/global.css'; // Import global styles
+// --- START: Font Awesome Configuration (Imports at the very top) ---
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faBookOpen } from '@fortawesome/free-solid-svg-icons'; // Import the specific icon
+// --- END: Font Awesome Configuration ---
+
+// Import styles BEFORE App component to ensure correct cascade (Imports should also be at top)
+import './styles/tokens.css';
+import './styles/global.css';
+
+// Import Components and Contexts (Imports should also be at top)
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+
+
+// Add the imported icons to the library so they can be used by the component
+library.add(faBookOpen);
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

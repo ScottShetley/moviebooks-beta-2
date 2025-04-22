@@ -17,6 +17,8 @@ import movieRoutes from './routes/movieRoutes.js';
 import bookRoutes from './routes/bookRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+// --- NEW: Import the new comment routes ---
+import commentRoutes from './routes/commentRoutes.js';
 // --- ---
 
 // --- Replicate __dirname ---
@@ -74,6 +76,8 @@ if (process.env.NODE_ENV === 'development') {
 
 // --- Mount Routes ---
 app.use('/api/auth', authRoutes);
+// --- Mount the new comment routes BEFORE connection routes if there's any overlap possibility (unlikely here) ---
+app.use('/api/comments', commentRoutes); // <-- NEW: Mount new comment routes
 app.use('/api/connections', connectionRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/books', bookRoutes);

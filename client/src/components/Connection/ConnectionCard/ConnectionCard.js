@@ -1,36 +1,42 @@
 // client/src/components/Connection/ConnectionCard/ConnectionCard.js
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+// Removed useCallback from the import below
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // Removed useNavigate
 import { useAuth } from '../../../contexts/AuthContext';
-import api, { getCommentsForConnection, getStaticFileUrl } from '../../../services/api';
+// Removed getCommentsForConnection as it's not used in this component anymore
+import api, { getStaticFileUrl } from '../../../services/api';
 import LoadingSpinner from '../../Common/LoadingSpinner/LoadingSpinner';
-import CommentList from '../../comments/CommentList';
-import AddCommentForm from '../../comments/AddCommentForm';
+// Removed CommentList and AddCommentForm as they are not used inline here anymore
 import LikeButton from '../../Common/LikeButton/LikeButton';
 import styles from './ConnectionCard.module.css';
 import {
-    FaStar, FaRegStar, FaRegCommentDots, FaTrashAlt, FaShareAlt,
+    FaStar, FaRegStar, FaTrashAlt, FaShareAlt, // Removed FaRegCommentDots
     FaTwitter, FaFacebook, FaLink, FaTimes,
     FaLinkedin, FaRedditAlien, FaPinterest, FaWhatsapp,
     FaChevronDown, FaChevronUp
 } from 'react-icons/fa';
+// --- Import official Font Awesome React component and the specific icon ---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBookOpen } from '@fortawesome/free-solid-svg-icons'; // Import the book-open icon object
+// --- END Font Awesome Imports ---
 
 
 const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
+    // Removed const navigate = useNavigate();
     const { user, updateUserFavorites } = useAuth();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isFavoriting, setIsFavoriting] = useState(false);
     const [localError, setLocalError] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [comments, setComments] = useState([]);
-    const [isLoadingComments, setIsLoadingComments] = useState(false);
-    const [commentError, setCommentError] = useState(null);
-    const [showComments, setShowComments] = useState(false);
-    const [commentsFetched, setCommentsFetched] = useState(false);
+    // Removed states related to inline comments: comments, isLoadingComments, commentError, showComments, commentsFetched
     const [showShareOptions, setShowShareOptions] = useState(false);
     const [copyStatus, setCopyStatus] = useState('Copy Link');
     const shareButtonRef = useRef(null);
     const shareOptionsRef = useRef(null);
+
+    // Destructure commentCount from connection prop (assuming backend provides it)
+    const { commentCount } = connection;
+
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -44,26 +50,12 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     }, [showShareOptions]);
 
     const handleToggleExpand = () => setIsExpanded(prev => !prev);
-    const handleToggleComments = useCallback(async () => {
-        const currentConnectionId = connection?._id;
-        if (!currentConnectionId) { setCommentError("Cannot fetch comments: Connection ID is missing."); if (!showComments) setShowComments(true); setIsLoadingComments(false); return; }
-        if (showComments) { setShowComments(false); return; }
-        if (!isExpanded) { setIsExpanded(true); }
-        setShowComments(true);
-        if (!commentsFetched || commentError) {
-            setIsLoadingComments(true); setCommentError(null);
-            try { const response = await getCommentsForConnection(currentConnectionId); setComments(response.data || []); setCommentsFetched(true); }
-            catch (err) { console.error("[handleToggleComments] Error fetching comments:", err); const message = err.response?.data?.message || err.message || "Failed to load comments."; setCommentError(message); setCommentsFetched(false); setComments([]); }
-            finally { setIsLoadingComments(false); }
-        }
-    }, [showComments, commentsFetched, connection?._id, commentError, isExpanded]);
 
-    const handleAddComment = useCallback((newComment) => {
-        setComments(prevComments => [newComment, ...prevComments]);
-        if (!commentsFetched) setCommentsFetched(true);
-        if (!isExpanded) setIsExpanded(true);
-        if (!showComments) setShowComments(true);
-    }, [commentsFetched, isExpanded, showComments]);
+    // Removed the handleToggleComments function entirely as it's not used
+
+
+    // Removed handleCommentAdded function as it's not used with inline comments removed
+
 
     const handleFavoriteToggle = async () => {
         const currentConnectionId = connection?._id; if (!user || isFavoriting || !currentConnectionId) return;
@@ -81,7 +73,8 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     };
 
     const baseUrl = window.location.origin;
-    const connectionUrl = `${baseUrl}/connections/${connection._id}`;
+    // The connectionUrl now includes the #comments fragment for sharing/copying
+    const connectionUrl = `${baseUrl}/connections/${connection._id}#comments`;
     const shareTitle = `${connection.movieRef?.title || 'Movie'} & ${connection.bookRef?.title || 'Book'} - MovieBooks Connection`;
     const shareDescription = `Check out this MovieBooks connection: ${connection.context?.substring(0, 100) || shareTitle}...`;
     const handleShareToggle = () => { setShowShareOptions(prev => !prev); setCopyStatus('Copy Link'); };
@@ -94,21 +87,26 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     const handleShareToWhatsApp = () => { const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareDescription + ' ' + connectionUrl)}`; window.open(whatsappUrl, '_blank', 'noopener,noreferrer'); setShowShareOptions(false); };
 
 
-    // Early return for incomplete data (remains the same)
-    if (!connection || !connection.userRef || !connection.userRef.username) {
-        console.error("[ConnectionCard Render] Incomplete base connection data, rendering error.", { connection });
+    // Early return for incomplete data
+    // Added check for movieRef/bookRef existence before accessing properties
+    if (!connection || !connection.userRef || (!connection.userRef.username && !connection.userRef.displayName)) {
+         console.error("[ConnectionCard Render] Incomplete base connection data, rendering error.", { connection });
         return <div className={styles.card}>Error: Incomplete connection data for ID {connection?._id}. Check console.</div>;
     }
+
 
     const isFavoritedByCurrentUser = !!user && !!user.favorites && !!connection._id && user.favorites.includes(connection._id);
     const isOwner = !!user && user._id === connection.userRef._id;
     const movieTitle = connection.movieRef?.title;
     const bookTitle = connection.bookRef?.title;
+    const displayUsername = connection.userRef?.displayName || connection.userRef?.username || 'Unknown User'; // Use displayName if available
+
 
     return (
         <article className={`${styles.card} ${isExpanded ? styles.expanded : ''}`}>
             <header className={styles.header}>
                  <h3>
+                     {/* Link Title to Detail Page (This link does NOT get the #comments fragment) */}
                      <Link to={`/connections/${connection._id}`} className={styles.titleLink}>
                          {movieTitle && bookTitle ? `${movieTitle} & ${bookTitle}` : (movieTitle || bookTitle || 'Connection')}
                      </Link>
@@ -116,13 +114,15 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
             </header>
             <p className={styles.meta}> Added by{' '}
                  <Link to={`/users/${connection.userRef._id}`} className={styles.userLink}>
-                     {connection.userRef.username}
+                     {displayUsername} {/* Use the variable here */}
                  </Link>
                  {' on '} {new Date(connection.createdAt).toLocaleDateString()}
             </p>
             <div className={styles.contentWrapper}>
-                <div onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "" : "Click to expand"}>
+                {/* Added onClick to wrapper div for expand toggle */}
+                <div onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "Click to collapse" : "Click to expand"}>
                     {connection.screenshotUrl ? (
+                        // Link Image to Detail Page (This link does NOT get the #comments fragment)
                         <Link to={`/connections/${connection._id}`} className={styles.imageLink} onClick={(e) => e.stopPropagation()} >
                             <div className={styles.screenshotWrapper}>
                                 <img src={getStaticFileUrl(connection.screenshotUrl)} alt={`Scene from ${movieTitle || 'Movie'} featuring ${bookTitle || 'Book'}`} className={styles.screenshot} loading="lazy" />
@@ -130,19 +130,21 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
                         </Link>
                     ) : ( null )}
                 </div>
-                {connection.context && (
-                    <div onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "" : "Click to expand"}>
+                 {connection.context && (
+                     <div onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "Click to collapse" : "Click to expand"}>
                         <p className={styles.context}>{connection.context}</p>
-                    </div>
+                     </div>
                  )}
                  {(connection.movieRef?.posterPath || connection.bookRef?.coverPath) && (
-                     <div className={styles.additionalImagesContainer} onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "" : "Click to expand"}>
+                     <div className={styles.additionalImagesContainer} onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "Click to collapse" : "Click to expand"}>
                          {connection.movieRef?.posterPath && (
+                             // Link Movie Poster to Movie Detail Page
                              <Link to={`/movies/${connection.movieRef._id}`} title={movieTitle} className={styles.additionalImageWrapper} onClick={(e) => e.stopPropagation()}>
                                  <img src={getStaticFileUrl(connection.movieRef.posterPath)} alt={`${movieTitle} Poster`} className={styles.additionalImage} loading="lazy" />
                              </Link>
                          )}
                          {connection.bookRef?.coverPath && (
+                             // Link Book Cover to Book Detail Page
                              <Link to={`/books/${connection.bookRef._id}`} title={bookTitle} className={styles.additionalImageWrapper} onClick={(e) => e.stopPropagation()}>
                                  <img src={getStaticFileUrl(connection.bookRef.coverPath)} alt={`${bookTitle} Cover`} className={styles.additionalImage} loading="lazy" />
                              </Link>
@@ -152,9 +154,13 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
             </div>
 
             <footer className={styles.actions}>
+                {/* Like Button */}
                 <LikeButton connectionId={connection._id} initialLikes={connection.likes || []} onLikeUpdate={onUpdate} />
+
+                {/* Favorite Button */}
                 <button className={`${styles.actionButton} ${isFavoritedByCurrentUser ? styles.favorited : ''}`} onClick={handleFavoriteToggle} disabled={!user || isFavoriting} title={isFavoritedByCurrentUser ? "Remove from Favorites" : "Add to Favorites"} > {isFavoriting ? <LoadingSpinner size="small" inline /> : (isFavoritedByCurrentUser ? <FaStar /> : <FaRegStar />) } </button>
-                <button className={`${styles.actionButton} ${styles.commentButton}`} onClick={handleToggleComments} title={showComments ? "Hide Comments" : "Show Comments"} aria-expanded={showComments} > <FaRegCommentDots /> </button>
+
+                 {/* Share Action with Popup */}
                 <div className={styles.shareActionWrapper}>
                     <button ref={shareButtonRef} className={`${styles.actionButton} ${styles.shareButton}`} onClick={handleShareToggle} title="Share Connection" > <FaShareAlt /> </button>
                     {showShareOptions && ( <div ref={shareOptionsRef} id={`share-options-${connection._id}`} className={styles.shareOptionsPopup} role="menu" >
@@ -169,27 +175,33 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
                      </div> )}
                 </div>
 
+                {/* View Discussion Link */}
+                {/* Show if there are comments or if user is logged in (to encourage starting discussion) */}
+                {(commentCount > 0 || user) && connection?._id && (
+                    <Link
+                        to={`/connections/${connection._id}#comments`} // Added #comments fragment here
+                        className={`${styles.actionButton} ${styles.viewDiscussionLink}`}
+                        title="View full discussion"
+                    >
+                         {/* Use the official Font Awesome Component with faBookOpen */}
+                         <FontAwesomeIcon icon={faBookOpen} />
+                         {/* Show count if > 0 */}
+                         <span>Discussion{commentCount > 0 ? ` (${commentCount})` : ''}</span>
+                    </Link>
+                )}
+
+
                 <div className={styles.endButtonsWrapper}>
+                     {/* Expand/Collapse Button */}
                      <button className={`${styles.actionButton} ${styles.expandButton}`} onClick={handleToggleExpand} title={isExpanded ? "Show less" : "Show more"} aria-expanded={isExpanded} > {isExpanded ? <FaChevronUp /> : <FaChevronDown />} <span className={styles.expandText}>{isExpanded ? "Less" : "More"}</span> </button>
+                     {/* Delete Button (Owner only) */}
                      {isOwner && ( <button className={`${styles.actionButton} ${styles.deleteButton}`} onClick={handleDelete} disabled={isDeleting} title="Delete Connection" > {isDeleting ? <LoadingSpinner size="small" inline /> : <FaTrashAlt />} </button> )}
                 </div>
 
                  {localError && <span className={styles.actionError}>{localError}</span>}
             </footer>
 
-            <div className={`${styles.commentsSectionWrapper} ${isExpanded ? styles.commentsVisible : ''}`}>
-                <div hidden={!showComments}>
-                    {showComments && (
-                        <>
-                            {user && ( <AddCommentForm connectionId={connection._id} onCommentAdded={handleAddComment} /> )}
-                            {isLoadingComments && ( <div className={styles.commentLoading}> <LoadingSpinner size="medium" /> Loading Comments... </div> )}
-                            {commentError && !isLoadingComments && ( <div className={styles.commentError}>Error: {commentError}</div> )}
-                            {!isLoadingComments && !commentError && commentsFetched && ( <CommentList comments={comments} /> )}
-                            {!isLoadingComments && !commentError && commentsFetched && comments.length === 0 && ( <p className={styles.noCommentsYet}> No comments yet. {user ? 'Be the first to comment!' : 'Log in to comment.'} </p> )}
-                        </>
-                    )}
-                </div>
-            </div>
+            {}
         </article>
     );
 };

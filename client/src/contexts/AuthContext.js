@@ -185,14 +185,16 @@ export const AuthProvider = ({ children }) => {
 
   // Value provided by the context
   const contextValue = {
-      user,           // NOW includes { ..., favorites: [] } and is updated by updateUserFavorites
+      user,
       loading,
       error,
       login,
       signup,
       logout,
       clearError,
-      updateUserFavorites // <-- Expose the new function
+      updateUserFavorites,
+      // --- ADD isAuthenticated property here ---
+      isAuthenticated: user !== null, // Derived directly from user state
   };
 
   return (

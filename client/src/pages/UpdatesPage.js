@@ -24,9 +24,26 @@ const UpdatesPage = () => {
           Tracking the evolution of MovieBooks, from initial features to the latest enhancements.
       </p>
 
-      {/* --- LATEST UPDATE SECTION --- */}
+      {/* --- LATEST UPDATE SECTION (Discussion Hub) --- */}
       <section className={styles.updateSection}>
-        <h2>🚀 Latest Update ({formattedDate}) - Feed Revamp & Fixes!</h2>
+        <h2>💬 Latest Update ({formattedDate}) - Discussion Hub Enhancements!</h2>
+        <p>The Connection Detail Page has been significantly enhanced to serve as a better discussion hub:</p>
+        <ul>
+            <li><strong>Direct Discussion Link:</strong> Added a clear "View Discussion" link with the comment count to each connection card on the main Feed, making it easy to jump straight to the conversation on the detail page.</li>
+            <li><strong>Auto-Scrolling to Comments:</strong> Clicking the "View Discussion" link now automatically scrolls the page down to the comments section upon loading the detail page.</li>
+            <li><strong>Improved Comment Display:</strong> Individual comments are now rendered using a dedicated component, featuring better styling, visual separation, and user avatars (if available).</li>
+            <li><strong>Refined Comments Section Styling:</strong> Enhanced the layout, padding, and background of the overall comments area and the comment submission form for a cleaner look.</li>
+            <li><strong>Edit Your Comments:</strong> Logged-in users can now easily edit the text of their own comments directly on the detail page.</li>
+            <li><strong>Delete Your Comments:</strong> Logged-in users can now delete their own comments directly from the detail page.</li>
+        </ul>
+      </section>
+
+      {/* --- PREVIOUS UPDATES SECTION --- */}
+      <section className={styles.updateSection}>
+        <h2>✅ Previous Updates</h2>
+
+        {/* --- Feed Revamp & Fixes (Moved from Latest) --- */}
+        <h3 className={styles.subHeading}>Feed Revamp & Fixes (Previous Major Update)</h3>
         <p>The main feed just got a significant upgrade and several usability fixes:</p>
         <ul>
             <li><strong>Text-Only Posts:</strong> You can now create connections with just context text, without needing to select a movie or book. Perfect for quick thoughts or general discussion!</li>
@@ -37,15 +54,11 @@ const UpdatesPage = () => {
             <li><strong>Share Button Fixes:</strong> The enhanced share pop-up now works correctly on text-only posts, and the visual layout is fixed on standard posts.</li>
             <li><strong>Mobile Layout Improvements:</strong> Adjusted the action button layout on standard cards for better usability on smaller screens.</li>
         </ul>
-      </section>
 
-      {/* --- PREVIOUS UPDATES SECTION --- */}
-      <section className={styles.updateSection}>
-        <h2>✅ Previous Updates</h2>
 
         {/* --- Profile Enhancements Update --- */}
-        <h3 className={styles.subHeading}>User Profiles & Notifications (Previous Major Update)</h3>
-        <p>Features rolled out just before the Feed Revamp:</p>
+        <h3 className={styles.subHeading}>User Profiles & Notifications (Older Update)</h3> {/* Changed heading text */}
+        <p>Features rolled out before the Feed Revamp:</p> {/* Updated intro text */}
         <ul>
            <li><strong>Enhanced User Profiles:</strong> View richer profiles with Display Names, Bios, Locations, and Profile Pictures.</li>
            <li><strong>Profile Editing:</strong> Customize your own profile, including text details and uploading your own avatar via the "Edit Profile" page.</li>

@@ -95,6 +95,11 @@
     .contextSection {
         padding: var(--space-md);
     }
+
+    /* Adjust page container padding on smaller screens */
+    .pageContainer {
+        padding: var(--space-md) var(--space-md);
+    }
 }
 
 /* --- End Correct Grid Layout --- */
@@ -212,4 +217,232 @@
 
 .backButton:hover {
     background-color: var(--color-primary-dark);
+}
+
+/* --- START: Comments Section Styles --- */
+.commentsSection {
+    margin-top: var(--space-xl);
+    border-top: 1px solid var(--color-grey-light);
+    /* Keep top border from main page */
+    padding-top: var(--space-lg);
+    /* Keep padding top from main page */
+
+    /* Add some internal padding to the section itself */
+    padding: var(--space-lg);
+    /* Give the comments section a background */
+    background-color: var(--color-background);
+    /* Main background for the comments area */
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-grey-lighter);
+    /* Match other sections */
+}
+
+.commentsSection .sectionTitle {
+    /* Refined: Remove top margin, keep bottom margin */
+    margin-top: 0;
+    margin-bottom: var(--space-lg);
+    /* Space below the title */
+    /* Remove the border-bottom if you want it only on the other sections */
+    border-bottom: none;
+    padding-bottom: 0;
+    color: var(--color-primary-dark);
+    /* Ensure consistent title color */
+    font-size: var(--font-size-xl);
+    /* Slightly larger title for this main section */
+}
+
+.commentForm {
+    margin-bottom: var(--space-xl);
+    /* More space below the form before the list */
+    display: flex;
+    /* Use flexbox for layout */
+    flex-direction: column;
+    /* Stack elements vertically */
+    gap: var(--space-md);
+    /* Space between textarea and button */
+    padding: var(--space-md);
+    /* Add padding inside the form area */
+    background-color: var(--color-background);
+    /* Match main comments section background */
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-grey-light);
+}
+
+.commentForm textarea {
+    width: 100%;
+    /* Make textarea fill the form width */
+    padding: var(--space-sm);
+    border: 1px solid var(--color-grey-dark);
+    /* Darker border */
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    line-height: 1.5;
+    resize: vertical;
+    /* Allow vertical resizing only */
+    box-sizing: border-box;
+    /* Include padding and border in element's total width and height */
+    font-family: inherit;
+    /* Use the same font as the rest of the site */
+    color: var(--color-text-primary);
+    background-color: var(--color-white);
+    /* White background */
+    box-shadow: var(--shadow-input);
+    /* Subtle shadow for unfocused state */
+}
+
+/* --- NEW: Style for placeholder text --- */
+.commentForm textarea::placeholder {
+    color: var(--color-text-light);
+    /* Use a lighter text color for placeholder */
+    opacity: 1;
+    /* Ensure placeholder is not transparent */
+}
+
+/* --- NEW: Support for older browsers --- */
+.commentForm textarea:-ms-input-placeholder {
+    color: var(--color-text-light);
+}
+
+.commentForm textarea::-ms-input-placeholder {
+    color: var(--color-text-light);
+}
+
+/* --- END NEW PLACEHOLDER STYLES --- */
+
+
+.commentForm textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.1rem rgba(var(--color-primary-rgb), 0.25);
+    /* Simple focus highlight */
+}
+
+.commentForm button {
+    align-self: flex-end;
+    /* Align button to the right */
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-md);
+    transition: background-color 0.2s ease;
+    font-weight: var(--font-weight-bold);
+}
+
+.commentForm button:hover:not(:disabled) {
+    background-color: var(--color-primary-dark);
+}
+
+.commentForm button:disabled {
+    background-color: var(--color-grey-medium);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.commentList {
+    display: flex;
+    flex-direction: column;
+    /* Stack comments vertically */
+    gap: var(--space-md);
+    /* Space between individual comment items */
+    /* Added some margin top to create space between form/message and the list */
+    margin-top: var(--space-lg);
+    /* <-- Adjusted spacing here */
+}
+
+
+/* Placeholder/Loading/Empty states within comments section */
+.commentsSection :global(.loadingSpinner) {
+    /* Adjust margin/padding for spinners within this section */
+    margin: var(--space-lg) auto;
+}
+
+.commentsSection :global(.errorMessage) {
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
+    /* Added margin-bottom for consistency */
+}
+
+/* Styles for the "No comments yet" paragraph */
+.commentsSection>p {
+    /* Styles for the "No comments yet" paragraph */
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    font-style: italic;
+    text-align: center;
+    padding: var(--space-md) 0;
+    /* Adjusted margin-top based on whether the form is visible */
+    margin-top: var(--space-lg);
+    /* <-- Adjusted spacing here */
+    margin-bottom: var(--space-md);
+    /* Added margin-bottom for consistency */
+}
+
+
+/* --- END: Comments Section Styles --- */
+
+/* Media Query Adjustments for smaller screens within Comments Section */
+@media (max-width: 768px) {
+    .commentsSection {
+        padding: var(--space-md);
+        /* Reduce padding within the section */
+        margin-top: var(--space-lg);
+        /* Adjust top margin */
+        padding-top: var(--space-md);
+        /* Adjust padding top */
+    }
+
+    .commentsSection .sectionTitle {
+        margin-bottom: var(--space-md);
+        /* Smaller space below title */
+        font-size: var(--font-size-lg);
+        /* Smaller title font */
+    }
+
+    .commentForm {
+        margin-bottom: var(--space-lg);
+        /* Reduce space below form */
+        gap: var(--space-sm);
+        /* Smaller gap in form */
+        padding: var(--space-sm);
+        /* Reduce padding in form */
+        background-color: var(--color-background);
+        /* Match main comments section background */
+    }
+
+    .commentForm textarea {
+        font-size: var(--font-size-sm);
+        /* Smaller textarea font */
+        padding: var(--space-xs);
+        /* Smaller textarea padding */
+    }
+
+    .commentForm button {
+        padding: var(--space-xs) var(--space-sm);
+        /* Smaller button padding */
+        font-size: var(--font-size-sm);
+        /* Smaller button font */
+    }
+
+    .commentList {
+        gap: var(--space-sm);
+        /* Smaller gap between comments */
+        margin-top: var(--space-lg);
+        /* <-- Adjusted spacing here */
+    }
+
+    .commentsSection>p,
+    .commentsSection :global(.errorMessage) {
+        /* "No comments yet" and Error messages */
+        font-size: var(--font-size-xs);
+        padding: var(--space-md) 0;
+    }
+
+    .commentsSection :global(.errorMessage) {
+        padding: var(--space-xs);
+        /* Reduce padding for error message */
+        margin-bottom: var(--space-sm);
+    }
 }

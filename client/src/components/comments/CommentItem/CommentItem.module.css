@@ -1,0 +1,396 @@
+/* client/src/components/comments/CommentItem/CommentItem.module.css */
+
+.commentItem {
+    background-color: var(--color-white);
+    /* White background */
+    border: 1px solid var(--color-border);
+    /* Subtle border */
+    border-radius: var(--border-radius-md);
+    /* Rounded corners */
+    padding: var(--space-md);
+    /* Add padding */
+    margin-bottom: var(--space-sm);
+    /* Space between comments */
+    display: flex;
+    /* Use flexbox for layout (avatar and content) */
+    gap: var(--space-md);
+    /* Space between avatar and comment content */
+    align-items: flex-start;
+    /* Align items to the top */
+    box-shadow: var(--shadow-light);
+    /* Added a subtle shadow for depth */
+    position: relative;
+    /* Needed for absolute positioning of error message */
+    /* --- NEW: Add a bottom border to separate items --- */
+    border-bottom: 1px solid var(--color-grey-light);
+    /* Adjust margin-bottom slightly if needed, or keep as is */
+    margin-bottom: var(--space-sm);
+    /* --- END NEW --- */
+}
+
+/* Styles for the user avatar container */
+.avatarContainer {
+    flex-shrink: 0;
+    /* Prevent the avatar from shrinking */
+    width: 40px;
+    /* Fixed width for avatar */
+    height: 40px;
+    /* Fixed height for avatar */
+    border-radius: 50%;
+    /* Make it round */
+    overflow: hidden;
+    /* Hide anything outside the circle */
+    background-color: var(--color-border);
+    /* Placeholder background */
+    display: flex;
+    /* Center image if it doesn't fill */
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--color-grey-light);
+    /* Added a small border to avatar */
+}
+
+.avatar {
+    display: block;
+    width: 100%;
+    /* Make image fill container */
+    height: 100%;
+    object-fit: cover;
+    /* Cover the area without distortion */
+}
+
+/* Styles for the comment content area */
+.commentContent {
+    flex-grow: 1;
+    /* Allow content to take remaining space */
+    min-width: 0;
+    /* Allow text to wrap */
+}
+
+
+.commentMeta {
+    font-size: var(--font-size-sm);
+    /* Smaller font for meta info */
+    color: var(--color-text-light);
+    /* Lighter color for meta info */
+    margin-bottom: var(--space-xs);
+    /* Space below meta info */
+    display: flex;
+    /* Use flexbox for author/timestamp layout */
+    align-items: center;
+    flex-wrap: wrap;
+    /* Allow wrapping on small screens */
+    gap: var(--space-xs);
+    /* Gap between items in meta */
+}
+
+.authorLink {
+    color: var(--color-primary);
+    /* Use primary color for author link */
+    font-weight: var(--font-weight-medium, 600);
+    /* Make author name slightly bolder */
+    text-decoration: none;
+    /* No underline */
+    /* Add margin-right to push timestamp away unless wrapping */
+    margin-right: var(--space-xs);
+}
+
+.authorLink:hover {
+    text-decoration: underline;
+    /* Underline on hover */
+    color: var(--color-primary-dark);
+    /* Darken on hover */
+}
+
+.timestamp {
+    font-size: var(--font-size-xs);
+    /* Even smaller font for timestamp */
+    color: var(--color-text-lighter);
+    /* Even lighter color */
+    /* Remove margin-right added to authorLink */
+    margin-right: 0;
+}
+
+/* --- Styles for Edit/Delete actions within meta --- */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    /* Space between buttons */
+    margin-left: auto;
+    /* Push actions to the right if space allows */
+}
+
+.actionButton {
+    background: none;
+    border: none;
+    padding: var(--space-xxs);
+    /* Small padding for icons */
+    cursor: pointer;
+    color: var(--color-icon);
+    /* Default icon color */
+    font-size: var(--font-size-sm);
+    /* Icon size */
+    transition: color var(--transition-fast);
+    line-height: 1;
+    /* Prevent extra height */
+    display: flex;
+    /* Center icon */
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-sm);
+    /* Slight rounding */
+}
+
+.actionButton:hover:not(:disabled) {
+    color: var(--color-primary-dark);
+    /* Darker color on hover */
+    background-color: var(--color-background-hover);
+    /* Subtle background */
+}
+
+.actionButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Specific action button colors */
+.actionButton svg {
+    vertical-align: middle;
+    /* Align icon nicely */
+}
+
+.actionButton[title="Delete comment"] {
+    color: var(--color-error);
+    /* Error color for delete */
+}
+
+.actionButton[title="Delete comment"]:hover:not(:disabled) {
+    color: var(--color-error-dark);
+    background-color: rgba(var(--color-error-rgb), 0.1);
+}
+
+/* --- END NEW ACTION BUTTONS --- */
+
+
+.commentText {
+    font-size: var(--font-size-md);
+    /* Standard text size for comment content */
+    color: var(--color-text);
+    /* Normal text color */
+    line-height: var(--line-height-body);
+    /* Good line spacing */
+    margin-bottom: 0;
+    /* Remove default paragraph margin */
+    white-space: pre-wrap;
+    /* Respect line breaks */
+    word-break: break-word;
+    /* Prevent overflow for long words */
+}
+
+/* --- Styles for the Edit Form --- */
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    /* Space between textarea and buttons */
+    margin-top: var(--space-xs);
+    /* Space above the form */
+}
+
+.editForm textarea {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-grey-medium);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-md);
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+    color: var(--color-text-primary);
+    background-color: var(--color-white);
+    /* White background */
+    box-shadow: var(--shadow-input);
+    /* Subtle shadow */
+    min-height: 80px;
+    /* Minimum height for textarea */
+}
+
+.editForm textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.1rem rgba(var(--color-primary-rgb), 0.25);
+}
+
+.editActions {
+    display: flex;
+    justify-content: flex-end;
+    /* Align buttons to the right */
+    gap: var(--space-xs);
+    /* Space between buttons */
+}
+
+.saveButton {
+    color: var(--color-success);
+    /* Green for save */
+    border: 1px solid var(--color-success);
+    padding: var(--space-xxs) var(--space-sm);
+    /* Add padding to save button */
+    border-radius: var(--border-radius-sm);
+    font-weight: var(--font-weight-medium);
+    gap: var(--space-xxs);
+    /* Space between icon and text */
+}
+
+.saveButton:hover:not(:disabled) {
+    background-color: rgba(var(--color-success-rgb), 0.1);
+    border-color: var(--color-success-dark);
+    color: var(--color-success-dark);
+}
+
+.cancelButton {
+    color: var(--color-text-secondary);
+    /* Grey for cancel */
+    border: 1px solid var(--color-grey-medium);
+    padding: var(--space-xxs) var(--space-sm);
+    /* Add padding to cancel button */
+    border-radius: var(--border-radius-sm);
+    font-weight: var(--font-weight-medium);
+    gap: var(--space-xxs);
+    /* Space between icon and text */
+}
+
+.cancelButton:hover:not(:disabled) {
+    background-color: rgba(var(--color-text-secondary-rgb), 0.1);
+    border-color: var(--color-grey-dark);
+    color: var(--color-text-primary);
+}
+
+.editForm .actionButton {
+    /* Remove base actionButton styles like background: none */
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    /* Reset padding */
+    color: inherit;
+    /* Inherit color from specific button styles */
+    font-size: inherit;
+    /* Inherit font size */
+    gap: 0;
+    /* Reset gap */
+    display: inline-flex;
+    /* Keep flex */
+    align-items: center;
+    justify-content: center;
+}
+
+.editForm .actionButton svg {
+    vertical-align: middle;
+}
+
+/* Style for error message within the comment item */
+.error {
+    font-size: var(--font-size-sm);
+    color: var(--color-error);
+    background-color: rgba(var(--color-error-rgb), 0.1);
+    border: 1px solid var(--color-error);
+    border-radius: var(--border-radius-sm);
+    padding: var(--space-xs) var(--space-sm);
+    margin-top: var(--space-xs);
+    text-align: center;
+    width: 100%;
+    /* Make error span full width */
+    box-sizing: border-box;
+}
+
+/* --- END NEW EDIT FORM STYLES --- */
+
+
+/* Media Query for Smaller Screens */
+@media (max-width: var(--breakpoint-sm, 576px)) {
+    .commentItem {
+        padding: var(--space-sm);
+        /* Reduce padding on smaller screens */
+        gap: var(--space-sm);
+        /* Reduce gap */
+        margin-bottom: var(--space-sm);
+        /* Keep consistent margin */
+    }
+
+    .avatarContainer {
+        width: 30px;
+        /* Smaller avatar */
+        height: 30px;
+    }
+
+    .commentMeta {
+        font-size: var(--font-size-xs);
+        /* Smaller meta font */
+        gap: var(--space-xxs);
+        /* Smaller gap in meta */
+    }
+
+    .authorLink {
+        margin-right: var(--space-xxs);
+        /* Adjust margin */
+    }
+
+    .timestamp {
+        font-size: var(--font-size-xxs);
+        /* Even smaller timestamp font */
+    }
+
+    .commentText {
+        font-size: var(--font-size-sm);
+        /* Slightly smaller text */
+    }
+
+    .actions {
+        gap: var(--space-xxs);
+        /* Smaller gap between buttons */
+        margin-left: auto;
+    }
+
+    .actionButton {
+        padding: var(--space-xxs);
+        /* Keep padding small for icons */
+        font-size: var(--font-size-xs);
+        /* Smaller icons */
+    }
+
+    .editForm {
+        gap: var(--space-xxs);
+        /* Smaller gap in edit form */
+        margin-top: var(--space-xxs);
+    }
+
+    .editForm textarea {
+        font-size: var(--font-size-sm);
+        /* Smaller font */
+        padding: var(--space-xs);
+        /* Smaller padding */
+        min-height: 60px;
+        /* Smaller min height */
+    }
+
+    .editActions {
+        gap: var(--space-xxs);
+        /* Smaller gap in edit actions */
+    }
+
+    .saveButton,
+    .cancelButton {
+        padding: var(--space-xxs) var(--space-sm);
+        /* Adjusted padding */
+        font-size: var(--font-size-xs);
+        /* Smaller font */
+        gap: var(--space-xxs);
+    }
+
+    .error {
+        font-size: var(--font-size-xs);
+        padding: var(--space-xs);
+        margin-top: var(--space-xxs);
+    }
+}
