@@ -6,6 +6,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
 // --- START: Font Awesome Configuration (Imports at the very top) ---
+// Configure Font Awesome library here to add global icons used throughout the app
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons'; // Import the specific icon
 // --- END: Font Awesome Configuration ---
