@@ -1,6 +1,6 @@
 // client/src/components/Layout/Header/Header.js
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom'; // Removed useLocation
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes, FaSearch } from 'react-icons/fa';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNotifications } from '../../../contexts/NotificationContext';
@@ -19,7 +19,6 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
-  // const location = useLocation(); // Removed unused useLocation hook
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const hamburgerButtonRef = useRef(null);
@@ -35,7 +34,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
         }
         return false;
     });
-  }, []);
+  }, []); // Dependency array is empty as it doesn't depend on props or state inside the effect/callback itself
 
   // Handle logout, close mobile menu first if open
   const handleLogout = () => {
@@ -43,7 +42,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
         closeMobileMenu(false); // Don't focus toggle button after logout
     }
     logout();
-    navigate('/');
+    navigate('/'); // Redirect to home after logout
   };
 
   // Toggle main mobile menu
@@ -70,7 +69,8 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
           setSearchTerm('');
           // Close the mobile menu if it's open
           if (isMobileMenuOpen) {
-              closeMobileMenu(true); // Close menu and focus toggle
+              // Delay closing slightly if search input was focused, for smoother UX
+              setTimeout(() => closeMobileMenu(true), 100); // Adjust delay if needed
           }
            // Optional: blur search input if focused
            searchInputRef.current?.blur();
@@ -80,40 +80,41 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
   // Effect for resize cleanup
   useEffect(() => {
         const handleResize = () => {
-            const breakpoint = 768;
-            if (window.innerWidth > breakpoint) {
-                closeMobileMenu(false);
+            const breakpoint = 768; // Matches mobile breakpoint
+            if (window.innerWidth > breakpoint && isMobileMenuOpen) {
+                closeMobileMenu(false); // Close menu if window is resized above mobile breakpoint while menu is open
             }
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-   }, [closeMobileMenu]);
+   }, [closeMobileMenu, isMobileMenuOpen]); // Added isMobileMenuOpen as dependency
 
    // Effect to manage body scroll lock when mobile menu is open
    useEffect(() => {
        if (isMobileMenuOpen) {
+           // Add a class to the body to prevent scrolling
            document.body.classList.add('noScroll');
        } else {
+            // Remove the class
            document.body.classList.remove('noScroll');
        }
+       // Cleanup function to remove the class if the component unmounts while menu is open
        return () => {
-           document.body.classList.remove('noScroll'); // Cleanup on unmount
+           document.body.classList.remove('noScroll');
        };
-   }, [isMobileMenuOpen]);
+   }, [isMobileMenuOpen]); // This effect should re-run when isMobileMenuOpen changes
 
 
+  // Helper functions for NavLink class names
   const getNavLinkClass = ({ isActive }) => isActive ? styles.active : '';
-  // Keep getMobileNavLinkClass as is, will apply to NavLinks
   const getMobileNavLinkClass = ({ isActive }) => `${styles.mobileNavLink} ${isActive ? styles.active : ''}`;
 
   // Helper for mobile link clicks that also closes the menu
-  const handleMobileLinkClick = (focusToggle = true) => {
+  const handleMobileLinkClick = useCallback((focusToggle = true) => {
        closeMobileMenu(focusToggle);
-       // Clear search input if navigated away from search page?
-       // Maybe not needed, the input will clear on submit anyway.
-   };
-
-   // Removed the unused isSearchPage variable and the useLocation hook call
+       // Optionally clear search term if clicking a mobile link? Depends on desired UX.
+       // setSearchTerm('');
+   }, [closeMobileMenu]); // Added closeMobileMenu as dependency
 
 
   return (
@@ -127,8 +128,8 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
          )}
 
         <div className={styles.logo}>
-             {/* Logo links to Feed if logged in, Landing if not */}
-             <Link to={user ? "/" : "/"} onClick={() => handleMobileLinkClick(false)} aria-label="MovieBooks Home">{/* Link to updates removed per previous flow */} MovieBooks</Link>
+             {/* *** MODIFIED: Logo now links to the Updates page *** */}
+             <Link to="/updates" onClick={() => handleMobileLinkClick(false)} aria-label="MovieBooks Updates">{/* Link to updates */} MovieBooks</Link>
         </div>
 
          {/* Main Nav Hamburger Button (only visible <= 768px) */}
@@ -156,6 +157,8 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                          </button>
                      </form>
                  </li>
+                 {/* Desktop Nav Links */}
+                 {/* Use NavLink for feed link to get active styling */}
                  <li><NavLink to="/" className={getNavLinkClass}>Feed</NavLink></li>
                  {user ? (
                      <>
@@ -163,20 +166,30 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                          <li>
                              <NavLink to="/notifications" className={({isActive}) => `${styles.notificationLink} ${isActive ? styles.active : ''}`}>
                                  Notifications
+                                 {/* Check unreadCount before rendering badge */}
                                  {unreadCount > 0 && (
                                      <span className={styles.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
                                  )}
                              </NavLink>
                          </li>
+                         {/* Desktop Profile Link */}
                          <li><NavLink to="/profile" className={getNavLinkClass}>My Profile</NavLink></li>
+                         {/* Desktop Logout Button */}
                          <li><button onClick={handleLogout} className={styles.logoutButton}>Logout</button></li>
                      </>
                  ) : (
                      <>
+                         {/* Desktop Login/Signup Links */}
                          <li><NavLink to="/login" className={getNavLinkClass}>Login</NavLink></li>
                          <li><NavLink to="/signup" className={getNavLinkClass}>Sign Up</NavLink></li>
                      </>
                  )}
+                 {/* Add other standard navigation links for completeness if you want them in desktop menu */}
+                 <li><NavLink to="/about" className={getNavLinkClass}>About</NavLink></li>
+                 <li><NavLink to="/help" className={getNavLinkClass}>Help</NavLink></li>
+                 {/* Add Updates link here too for desktop? Or just keep it as the logo link?
+                    Let's add it as a separate link for clarity/discoverability. */}
+                 <li><NavLink to="/updates" className={getNavLinkClass}>Updates</NavLink></li> {/* Added Updates link */}
              </ul>
         </nav>
 
@@ -190,10 +203,12 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
             role={isMobileMenuOpen ? "dialog" : undefined}
             aria-modal={isMobileMenuOpen ? "true" : undefined}
         >
+           {/* Overlay to close mobile menu */}
            <div className={styles.mobileNavOverlay} onClick={() => handleMobileLinkClick(true)} aria-label="Close menu"></div>
+           {/* Mobile menu content */}
            <div className={styles.mobileNavContent}>
                 {/* Search Form - Mobile */}
-                 <div className={styles.searchFormContainerMobile}> {/* Use a different container class for potential mobile-specific styling */}
+                 <div className={styles.searchFormContainerMobile}>
                      <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
                          <input
                              type="text"
@@ -209,7 +224,8 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                      </form>
                  </div>
                 <ul className={styles.mobileNavLinks} id="mobile-nav-links">
-                    {/* Using NavLink here for active class styling */}
+                    {/* Mobile Nav Links */}
+                    {/* Use NavLink here for active class styling */}
                     <li><NavLink to="/" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Feed</NavLink></li>
                     {user ? (
                         <>
@@ -221,16 +237,20 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                                     onClick={() => handleMobileLinkClick(true)}
                                 >
                                     Notifications
+                                    {/* Check unreadCount before rendering badge */}
                                     {unreadCount > 0 && (
                                         <span className={styles.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
                                     )}
                                 </NavLink>
                             </li>
+                             {/* Mobile Profile Link */}
                             <li><NavLink to="/profile" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>My Profile</NavLink></li>
+                             {/* Mobile Logout Button */}
                             <li><button onClick={handleLogout} className={`${styles.mobileNavLink} ${styles.logoutButton}`}>Logout</button></li>
                         </>
                     ) : (
                         <>
+                            {/* Mobile Login/Signup Links */}
                             <li><NavLink to="/login" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Login</NavLink></li>
                             <li><NavLink to="/signup" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Sign Up</NavLink></li>
                         </>
@@ -238,7 +258,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                     {/* Added other standard navigation links for completeness if you want them in mobile menu */}
                     <li><NavLink to="/about" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>About</NavLink></li>
                     <li><NavLink to="/help" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Help</NavLink></li>
-                    <li><NavLink to="/updates" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Updates</NavLink></li>
+                    <li><NavLink to="/updates" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Updates</NavLink></li> {/* Added Updates link */}
                 </ul>
             </div>
         </nav>

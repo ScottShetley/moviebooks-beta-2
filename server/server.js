@@ -8,7 +8,7 @@ import fs from 'fs'; // Import fs for checking client build path
 
 // --- Import Custom Modules ---
 import connectDB from './config/db.js';
-import { notFound } from './middleware/errorMiddleware.js'; // Ensure this file uses export
+import { notFound } from './middleware/errorMiddleware.js';
 
 // --- Import Route Files ---
 import authRoutes from './routes/authRoutes.js';
@@ -17,9 +17,8 @@ import movieRoutes from './routes/movieRoutes.js';
 import bookRoutes from './routes/bookRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
-// --- NEW: Import the new comment routes ---
 import commentRoutes from './routes/commentRoutes.js';
-// --- ---
+
 
 // --- Replicate __dirname ---
 const __filename = fileURLToPath(import.meta.url);
@@ -36,13 +35,14 @@ const app = express();
 
 // --- Determine CORS origin ---
 const allowedOrigin = process.env.NODE_ENV === 'production'
-    ? process.env.CLIENT_ORIGIN_URL
-    : 'http://localhost:3000';
+    ? process.env.CLIENT_ORIGIN_URL // Use CLIENT_ORIGIN_URL for production
+    : 'http://localhost:3000'; // Default to localhost:3000 for development
 
-// --- CORS Middleware ---
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigin === origin) {
+    // Allow requests with no origin (like mobile apps or server-to-server requests)
+    // and allow the specific allowedOrigin
+    if (!origin || origin === "null" || allowedOrigin === origin) {
       callback(null, true);
     } else {
       console.error(`CORS Error: Origin '${origin}' not allowed. Allowed: '${allowedOrigin}'`);
@@ -53,87 +53,110 @@ const corsOptions = {
 };
 console.log(`CORS Configured: Allowing origin -> ${allowedOrigin || 'requests with no origin (e.g., server-to-server)'}`);
 app.use(cors(corsOptions));
-// --- ---
+
 
 // --- Body Parser Middleware ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// --- ---
+
 
 // --- Basic Logging Middleware ---
 if (process.env.NODE_ENV === 'development') {
     app.use((req, res, next) => {
-        console.log(`${req.method} ${req.originalUrl}`);
+        // Only log if not requesting a static file from client build or uploads
+        if (!req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/')) {
+             console.log(`${req.method} ${req.originalUrl}`);
+        }
         next();
     });
 } else {
      app.use((req, res, next) => {
-        console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} (Origin: ${req.headers.origin || 'N/A'})`);
+        // Only log if not requesting a static file from client build or uploads
+         if (!req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/')) {
+            console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} (Origin: ${req.headers.origin || 'N/A'})`);
+         }
         next();
     });
 }
-// --- ---
 
-// --- Mount Routes ---
+
+// --- Mount API Routes ---
+// Order matters: API routes should be processed before static file or SPA fallback routes
 app.use('/api/auth', authRoutes);
-// --- Mount the new comment routes BEFORE connection routes if there's any overlap possibility (unlikely here) ---
-app.use('/api/comments', commentRoutes); // <-- NEW: Mount new comment routes
+app.use('/api/comments', commentRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
-// --- ---
+
 
 // --- Serve Static Files (Uploaded Images) ---
-// Use the derived __dirname
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// --- ---
 
-// --- Production Static Build Check ---
-// This section might be less relevant if your frontend is a separate static site on Render
+
+// --- Serve Client Build in Production ---
+const clientBuildPath = path.resolve(__dirname, '../client/build');
+
+// In production, serve the static files from the client/build directory
 if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.resolve(__dirname, '../client/build'); // Use path.resolve for better cross-platform path handling
-  // Use imported fs instead of require('fs')
   if (!fs.existsSync(clientBuildPath)) {
-      console.warn("Production mode: Client build folder not found at:", clientBuildPath);
+      console.error("Production mode: Client build folder not found at:", clientBuildPath);
+      // Optionally, exit or throw error if build is missing in prod
+      // process.exit(1);
+  } else {
+      console.log("Serving client build from:", clientBuildPath);
+      // Serve static assets from the build directory (CSS, JS, images, etc.)
+      // This should come AFTER API routes and /uploads static route
+      app.use(express.static(clientBuildPath));
+
+      // --- SPA Fallback Route ---
+      // For any GET request that is not an API call, /uploads, or a static file from the build,
+      // serve index.html. React Router will then handle the path.
+      // This should be the LAST GET route handler before the 404 middleware.
+      app.get('*', (req, res) => {
+          // Add a log to confirm this route is being hit
+           console.log(`SPA Fallback: Serving index.html for ${req.originalUrl}`);
+           res.sendFile(path.join(clientBuildPath, 'index.html'));
+      });
+      // --- END SPA Fallback ---
   }
-  // Note: Serving the client build from the backend is usually not done when
-  // deploying frontend and backend separately (like Render Static Site + Web Service).
-  // Consider removing this section if not needed.
+} else {
+    // In development, provide a simple root message as the frontend is served by Create React App's server (localhost:3000)
+     app.get('/', (req, res) => {
+        res.send(`MovieBooks API is running... (${process.env.NODE_ENV || 'development'} Mode)`);
+      });
+      // Note: No catch-all needed here because webpack-dev-server handles frontend routing.
 }
-// Basic root route for API health check
-app.get('/', (req, res) => {
-  res.send(`MovieBooks API is running... (${process.env.NODE_ENV || 'development'} Mode)`);
-});
-// --- ---
+
 
 // --- Error Handling Middleware ---
-// 1. Catch 404s (Must use imported 'notFound' function)
-app.use(notFound); // Ensure errorMiddleware.js exports 'notFound'
+// 1. Catch 404s (These will only be hit if the request wasn't caught by API routes, /uploads, or the production SPA fallback)
+app.use(notFound);
 
 // 2. Catch all other errors
 app.use((err, req, res, next) => {
   const isCorsError = err.message === 'Not allowed by CORS';
-  const statusCode = isCorsError ? 403 : (res.statusCode === 200 ? 500 : res.statusCode);
+  // Determine status code: use the error's status if available, or 500 if it was a 200 response before error
+  const statusCode = err.status || (res.statusCode === 200 ? 500 : res.statusCode);
 
   console.error('--- DETAILED ERROR HANDLER ---');
   console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   console.error('Status Code:', statusCode);
   console.error('Error Message:', err.message);
-  if (!isCorsError) {
-      // Avoid logging full stack for expected CORS denials
-      // console.error('Full Error Object:', err); // Optional: Can be noisy
-      console.error('Stack Trace:', err.stack);
+  // Log stack trace only if not a CORS error and in development or test environment
+  if (!isCorsError && (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) {
+       console.error('Stack Trace:', err.stack);
   }
   console.error('--- END DETAILED ERROR ---');
 
   res.status(statusCode).json({
     message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    // Only include stack trace in development/test environments
+    stack: (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? err.stack : null,
   });
 });
-// --- ---
+
 
 const PORT = process.env.PORT || 5001;
 

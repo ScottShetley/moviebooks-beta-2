@@ -5,8 +5,8 @@ import Connection from '../models/Connection.js';
 import Movie from '../models/Movie.js';
 import Book from '../models/Book.js';
 import Notification from '../models/Notification.js';
-import Comment from '../models/Comment.js'; // Make sure Comment model is imported
-import cloudinary from '../config/cloudinary.js';
+import Comment from '../models/Comment.js';
+import cloudinary from '../config/cloudinary.js'; // Needed for screenshot updates
 import User from '../models/User.js';
 
 // --- Helper Function to process comma-separated strings into arrays ---
@@ -17,7 +17,6 @@ const processStringToArray = (inputString) => {
 
 // --- Helper function to find or create Movie/Book ---
 const findOrCreate = async (model, query, data) => {
-    // Removed unused 'options' variable. The upsert logic is handled manually below.
     const collation = { locale: 'en', strength: 2 };
     const updateData = {};
     for (const key in data) { if (data[key] !== undefined && data[key] !== null) { updateData[key] = data[key]; } }
@@ -25,11 +24,6 @@ const findOrCreate = async (model, query, data) => {
     if (doc) {
         let needsUpdate = false;
         for (const key in updateData) {
-            // Specific logic to avoid overwriting existing poster/cover paths if a new one isn't provided or if one already exists.
-            // This part seems a bit complex; let's stick to the original intention which was to avoid overwriting existing uploads unless a new file is explicitly uploaded.
-            // The current logic `if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath)` seems to *prevent* update if both exist, which might not be desired if you upload a *new* image to replace an old one.
-            // However, given the file upload middleware handles getting the *new* path/publicId and placing it in `updateData`, the simpler check `if (!(key in doc) || JSON.stringify(doc[key]) !== JSON.stringify(updateData[key]))` is usually sufficient, assuming `updateData` only contains new paths when a file was uploaded.
-            // Let's keep the original check for now, assuming it's behaving as intended in your setup, but note it might need review if replacing existing images doesn't work as expected.
              if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath) { continue; }
              if ((key === 'coverPath' || key === 'coverPublicId') && doc.coverPath && updateData.coverPath) { continue; }
 
@@ -42,7 +36,7 @@ const findOrCreate = async (model, query, data) => {
         return doc;
     } else {
         const createData = { ...query, ...updateData };
-        return await model.create(createData); // This doesn't use the 'options' object either, relies on schema defaults and validation
+        return await model.create(createData);
     }
 };
 
@@ -74,10 +68,7 @@ export const createConnection = asyncHandler(async (req, res, next) => {
 
   if (bookTitle) {
       const processedBookGenres = processStringToArray(bookGenres);
-      // Correcting potential typo/logic: Use bookAuthor, not processedBookAuthors based on the incoming req.body structure and finding/creating a single author string.
-      // If bookAuthor can be multiple, the findOrCreate logic might need adjustment, but assuming a single string for author based on the schema.
-      const processedBookAuthors = processStringToArray(bookAuthor); // This was processedBookActors, correcting to match logic flow
-      const bookData = { title: bookTitle, genres: processedBookGenres, author: processedBookAuthors[0] || undefined, publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined, isbn: bookIsbn?.trim() || undefined, synopsis: bookSynopsis?.trim() || undefined };
+      const bookData = { title: bookTitle, genres: processedBookGenres, author: bookAuthor?.trim() || undefined, publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined, isbn: bookIsbn?.trim() || undefined, synopsis: bookSynopsis?.trim() || undefined };
       if (req.files?.bookCover?.[0]) { bookData.coverPath = req.files.bookCover[0].path; bookData.coverPublicId = req.files.bookCover[0].filename; }
       book = await findOrCreate(Book, { title: bookTitle }, bookData);
   }
@@ -99,7 +90,7 @@ export const createConnection = asyncHandler(async (req, res, next) => {
 
   const newConnection = await Connection.create(connectionData);
   const populatedConnection = await Connection.findById(newConnection._id)
-    .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+    .populate('userRef', 'username profileImageUrl _id displayName')
     .populate('movieRef')
     .populate('bookRef');
 
@@ -133,14 +124,12 @@ export const getConnections = asyncHandler(async (req, res, next) => {
     { $unwind: { path: '$bookData', preserveNullAndEmptyArrays: true } },
     { $lookup: { from: 'users', localField: 'userRef', foreignField: '_id', as: 'userData' } },
     { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } },
-    // --- Lookup comments for each connection ---
     { $lookup: {
-        from: 'comments',           // The collection to join
-        localField: '_id',          // Field from the input documents (connections)
-        foreignField: 'connection', // Field from the documents of the "from" collection (comments)
-        as: 'commentsData'          // Output array field name
+        from: 'comments',
+        localField: '_id',
+        foreignField: 'connection',
+        as: 'commentsData'
     } },
-    // --- END NEW LOOKUP ---
     { $match: matchStage }
   ];
 
@@ -152,38 +141,32 @@ export const getConnections = asyncHandler(async (req, res, next) => {
      { $sort: { createdAt: -1 } },
      { $skip: pageSize * (page - 1) },
      { $limit: pageSize },
-     // --- $project Stage to include commentCount ---
      { $project: {
         _id: 1, context: 1, tags: 1, likes: 1, favorites: 1, createdAt: 1, updatedAt: 1,
         screenshotUrl: 1, screenshotPublicId: 1,
-        // Ensure userRef includes necessary fields
         userRef: {
              _id: '$userData._id',
              username: '$userData.username',
              profileImageUrl: '$userData.profileImageUrl',
-             displayName: '$userData.displayName' // Include displayName
+             displayName: '$userData.displayName'
         },
-        // Explicitly check if movieData exists and has an _id before including
         movieRef: {
             $cond: {
                 if: { $and: [ "$movieData", "$movieData._id" ] },
-                then: "$movieData", // Pass the whole object if valid
-                else: null         // Otherwise, explicitly set to null
+                then: "$movieData",
+                else: null
             }
         },
-        // Explicitly check if bookData exists and has an _id before including
         bookRef: {
              $cond: {
                  if: { $and: [ "$bookData", "$bookData._id" ] },
-                 then: "$bookData", // Pass the whole object if valid
-                 else: null        // Otherwise, explicitly set to null
+                 then: "$bookData",
+                 else: null
              }
          },
-         // --- Include the size of the commentsData array as commentCount ---
          commentCount: { $size: "$commentsData" }
        }
      }
-     // --- *** END $project Stage *** ---
     ]);
 
   res.json({ connections, page, pages: Math.ceil(count / pageSize), filterApplied: isFilterApplied, activeFilters: req.query });
@@ -200,12 +183,11 @@ export const searchConnections = asyncHandler(async (req, res, next) => {
     const page = Number(req.query.pageNumber) || 1;
     const searchTerm = req.query.q;
 
-    // If no search term is provided, return empty results
     if (!searchTerm || searchTerm.trim() === '') {
         return res.json({ connections: [], page: 1, pages: 1, totalCount: 0 });
     }
 
-    const searchTermRegex = new RegExp(searchTerm, 'i'); // Case-insensitive regex search
+    const searchTermRegex = new RegExp(searchTerm, 'i');
 
     const aggregationPipeline = [
         { $lookup: { from: 'movies', localField: 'movieRef', foreignField: '_id', as: 'movieData' } },
@@ -214,89 +196,74 @@ export const searchConnections = asyncHandler(async (req, res, next) => {
         { $unwind: { path: '$bookData', preserveNullAndEmptyArrays: true } },
         { $lookup: { from: 'users', localField: 'userRef', foreignField: '_id', as: 'userData' } },
         { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } },
-        // --- Lookup comments for each connection (to get commentCount) ---
         { $lookup: {
-            from: 'comments',           // The collection to join
-            localField: '_id',          // Field from the input documents (connections)
-            foreignField: 'connection', // Field from the documents of the "from" collection (comments)
-            as: 'commentsData'          // Output array field name
+            from: 'comments',
+            localField: '_id',
+            foreignField: 'connection',
+            as: 'commentsData'
         } },
-        // --- END NEW LOOKUP ---
         {
             $match: {
                 $or: [
-                    // Search in movie fields (if movieData exists and field is not null)
                     { 'movieData.title': { $exists: true, $ne: null, $regex: searchTermRegex } },
                     { 'movieData.director': { $exists: true, $ne: null, $regex: searchTermRegex } },
-                    // For arrays like genres/actors, $regex can match any element
                     { 'movieData.genres': { $exists: true, $ne: null, $regex: searchTermRegex } },
                     { 'movieData.actors': { $exists: true, $ne: null, $regex: searchTermRegex } },
                     { 'movieData.synopsis': { $exists: true, $ne: null, $regex: searchTermRegex } },
 
-                    // Search in book fields (if bookData exists and field is not null)
                     { 'bookData.title': { $exists: true, $ne: null, $regex: searchTermRegex } },
                     { 'bookData.author': { $exists: true, $ne: null, $regex: searchTermRegex } },
-                     // For arrays like genres, $regex can match any element
                     { 'bookData.genres': { $exists: true, $ne: null, $regex: searchTermRegex } },
                     { 'bookData.synopsis': { $exists: true, $ne: null, $regex: searchTermRegex } },
 
-                    // Search in connection fields (context and tags)
                     { 'context': { $exists: true, $ne: null, $regex: searchTermRegex } },
-                    { 'tags': { $exists: true, $ne: null, $regex: searchTermRegex } } // Search within tags array
-                ].filter(Boolean) // Filter out potentially null match conditions if fields don't exist
+                    { 'tags': { $exists: true, $ne: null, $regex: searchTermRegex } }
+                ].filter(Boolean)
             }
         }
     ];
 
-    // Get total count for pagination
     const countResult = await Connection.aggregate([...aggregationPipeline, { $count: 'totalCount' }]);
     const count = countResult.length > 0 ? countResult[0].totalCount : 0;
 
-    // Get paginated results
     const connections = await Connection.aggregate([
         ...aggregationPipeline,
-        { $sort: { createdAt: -1 } }, // Sort by creation date, latest first
+        { $sort: { createdAt: -1 } },
         { $skip: pageSize * (page - 1) },
         { $limit: pageSize },
-        // --- Project Stage to shape output and include commentCount ---
         { $project: {
            _id: 1, context: 1, tags: 1, likes: 1, favorites: 1, createdAt: 1, updatedAt: 1,
            screenshotUrl: 1, screenshotPublicId: 1,
-           // Ensure userRef includes necessary fields
            userRef: {
                 _id: '$userData._id',
                 username: '$userData.username',
                 profileImageUrl: '$userData.profileImageUrl',
                 displayName: '$userData.displayName'
            },
-           // Explicitly check if movieData exists and has an _id before including
            movieRef: {
                $cond: {
                    if: { $and: [ "$movieData", "$movieData._id" ] },
-                   then: "$movieData", // Pass the whole object if valid
+                   then: "$movieData",
                    else: null
                }
            },
-           // Explicitly check if bookData exists and has an _id before including
            bookRef: {
                 $cond: {
                     if: { $and: [ "$bookData", "$bookData._id" ] },
-                    then: "$bookData", // Pass the whole object if valid
+                    then: "$bookData",
                     else: null
                 }
             },
-            // --- Include the size of the commentsData array as commentCount ---
             commentCount: { $size: "$commentsData" }
           }
         }
-        // --- END Project Stage ---
     ]);
 
     res.json({
         connections,
         page,
         pages: Math.ceil(count / pageSize),
-        totalCount: count // Include total count for frontend
+        totalCount: count
     });
 });
 
@@ -308,11 +275,151 @@ export const getConnectionById = asyncHandler(async (req, res) => {
     const connectionId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(connectionId)) { res.status(400); throw new Error('Invalid Connection ID format'); }
     const connection = await Connection.findById(connectionId)
-        .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+        .populate('userRef', 'username profileImageUrl _id displayName')
         .populate('movieRef')
         .populate('bookRef');
     if (!connection) { res.status(404); throw new Error('Connection not found'); }
     res.status(200).json(connection);
+});
+
+
+/**
+ * @desc    Update an existing MovieBook connection
+ * @route   PUT /api/connections/:id
+ * @access  Private (Owner only)
+ */
+export const updateConnection = asyncHandler(async (req, res) => {
+    const connectionId = req.params.id;
+    // Allow bookAuthor to be updated, context, and tags.
+    // movieTitle and bookTitle cannot be changed as they are tied to the specific Movie/Book document.
+    const { context, tags, bookAuthor, removeScreenshot } = req.body; // Added removeScreenshot from body
+
+    // 1. Validate Connection ID
+    if (!mongoose.Types.ObjectId.isValid(connectionId)) {
+        res.status(400);
+        throw new Error('Invalid Connection ID format');
+    }
+
+    // 2. Find the connection
+    const connection = await Connection.findById(connectionId);
+
+    // 3. Check if connection exists
+    if (!connection) {
+        res.status(404);
+        throw new Error('Connection not found');
+    }
+
+    // 4. Check if logged-in user is the owner
+    // `req.user` is available because the 'protect' middleware is used on this route
+    if (!req.user || !req.user._id) {
+        res.status(401);
+        throw new Error('User not authenticated'); // Should be caught by protect middleware, but good safeguard
+    }
+    if (!connection.userRef.equals(req.user._id)) {
+        res.status(403);
+        throw new Error('User not authorized to update this connection');
+    }
+
+    // 5. Prepare update data for the Connection document
+    const updateData = {};
+
+    if (context !== undefined) {
+         updateData.context = context?.trim() || '';
+    }
+
+    if (tags !== undefined) {
+         updateData.tags = processStringToArray(tags);
+    }
+
+    // Handle optional bookAuthor update within the RELATED Book document
+    if (bookAuthor !== undefined) {
+        if (connection.bookRef) {
+            const book = await Book.findById(connection.bookRef);
+            if (book) {
+                const trimmedAuthor = bookAuthor?.trim() || undefined;
+                if (book.author !== trimmedAuthor) {
+                    book.author = trimmedAuthor;
+                    await book.save();
+                     console.log(`Book author updated for Book ID ${book._id}`);
+                }
+            } else {
+                 console.warn(`[updateConnection] Book reference found on connection (${connection.bookRef}), but Book document was not found.`);
+            }
+        } else {
+             console.warn(`[updateConnection] Attempted to update bookAuthor, but connection ${connectionId} has no bookRef.`);
+        }
+    }
+
+
+    // Handle screenshot update/removal
+    if (req.files?.screenshot?.[0]) {
+        // A new screenshot was uploaded
+        const newScreenshot = req.files.screenshot[0];
+
+        // Delete old screenshot from Cloudinary if it exists
+        if (connection.screenshotPublicId) {
+            try {
+                 await cloudinary.uploader.destroy(connection.screenshotPublicId);
+                console.log(`Deleted old screenshot: ${connection.screenshotPublicId}`);
+            } catch (cloudinaryError) {
+                console.error(`[updateConnection] WARNING: Error deleting old screenshot ${connection.screenshotPublicId} from Cloudinary:`, cloudinaryError.message);
+            }
+        }
+
+        updateData.screenshotUrl = newScreenshot.path;
+        updateData.screenshotPublicId = newScreenshot.filename;
+
+    } else if (removeScreenshot === 'true') { // Check the flag from req.body
+        // Frontend explicitly sent a flag to remove the screenshot
+        if (connection.screenshotPublicId) {
+             try {
+                await cloudinary.uploader.destroy(connection.screenshotPublicId);
+                 console.log(`Deleted old screenshot on explicit removal request: ${connection.screenshotPublicId}`);
+             } catch (cloudinaryError) {
+                 console.error(`[updateConnection] WARNING: Failed to delete screenshot ${connection.screenshotPublicId} on explicit removal request:`, cloudinaryError.message);
+             }
+        }
+        updateData.screenshotUrl = null;
+        updateData.screenshotPublicId = null;
+    }
+
+
+    // 6. Update the connection in the database if there are fields to update on the Connection document itself
+    let updatedConnectionRaw;
+    if (Object.keys(updateData).length > 0) {
+        updatedConnectionRaw = await Connection.findByIdAndUpdate(
+            connectionId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+         if (!updatedConnectionRaw) {
+            res.status(404);
+            throw new Error('Connection not found after update attempt.');
+        }
+    } else {
+        updatedConnectionRaw = await Connection.findById(connectionId);
+         if (!updatedConnectionRaw) {
+            res.status(404);
+            throw new Error('Connection not found after update attempt.');
+         }
+    }
+
+
+    // 7. Populate refs for the response
+    const updatedConnection = await Connection.findById(updatedConnectionRaw._id)
+        .populate('userRef', 'username profileImageUrl _id displayName')
+        .populate('movieRef')
+        .populate('bookRef');
+
+    // Final check after population
+    if (!updatedConnection) {
+         console.error(`[updateConnection] CRITICAL: Connection updated (ID: ${updatedConnectionRaw._id}) but failed to populate!`);
+         res.status(500);
+         throw new Error('Connection updated but could not be retrieved for response.');
+    }
+
+    // 8. Send success response
+    res.status(200).json(updatedConnection);
 });
 
 
@@ -344,7 +451,7 @@ export const likeConnection = asyncHandler(async (req, res, next) => {
   if (!updatedConnectionRaw) { res.status(404); throw new Error('Connection not found after update attempt.'); }
   if (notificationShouldBeCreated) { try { const notificationMessage = `${username} liked your connection.`; const notification = await Notification.create({ recipientRef: connection.userRef, senderRef: userId, type: 'LIKE', connectionRef: connection._id, message: notificationMessage }); notificationId = notification._id; } catch (notificationError) { console.error(`[likeConnection] Failed notification creation: ${notificationError.message}`); } }
   const updatedConnection = await Connection.findById(updatedConnectionRaw._id)
-        .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+        .populate('userRef', 'username profileImageUrl _id displayName')
         .populate('movieRef')
         .populate('bookRef');
   res.json({ connection: updatedConnection, notificationId });
@@ -370,7 +477,7 @@ export const favoriteConnection = asyncHandler(async (req, res, next) => {
   try { await User.findByIdAndUpdate(userId, userUpdateOperation); } catch (userUpdateError) { console.error(`[favoriteConnection] FAILED to update user ${userId} favorites list:`, userUpdateError); }
   if (notificationShouldBeCreated) { try { const favoriterUsername = req.user.username || 'Someone'; const notificationMessage = `${favoriterUsername} favorited your connection.`; await Notification.create({ recipientRef: connectionCreatorId, senderRef: userId, type: 'FAVORITE', connectionRef: connection._id, message: notificationMessage }); } catch (notificationError) { console.error(`[favoriteConnection] Failed notification creation for FAVORITE: ${notificationError.message}`); } }
   const updatedConnection = await Connection.findById(updatedConnectionRaw._id)
-      .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+      .populate('userRef', 'username profileImageUrl _id displayName')
       .populate('movieRef')
       .populate('bookRef');
   if (!updatedConnection) { res.status(500); throw new Error('Failed to retrieve updated connection details.'); }
@@ -389,7 +496,7 @@ export const deleteConnection = asyncHandler(async (req, res, next) => {
     if (!connection) { res.status(404); throw new Error('Connection not found'); }
     if (!connection.userRef.equals(userId)) { res.status(403); throw new Error('User not authorized to delete this connection'); }
     const publicIdsToDelete = [ connection.screenshotPublicId ].filter(Boolean);
-    if (publicIdsToDelete.length > 0) { try { await cloudinary.api.delete_resources(publicIdsToDelete, { type: 'upload', resource_type: 'image' }); } catch (cloudinaryError) { console.error(`[deleteConnection] WARNING: Error deleting Cloudinary images:`, cloudinaryError); } }
+    if (publicIdsToDelete.length > 0) { try { await cloudinary.uploader.destroy(publicIdsToDelete); } catch (cloudinaryError) { console.error(`[deleteConnection] WARNING: Error deleting Cloudinary images:`, cloudinaryError); } }
     try { await User.updateMany({ favorites: connectionId }, { $pull: { favorites: connectionId } }); } catch (userUpdateError) { console.error(`[deleteConnection] WARNING: Failed to remove connection ${connectionId} from users' favorites lists:`, userUpdateError); }
     try { await Comment.deleteMany({ connection: connectionId }); } catch(commentDeleteError) { console.error(`[deleteConnection] WARNING: Failed to delete comments for connection ${connectionId}:`, commentDeleteError); }
     try { await Notification.deleteMany({ connectionRef: connectionId }); } catch (notificationDeleteError) { console.error(`[deleteConnection] WARNING: Failed to delete notifications for connection ${connectionId}:`, notificationDeleteError); }
@@ -404,9 +511,8 @@ export const deleteConnection = asyncHandler(async (req, res, next) => {
 export const getConnectionsByUserId = asyncHandler(async (req, res) => {
   const targetUserId = req.params.userId;
   if (!mongoose.Types.ObjectId.isValid(targetUserId)) { res.status(400); throw new Error('Invalid User ID format'); }
-  // NOTE: commentCount is currently NOT included here, only in getConnections (main feed) and search
   const connections = await Connection.find({ userRef: targetUserId })
-    .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+    .populate('userRef', 'username profileImageUrl _id displayName')
     .populate('movieRef')
     .populate('bookRef')
     .sort({ createdAt: -1 });
@@ -422,9 +528,8 @@ export const getConnectionsByIds = asyncHandler(async (req, res) => {
     if (connectionIds.length === 0) { return res.json([]); }
     const validConnectionIds = connectionIds.filter(id => mongoose.Types.ObjectId.isValid(id));
     if (validConnectionIds.length === 0) { return res.json([]); }
-    // NOTE: commentCount is currently NOT included here, only in getConnections (main feed) and search
     const connections = await Connection.find({ _id: { $in: validConnectionIds } })
-        .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
+        .populate('userRef', 'username profileImageUrl _id displayName')
         .populate('movieRef')
         .populate('bookRef')
         .sort({ createdAt: -1 });

@@ -1,12 +1,12 @@
 // client/src/pages/ConnectionDetailPage.js
-import React, { useState, useEffect, useCallback } from 'react'; // Import useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { getConnectionById, getCommentsForConnection, createComment, getStaticFileUrl } from '../services/api';
 import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage';
 import Tag from '../components/Common/Tag/Tag';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
 import CommentItem from '../components/comments/CommentItem/CommentItem';
 import styles from './ConnectionDetailPage.module.css';
 
@@ -14,7 +14,7 @@ function ConnectionDetailPage() {
     const { connectionId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth(); // Get 'user' from useAuth
 
     // State for connection details
     const [connection, setConnection] = useState(null);
@@ -32,29 +32,29 @@ function ConnectionDetailPage() {
     const siteBaseUrl = window.location.origin;
 
     // Effect to fetch connection details
-    useEffect(() => {
-        const fetchConnection = async () => {
-            // console.log("ConnectionDetailPage: Fetching connection with ID:", connectionId);
-            try {
-                setLoading(true);
-                setError(null);
-                const response = await getConnectionById(connectionId);
-                setConnection(response.data);
-                // console.log("ConnectionDetailPage: Fetched connection data:", response.data);
-            } catch (err) {
-                console.error("ConnectionDetailPage: Error fetching connection:", err);
-                const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch connection details.';
-                setError(errorMsg);
-                if (err.response?.status === 404) {
-                    setError(`Connection with ID ${connectionId} not found.`);
-                }
-            } finally {
-                setLoading(false);
+    const fetchConnection = useCallback(async () => { // Made fetchConnection a useCallback
+        // console.log("ConnectionDetailPage: Fetching connection with ID:", connectionId);
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await getConnectionById(connectionId);
+            setConnection(response.data);
+            // console.log("ConnectionDetailPage: Fetched connection data:", response.data);
+        } catch (err) {
+            console.error("ConnectionDetailPage: Error fetching connection:", err);
+            const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch connection details.';
+            setError(errorMsg);
+            if (err.response?.status === 404) {
+                setError(`Connection with ID ${connectionId} not found.`);
             }
-        };
+        } finally {
+            setLoading(false);
+        }
+    }, [connectionId]); // Dependency connectionId
 
-        fetchConnection();
-    }, [connectionId]);
+    useEffect(() => {
+         fetchConnection(); // Call the useCallback version
+    }, [fetchConnection]); // Dependency fetchConnection
 
     // Effect to fetch comments after connection data is loaded
     useEffect(() => {
@@ -83,15 +83,16 @@ function ConnectionDetailPage() {
 
     // Effect: Scroll to comments if URL hash is #comments
     useEffect(() => {
+        // Ensure connection data is loaded before attempting to scroll
         if (connection && !loading && location.hash === '#comments') {
             const commentsSection = document.getElementById('comments');
             if (commentsSection) {
                 setTimeout(() => {
                      commentsSection.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
+                }, 100); // A slight delay can sometimes help ensure the element is rendered
             }
         }
-    }, [connection, loading, location.hash]);
+    }, [connection, loading, location.hash]); // Added connection and loading to dependencies
 
     // Handler for new comment input change
     const handleNewCommentChange = (e) => {
@@ -130,6 +131,8 @@ function ConnectionDetailPage() {
             // --- END CONSOLE LOG ---
             setComments(updatedCommentsResponse.data);
 
+            // Optional: Re-fetch connection to potentially update comment count shown in header (if implemented)
+            // fetchConnection(); // Now callable because it's a useCallback
 
         } catch (err) {
             console.error("Error submitting comment:", err);
@@ -140,9 +143,7 @@ function ConnectionDetailPage() {
         }
     };
 
-
-    // --- NEW: Handler for when a comment is updated by CommentItem ---
-    // Use useCallback to memoize the function, as it will be passed down as a prop
+    // Handler for when a comment is updated by CommentItem
     const handleCommentUpdated = useCallback((updatedComment) => {
         console.log('[ConnectionDetailPage] Handling comment update:', updatedComment);
         setComments(prevComments =>
@@ -150,25 +151,17 @@ function ConnectionDetailPage() {
                 comment._id === updatedComment._id ? updatedComment : comment
             )
         );
-        // Note: Comment count displayed in the title will only update on a full page refresh
-        // unless we also update a local count state or re-fetch the connection data.
-        // For now, re-fetch is simplest to ensure count consistency.
-        // Optional: Re-fetch connection to get updated comment count
-        // fetchConnection(); // You would need to make fetchConnection callable outside useEffect or trigger effect
-    }, []); // Dependencies: empty array means this function is stable across renders
+    }, []);
 
-    // --- NEW: Handler for when a comment is deleted by CommentItem ---
-    // Use useCallback to memoize the function, as it will be passed down as a prop
+    // Handler for when a comment is deleted by CommentItem
     const handleCommentDeleted = useCallback((deletedCommentId) => {
         console.log('[ConnectionDetailPage] Handling comment deletion for ID:', deletedCommentId);
         setComments(prevComments =>
             prevComments.filter(comment => comment._id !== deletedCommentId)
         );
-        // Optional: Re-fetch connection to get updated comment count
-        // fetchConnection(); // You would need to make fetchConnection callable outside useEffect or trigger effect
-    }, []); // Dependencies: empty array means this function is stable across renders
-    // --- END NEW HANDLERS ---
-
+        // Optional: Re-fetch connection to potentially update comment count
+        // fetchConnection(); // Now callable because it's a useCallback
+    }, []);
 
     // --- Loading State ---
     if (loading) {
@@ -199,6 +192,8 @@ function ConnectionDetailPage() {
 
     // --- No Connection Data State ---
     if (!connection) {
+        // This case should theoretically be caught by the 404 error handler in fetchConnection,
+        // but it's good practice to have a fallback if connection is null after loading finishes without an error.
         return (
             <>
                  <Helmet>
@@ -230,6 +225,9 @@ function ConnectionDetailPage() {
     const bookCoverDisplayUrl = getStaticFileUrl(bookRef?.coverPath);
     const screenshotDisplayUrl = getStaticFileUrl(screenshotUrl);
 
+    // Determine if the current user is the author of the connection
+    const isAuthor = isAuthenticated && user && connection?.userRef?._id === user._id;
+
     return (
         <>
             {/* --- START: Helmet for Meta Tags --- */}
@@ -255,6 +253,12 @@ function ConnectionDetailPage() {
             <div className={styles.pageContainer}>
                 <div className={styles.connectionHeader}>
                     <h1 className={styles.title}>Connection Details</h1>
+                    {/* Conditional rendering for the Edit button */}
+                    {isAuthor && (
+                         <Link to={`/connections/${connectionId}/edit`} className={styles.editButton}> {/* Use a CSS class for styling */}
+                            Edit Connection
+                         </Link>
+                    )}
                     <p className={styles.meta}>
                         Created by <Link to={`/users/${userRef?._id}`}>{userRef?.username || 'Unknown User'}</Link> on {new Date(createdAt).toLocaleDateString()}
                     </p>
@@ -370,7 +374,6 @@ function ConnectionDetailPage() {
                     ) : (
                         <p>Please <Link to="/login" state={{ from: window.location.pathname }}>log in</Link> to post a comment.</p>
                     )}
-
 
                     {/* Comments List */}
                     <div className={styles.commentList}>

@@ -1,0 +1,186 @@
+/* client/src/pages/EditConnectionPage.module.css */
+
+/* (Keep your existing styles for .pageContainer, .title, .backLinkContainer, .backButton, etc.) */
+
+.editForm {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: var(--color-background-card);
+    /* Or a slightly different background */
+    border-radius: 8px;
+    box-shadow: var(--box-shadow-light);
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--color-text-dark);
+}
+
+.inputField,
+.textareaField {
+    width: calc(100% - 20px);
+    /* Account for padding */
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 1em;
+    color: var(--color-text);
+    background-color: var(--color-background-light);
+    transition: border-color 0.2s ease-in-out;
+}
+
+.inputField:focus,
+.textareaField:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 5px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.readOnlyField {
+    /* Style for displaying non-editable fields */
+    padding: 10px;
+    background-color: var(--color-background-alt);
+    /* Lighter background */
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text-dark);
+    font-size: 1em;
+    white-space: pre-wrap;
+    /* Preserve line breaks if needed */
+    word-break: break-word;
+    /* Prevent overflow */
+}
+
+.fileInput {
+    display: block;
+    /* Ensures it takes its own line */
+    margin-top: 5px;
+    /* Styling file inputs is tricky across browsers.
+       Consider custom styling if needed, but default is often fine. */
+}
+
+.screenshotPreviewArea {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px dashed var(--color-border);
+    border-radius: 4px;
+    text-align: center;
+    /* Center image or message */
+    background-color: var(--color-background-alt);
+}
+
+.screenshotPreviewArea p {
+    margin-bottom: 10px;
+    font-style: italic;
+    color: var(--color-text-dark);
+}
+
+.screenshotPreview {
+    max-width: 100%;
+    /* Ensure image doesn't overflow container */
+    max-height: 300px;
+    /* Limit height, adjust as needed */
+    height: auto;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    object-fit: contain;
+    /* Maintain aspect ratio */
+}
+
+.buttonGroup {
+    margin-top: 30px;
+    text-align: right;
+    /* Align buttons to the right */
+}
+
+.saveButton,
+.cancelButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    min-width: 100px;
+    /* Give buttons a minimum width */
+    margin-left: 10px;
+    /* Space between buttons */
+}
+
+.saveButton {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.saveButton:hover:not(:disabled) {
+    background-color: var(--color-primary-dark);
+}
+
+.saveButton:disabled {
+    background-color: var(--color-secondary-light);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.cancelButton {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.cancelButton:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+/* Optional: Responsive adjustments */
+@media (max-width: 600px) {
+
+    .inputField,
+    .textareaField {
+        width: 100%;
+        /* Full width on smaller screens */
+        padding: 8px;
+    }
+
+    .editForm {
+        padding: 15px;
+    }
+
+    .buttonGroup {
+        text-align: center;
+        /* Center buttons on small screens */
+    }
+
+    .saveButton,
+    .cancelButton {
+        margin: 5px;
+        /* Adjust margin for stacking */
+    }
+}
+/* client/src/pages/EditConnectionPage.module.css */
+
+/* (Keep your existing styles) */
+
+.successMessage {
+    color: var(--color-success); /* Define a success color variable */
+    margin-top: 15px;
+    padding: 10px;
+    background-color: var(--color-success-light); /* Define a light success background */
+    border: 1px solid var(--color-success);
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Add variables to your root or a common file if they don't exist */
+/* Example in App.css or index.css */
+/*
+:root {
+  --color-success: #28a745; // Green
+  --color-success-light: #d4edda; // Light green
+}
+*/
