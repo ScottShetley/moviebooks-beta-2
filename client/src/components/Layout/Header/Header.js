@@ -110,10 +110,9 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
   const getMobileNavLinkClass = ({ isActive }) => `${styles.mobileNavLink} ${isActive ? styles.active : ''}`;
 
   // Helper for mobile link clicks that also closes the menu
+  // Note: Function name is handleMobileLinkClick, NOT handleMobileLinkClass
   const handleMobileLinkClick = useCallback((focusToggle = true) => {
        closeMobileMenu(focusToggle);
-       // Optionally clear search term if clicking a mobile link? Depends on desired UX.
-       // setSearchTerm('');
    }, [closeMobileMenu]); // Added closeMobileMenu as dependency
 
 
@@ -128,8 +127,9 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
          )}
 
         <div className={styles.logo}>
-             {/* *** MODIFIED: Logo now links to the Updates page *** */}
-             <Link to="/updates" onClick={() => handleMobileLinkClick(false)} aria-label="MovieBooks Updates">{/* Link to updates */} MovieBooks</Link>
+             {/* Logo links to the Updates page */}
+             {/* Use handleMobileLinkClick for the onClick handler */}
+             <Link to="/updates" onClick={() => handleMobileLinkClick(false)} aria-label="MovieBooks Updates">MovieBooks</Link>
         </div>
 
          {/* Main Nav Hamburger Button (only visible <= 768px) */}
@@ -184,12 +184,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                          <li><NavLink to="/signup" className={getNavLinkClass}>Sign Up</NavLink></li>
                      </>
                  )}
-                 {/* Add other standard navigation links for completeness if you want them in desktop menu */}
-                 <li><NavLink to="/about" className={getNavLinkClass}>About</NavLink></li>
-                 <li><NavLink to="/help" className={getNavLinkClass}>Help</NavLink></li>
-                 {/* Add Updates link here too for desktop? Or just keep it as the logo link?
-                    Let's add it as a separate link for clarity/discoverability. */}
-                 <li><NavLink to="/updates" className={getNavLinkClass}>Updates</NavLink></li> {/* Added Updates link */}
+                 {/* Removed: About, Help, Updates links from desktop main nav */}
              </ul>
         </nav>
 
@@ -226,6 +221,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                 <ul className={styles.mobileNavLinks} id="mobile-nav-links">
                     {/* Mobile Nav Links */}
                     {/* Use NavLink here for active class styling */}
+                    {/* Ensure handleMobileLinkClick is used for onClick */}
                     <li><NavLink to="/" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Feed</NavLink></li>
                     {user ? (
                         <>
@@ -255,10 +251,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                             <li><NavLink to="/signup" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Sign Up</NavLink></li>
                         </>
                     )}
-                    {/* Added other standard navigation links for completeness if you want them in mobile menu */}
-                    <li><NavLink to="/about" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>About</NavLink></li>
-                    <li><NavLink to="/help" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Help</NavLink></li>
-                    <li><NavLink to="/updates" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>Updates</NavLink></li> {/* Added Updates link */}
+                    {/* Removed: About, Help, Updates links from mobile main nav */}
                 </ul>
             </div>
         </nav>
