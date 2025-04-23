@@ -55,13 +55,14 @@ function App() {
     setIsSidebarOpen(prev => typeof forceState === 'boolean' ? forceState : !prev);
   }, []);
 
-  // Close sidebar on route change (for mobile)
-  useEffect(() => {
-    if (isSidebarOpen) {
-      toggleSidebar(false);
-    }
-    // Adding location.pathname here makes this hook reactive to route changes
-  }, [location.pathname, isSidebarOpen, toggleSidebar]);
+  // REMOVED: The useEffect that was causing the sidebar to close immediately on open.
+  // The logic for closing the sidebar when clicking a link *inside* it
+  // is handled correctly within the Sidebar component's handleLinkClick.
+  // useEffect(() => {
+  //   if (isSidebarOpen) {
+  //     toggleSidebar(false);
+  //   }
+  // }, [location.pathname, isSidebarOpen, toggleSidebar]);
 
 
   const handleTagClick = useCallback((tag) => {

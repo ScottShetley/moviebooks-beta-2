@@ -22,7 +22,7 @@ const getNotifications = asyncHandler(async (req, res) => {
         const notifications = await Notification.find({
             recipientRef: req.user._id // CORRECTED: Use recipientRef from model
         })
-        .populate('senderRef', 'username _id') // CORRECTED: Use senderRef from model, populate username
+        .populate('senderRef', 'username _id profilePictureUrl') // ADDED profilePictureUrl
         .populate({
             path: 'connectionRef',
             select: 'movieRef bookRef context screenshotUrl', // CORRECTED: Use screenshotUrl (verify this field name in Connection model)
@@ -32,15 +32,26 @@ const getNotifications = asyncHandler(async (req, res) => {
             ]
          })
         .sort({ createdAt: -1 })
-        .limit(30); // Limit the number of notifications returned
+        .limit(30) // Limit the number of notifications returned
+        .lean(); // --- ADDED .lean() HERE ---
 
         // --- START DIAGNOSTIC LOGGING ---
         console.log(`[getNotifications] Found ${notifications.length} notifications.`);
-        // Optional: Log the fetched notifications if needed for deep debugging
-        // if (notifications.length > 0) {
-        //     console.log('[getNotifications] Notifications data:', JSON.stringify(notifications, null, 2));
-        // }
-        // --- END DIAGNOSTIC LOGGING ---
+
+        // --- Existing DIAGNOSTIC LOG: Inspect the data before sending ---
+        console.log('[getNotifications] Notifications data structure/sample:');
+        if (notifications && notifications.length > 0) {
+            // Log the first item, or summary info
+            // JSON.stringify works reliably on plain objects from .lean()
+            console.log('  First notification sample:', JSON.stringify(notifications[0], null, 2));
+        } else {
+             console.log('  No notifications found or array is empty.');
+        }
+        // --- END Existing DIAGNOSTIC LOG ---
+
+        // --- Existing DIAGNOSTIC LOG: Immediately before sending response ---
+        console.log('[getNotifications] Attempting to send response.');
+        // --- END Existing DIAGNOSTIC LOG ---
 
         res.status(200).json(notifications); // Send 200 status with data
 
@@ -49,6 +60,8 @@ const getNotifications = asyncHandler(async (req, res) => {
         console.error('[getNotifications] Error fetching notifications:', error);
         // --- END DIAGNOSTIC LOGGING ---
         res.status(500); // Internal Server Error
+        // Don't send a response here, asyncHandler will handle it
+        // res.json({ message: 'Server error fetching notifications', error: error.message });
         throw new Error('Server error fetching notifications'); // Let error handler manage response
     }
 });
@@ -88,7 +101,8 @@ const markNotificationAsRead = asyncHandler(async (req, res) => {
         console.log(`[markNotificationAsRead] Notification ${notificationId} was already read.`); // Logging
     }
 
-    res.status(200).json(notification); // Send 200 status with updated notification
+    // Return the updated notification as a plain object
+    res.status(200).json(notification.toObject()); // Send 200 status with updated notification as plain object
 });
 
 // @desc    Mark all unread notifications for the user as read
