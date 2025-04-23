@@ -17,7 +17,7 @@ const processStringToArray = (inputString) => {
 
 // --- Helper function to find or create Movie/Book ---
 const findOrCreate = async (model, query, data) => {
-    const options = { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true };
+    // Removed unused 'options' variable. The upsert logic is handled manually below.
     const collation = { locale: 'en', strength: 2 };
     const updateData = {};
     for (const key in data) { if (data[key] !== undefined && data[key] !== null) { updateData[key] = data[key]; } }
@@ -25,15 +25,24 @@ const findOrCreate = async (model, query, data) => {
     if (doc) {
         let needsUpdate = false;
         for (const key in updateData) {
-            if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath) { continue; }
-            if ((key === 'coverPath' || key === 'coverPublicId') && doc.coverPath && updateData.coverPath) { continue; }
-            if (!(key in doc) || JSON.stringify(doc[key]) !== JSON.stringify(updateData[key])) { doc[key] = updateData[key]; needsUpdate = true; }
+            // Specific logic to avoid overwriting existing poster/cover paths if a new one isn't provided or if one already exists.
+            // This part seems a bit complex; let's stick to the original intention which was to avoid overwriting existing uploads unless a new file is explicitly uploaded.
+            // The current logic `if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath)` seems to *prevent* update if both exist, which might not be desired if you upload a *new* image to replace an old one.
+            // However, given the file upload middleware handles getting the *new* path/publicId and placing it in `updateData`, the simpler check `if (!(key in doc) || JSON.stringify(doc[key]) !== JSON.stringify(updateData[key]))` is usually sufficient, assuming `updateData` only contains new paths when a file was uploaded.
+            // Let's keep the original check for now, assuming it's behaving as intended in your setup, but note it might need review if replacing existing images doesn't work as expected.
+             if ((key === 'posterPath' || key === 'posterPublicId') && doc.posterPath && updateData.posterPath) { continue; }
+             if ((key === 'coverPath' || key === 'coverPublicId') && doc.coverPath && updateData.coverPath) { continue; }
+
+            if (!(key in doc) || JSON.stringify(doc[key]) !== JSON.stringify(updateData[key])) {
+                doc[key] = updateData[key];
+                needsUpdate = true;
+            }
         }
         if (needsUpdate) { doc = await doc.save(); }
         return doc;
     } else {
         const createData = { ...query, ...updateData };
-        return await model.create(createData);
+        return await model.create(createData); // This doesn't use the 'options' object either, relies on schema defaults and validation
     }
 };
 
@@ -65,8 +74,10 @@ export const createConnection = asyncHandler(async (req, res, next) => {
 
   if (bookTitle) {
       const processedBookGenres = processStringToArray(bookGenres);
-      const processedBookActors = processStringToArray(bookActors); // Should be processedBookGenres, but keeping as is to match input for now
-      const bookData = { title: bookTitle, genres: processedBookGenres, author: bookAuthor?.trim() || undefined, publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined, isbn: bookIsbn?.trim() || undefined, synopsis: bookSynopsis?.trim() || undefined };
+      // Correcting potential typo/logic: Use bookAuthor, not processedBookAuthors based on the incoming req.body structure and finding/creating a single author string.
+      // If bookAuthor can be multiple, the findOrCreate logic might need adjustment, but assuming a single string for author based on the schema.
+      const processedBookAuthors = processStringToArray(bookAuthor); // This was processedBookActors, correcting to match logic flow
+      const bookData = { title: bookTitle, genres: processedBookGenres, author: processedBookAuthors[0] || undefined, publicationYear: bookPublicationYear ? parseInt(bookPublicationYear, 10) : undefined, isbn: bookIsbn?.trim() || undefined, synopsis: bookSynopsis?.trim() || undefined };
       if (req.files?.bookCover?.[0]) { bookData.coverPath = req.files.bookCover[0].path; bookData.coverPublicId = req.files.bookCover[0].filename; }
       book = await findOrCreate(Book, { title: bookTitle }, bookData);
   }
@@ -122,7 +133,7 @@ export const getConnections = asyncHandler(async (req, res, next) => {
     { $unwind: { path: '$bookData', preserveNullAndEmptyArrays: true } },
     { $lookup: { from: 'users', localField: 'userRef', foreignField: '_id', as: 'userData' } },
     { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } },
-    // --- NEW: Lookup comments for each connection ---
+    // --- Lookup comments for each connection ---
     { $lookup: {
         from: 'comments',           // The collection to join
         localField: '_id',          // Field from the input documents (connections)
@@ -141,11 +152,11 @@ export const getConnections = asyncHandler(async (req, res, next) => {
      { $sort: { createdAt: -1 } },
      { $skip: pageSize * (page - 1) },
      { $limit: pageSize },
-     // --- *** MODIFIED $project Stage to include commentCount *** ---
+     // --- $project Stage to include commentCount ---
      { $project: {
         _id: 1, context: 1, tags: 1, likes: 1, favorites: 1, createdAt: 1, updatedAt: 1,
         screenshotUrl: 1, screenshotPublicId: 1,
-        // Ensure userRef includes necessary fields (added displayName)
+        // Ensure userRef includes necessary fields
         userRef: {
              _id: '$userData._id',
              username: '$userData.username',
@@ -168,19 +179,125 @@ export const getConnections = asyncHandler(async (req, res, next) => {
                  else: null        // Otherwise, explicitly set to null
              }
          },
-         // --- NEW: Include the size of the commentsData array as commentCount ---
+         // --- Include the size of the commentsData array as commentCount ---
          commentCount: { $size: "$commentsData" }
        }
      }
-     // --- *** END MODIFIED $project Stage *** ---
+     // --- *** END $project Stage *** ---
     ]);
 
-  // DEBUG: Log the structure of the first connection object being sent
-  // if (connections.length > 0) {
-  //   console.log("[getConnections] Sample connection object being sent:", JSON.stringify(connections[0], null, 2));
-  // }
-
   res.json({ connections, page, pages: Math.ceil(count / pageSize), filterApplied: isFilterApplied, activeFilters: req.query });
+});
+
+
+/**
+ * @desc    Search connections based on a query string across multiple fields
+ * @route   GET /api/connections/search?q=...&pageNumber=...
+ * @access  Public
+ */
+export const searchConnections = asyncHandler(async (req, res, next) => {
+    const pageSize = 10;
+    const page = Number(req.query.pageNumber) || 1;
+    const searchTerm = req.query.q;
+
+    // If no search term is provided, return empty results
+    if (!searchTerm || searchTerm.trim() === '') {
+        return res.json({ connections: [], page: 1, pages: 1, totalCount: 0 });
+    }
+
+    const searchTermRegex = new RegExp(searchTerm, 'i'); // Case-insensitive regex search
+
+    const aggregationPipeline = [
+        { $lookup: { from: 'movies', localField: 'movieRef', foreignField: '_id', as: 'movieData' } },
+        { $unwind: { path: '$movieData', preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: 'books', localField: 'bookRef', foreignField: '_id', as: 'bookData' } },
+        { $unwind: { path: '$bookData', preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: 'users', localField: 'userRef', foreignField: '_id', as: 'userData' } },
+        { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } },
+        // --- Lookup comments for each connection (to get commentCount) ---
+        { $lookup: {
+            from: 'comments',           // The collection to join
+            localField: '_id',          // Field from the input documents (connections)
+            foreignField: 'connection', // Field from the documents of the "from" collection (comments)
+            as: 'commentsData'          // Output array field name
+        } },
+        // --- END NEW LOOKUP ---
+        {
+            $match: {
+                $or: [
+                    // Search in movie fields (if movieData exists and field is not null)
+                    { 'movieData.title': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                    { 'movieData.director': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                    // For arrays like genres/actors, $regex can match any element
+                    { 'movieData.genres': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                    { 'movieData.actors': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                    { 'movieData.synopsis': { $exists: true, $ne: null, $regex: searchTermRegex } },
+
+                    // Search in book fields (if bookData exists and field is not null)
+                    { 'bookData.title': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                    { 'bookData.author': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                     // For arrays like genres, $regex can match any element
+                    { 'bookData.genres': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                    { 'bookData.synopsis': { $exists: true, $ne: null, $regex: searchTermRegex } },
+
+                    // Search in connection fields (context and tags)
+                    { 'context': { $exists: true, $ne: null, $regex: searchTermRegex } },
+                    { 'tags': { $exists: true, $ne: null, $regex: searchTermRegex } } // Search within tags array
+                ].filter(Boolean) // Filter out potentially null match conditions if fields don't exist
+            }
+        }
+    ];
+
+    // Get total count for pagination
+    const countResult = await Connection.aggregate([...aggregationPipeline, { $count: 'totalCount' }]);
+    const count = countResult.length > 0 ? countResult[0].totalCount : 0;
+
+    // Get paginated results
+    const connections = await Connection.aggregate([
+        ...aggregationPipeline,
+        { $sort: { createdAt: -1 } }, // Sort by creation date, latest first
+        { $skip: pageSize * (page - 1) },
+        { $limit: pageSize },
+        // --- Project Stage to shape output and include commentCount ---
+        { $project: {
+           _id: 1, context: 1, tags: 1, likes: 1, favorites: 1, createdAt: 1, updatedAt: 1,
+           screenshotUrl: 1, screenshotPublicId: 1,
+           // Ensure userRef includes necessary fields
+           userRef: {
+                _id: '$userData._id',
+                username: '$userData.username',
+                profileImageUrl: '$userData.profileImageUrl',
+                displayName: '$userData.displayName'
+           },
+           // Explicitly check if movieData exists and has an _id before including
+           movieRef: {
+               $cond: {
+                   if: { $and: [ "$movieData", "$movieData._id" ] },
+                   then: "$movieData", // Pass the whole object if valid
+                   else: null
+               }
+           },
+           // Explicitly check if bookData exists and has an _id before including
+           bookRef: {
+                $cond: {
+                    if: { $and: [ "$bookData", "$bookData._id" ] },
+                    then: "$bookData", // Pass the whole object if valid
+                    else: null
+                }
+            },
+            // --- Include the size of the commentsData array as commentCount ---
+            commentCount: { $size: "$commentsData" }
+          }
+        }
+        // --- END Project Stage ---
+    ]);
+
+    res.json({
+        connections,
+        page,
+        pages: Math.ceil(count / pageSize),
+        totalCount: count // Include total count for frontend
+    });
 });
 
 
@@ -287,7 +404,7 @@ export const deleteConnection = asyncHandler(async (req, res, next) => {
 export const getConnectionsByUserId = asyncHandler(async (req, res) => {
   const targetUserId = req.params.userId;
   if (!mongoose.Types.ObjectId.isValid(targetUserId)) { res.status(400); throw new Error('Invalid User ID format'); }
-  // NOTE: commentCount is currently NOT included here, only in getConnections (main feed)
+  // NOTE: commentCount is currently NOT included here, only in getConnections (main feed) and search
   const connections = await Connection.find({ userRef: targetUserId })
     .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
     .populate('movieRef')
@@ -305,7 +422,7 @@ export const getConnectionsByIds = asyncHandler(async (req, res) => {
     if (connectionIds.length === 0) { return res.json([]); }
     const validConnectionIds = connectionIds.filter(id => mongoose.Types.ObjectId.isValid(id));
     if (validConnectionIds.length === 0) { return res.json([]); }
-    // NOTE: commentCount is currently NOT included here, only in getConnections (main feed)
+    // NOTE: commentCount is currently NOT included here, only in getConnections (main feed) and search
     const connections = await Connection.find({ _id: { $in: validConnectionIds } })
         .populate('userRef', 'username profileImageUrl _id displayName') // Added displayName
         .populate('movieRef')

@@ -19,7 +19,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import AboutPage from './pages/AboutPage/AboutPage';
 import HelpPage from './pages/HelpPage/HelpPage';
 import EditProfilePage from './pages/EditProfilePage';
-import UpdatesPage from './pages/UpdatesPage'; // <-- IMPORT ADDED FOR UPDATES PAGE
+import UpdatesPage from './pages/UpdatesPage';
+import SearchPage from './pages/SearchPage'; // <-- NEW: Import SearchPage
 
 import './AppLayout.css'; // Import layout CSS
 
@@ -140,8 +141,11 @@ function App() {
             <Route path="/users/:userId" element={<ProfilePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/help" element={<HelpPage />} />
-            {/* --- NEW ROUTE FOR UPDATES PAGE --- */}
             <Route path="/updates" element={<UpdatesPage />} />
+
+            {/* --- NEW: Route for Search Results Page --- */}
+            {/* This route should be public */}
+            <Route path="/search" element={<SearchPage />} />
             {/* --- END NEW ROUTE --- */}
 
 
@@ -162,6 +166,7 @@ function App() {
                path="/notifications"
                element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}
             />
+
 
             {/* --- Not Found Route (Catch-all) --- */}
             <Route path="*" element={<NotFoundPage />} />

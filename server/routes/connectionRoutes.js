@@ -11,14 +11,21 @@ import {
     deleteConnection,
     getPopularTags,
     getConnectionsByUserId,
-    getConnectionsByIds
+    getConnectionsByIds,
+    searchConnections // --- NEW: Import the search function ---
 } from '../controllers/connectionController.js';
+
+// Import comment controllers --- MOVED TO TOP ---
+import {
+    createComment,
+    getCommentsForConnection
+} from '../controllers/commentController.js';
+// --- END MOVED IMPORTS ---
+
 
 // Import middleware
 import { protect } from '../middleware/authMiddleware.js';
-// --- CORRECTED IMPORT: Use named import ---
 import { uploadConnectionImages } from '../middleware/uploadMiddleware.js';
-// --- END CORRECTION ---
 
 const router = express.Router();
 
@@ -28,7 +35,7 @@ const router = express.Router();
 // POST /api/connections: Create a new connection (Private, requires login, handles upload)
 router.route('/')
     .get(getConnections)
-    .post(protect, uploadConnectionImages, createConnection); // This uses the correctly imported middleware
+    .post(protect, uploadConnectionImages, createConnection);
 
 // --- Route for Popular Tags ---
 // GET /api/connections/popular-tags: Get most frequent tags (Public)
@@ -42,6 +49,12 @@ router.route('/batch')
 // --- Route for User Specific Connections ---
 // GET /api/connections/user/:userId: Get connections created by a user (Public)
 router.route('/user/:userId').get(getConnectionsByUserId);
+
+// --- NEW: Route for searching connections ---
+// GET /api/connections/search: Search connections by query (Public)
+router.route('/search').get(searchConnections);
+// --- END NEW ---
+
 
 // --- Routes for specific connections '/api/connections/:id' ---
 
@@ -59,12 +72,6 @@ router.route('/:id/favorite').post(protect, favoriteConnection);
 
 
 // --- Routes for '/api/connections/:id/comments' ---
-// Import comment controllers
-import {
-    createComment,
-    getCommentsForConnection
-} from '../controllers/commentController.js';
-
 // GET /api/connections/:id/comments: Get comments for a connection (Public)
 // POST /api/connections/:id/comments: Create a comment for a connection (Private)
 router.route('/:id/comments')

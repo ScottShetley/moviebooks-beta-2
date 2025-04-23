@@ -70,6 +70,7 @@ api.interceptors.response.use(
 
 
 // --- Helper Function for Static File URLs ---
+// This function needs to be explicitly exported if used outside this file
 export const getStaticFileUrl = (relativePath) => {
     if (!relativePath) return null;
     if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
@@ -114,6 +115,24 @@ export const getUserConnections = (userId) => api.get(`/users/${userId}/connecti
 // --- Connection API Functions ---
 
 /**
+ * Fetches connections based on a search query across various fields. Public access.
+ * @param {string} query - The search term.
+ * @param {number} [pageNumber=1] - The page number for pagination.
+ * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing { connections, page, pages, totalCount }.
+ */
+export const searchConnections = (query, pageNumber = 1) => {
+    if (!query || query.trim() === '') {
+        console.warn("[api.searchConnections] Search query is empty.");
+        // Resolve with empty data if no query is provided
+        return Promise.resolve({ data: { connections: [], page: 1, pages: 1, totalCount: 0 } });
+    }
+    return api.get('/connections/search', {
+        params: { q: query, pageNumber: pageNumber }
+    });
+};
+
+
+/**
  * Fetches a single connection by its ID. Public access.
  * @param {string} connectionId - The ID of the connection to fetch.
  * @returns {Promise<axios.AxiosResponse<object>>} - Promise resolving to the Axios response containing the populated connection object.
@@ -130,8 +149,13 @@ export const getConnectionsByIds = (connectionIds) => {
         console.error("[api.getConnectionsByIds] Input must be an array of connection IDs.");
         return Promise.reject(new Error("Invalid input: Expected an array of connection IDs."));
     }
+    if (connectionIds.length === 0) {
+        console.warn("[api.getConnectionsByIds] Input array is empty, returning empty result.");
+        return Promise.resolve({ data: [] }); // Resolve with empty array if no IDs are provided
+    }
     return api.post('/connections/batch', { connectionIds });
 };
+
 
 /**
  * Sends a DELETE request to remove a specific connection. Requires authentication.
@@ -213,8 +237,7 @@ export const getConnectionsByBookId = (bookId) => api.get(`/books/${bookId}/conn
 // Export the configured Axios instance as the default export
 export default api;
 
-// --- Named Exports (Corrected: Only include exports not defined with export const) ---
-// In this case, only the 'api' instance is not exported with 'export const'.
-// If you want to export 'api' as a named export *in addition* to default, you can
-// add it here. Otherwise, rely on the default export.
-// export { api }; // <--- Uncomment this line if you need 'api' as a named import elsewhere
+// --- Named Exports ---
+// Export only the specific functions that need to be imported individually.
+// Functions declared with 'export const' above are automatically named exports.
+// This block is now removed as all intended exports are already handled by 'export const'.

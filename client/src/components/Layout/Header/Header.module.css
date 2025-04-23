@@ -1,6 +1,7 @@
 /* client/src/components/Layout/Header/Header.module.css */
 .header {
   background-color: var(--color-secondary);
+  /* Keep header background from theme */
   padding: var(--space-sm) 0;
   box-shadow: var(--shadow-md);
   position: sticky;
@@ -13,7 +14,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative; /* Needed for mobile nav positioning context */
+  position: relative;
+  /* Needed for mobile nav positioning context */
 }
 
 .logo a {
@@ -23,9 +25,12 @@
   color: var(--color-text-on-secondary);
   text-decoration: none;
   transition: var(--transition-fast);
-  display: inline-block; /* Prevents layout shift */
-  padding: var(--space-xs) 0; /* Add padding to match nav links roughly */
+  display: inline-block;
+  /* Prevents layout shift */
+  padding: var(--space-xs) 0;
+  /* Add padding to match nav links roughly */
 }
+
 .logo a:hover,
 .logo a:focus {
   color: var(--color-accent);
@@ -34,7 +39,8 @@
 
 /* --- Desktop Navigation Styles --- */
 .desktopNav {
-  display: block; /* Shown by default */
+  display: block;
+  /* Shown by default */
 }
 
 .navLinks {
@@ -47,7 +53,8 @@
 }
 
 .navLinks a,
-.navLinks button.logoutButton { /* Target only the logout button in desktop */
+.navLinks button.logoutButton {
+  /* Target only the logout button in desktop */
   color: var(--color-text-on-secondary);
   text-decoration: none;
   font-weight: 600;
@@ -76,7 +83,8 @@
 
 /* Notification Badge Styles */
 .notificationLink {
-  position: relative; /* Keep for badge positioning */
+  position: relative;
+  /* Keep for badge positioning */
 }
 
 .badge {
@@ -95,41 +103,115 @@
   border: 1px solid var(--color-secondary);
 }
 
+/* --- Search Form Styles (Desktop) --- */
+.searchFormContainer {
+  display: flex;
+  align-items: center;
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  /* White background for the search bar */
+  border: 1px solid #ccc;
+  /* Light grey border */
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  padding: 0 5px;
+  height: 32px;
+}
+
+.searchInput {
+  flex-grow: 1;
+  padding: 0 5px;
+  border: none;
+  background: none;
+  color: #333;
+  /* Dark grey text color */
+  font-size: var(--font-size-sm);
+  outline: none;
+  height: 100%;
+}
+
+.searchInput::placeholder {
+  color: #666;
+  /* Medium grey placeholder color */
+  opacity: 1;
+  /* Ensure placeholder is visible */
+}
+
+.searchButton {
+  background: none;
+  border: none;
+  color: #666;
+  /* Medium grey icon color */
+  cursor: pointer;
+  padding: 0 5px;
+  font-size: var(--font-size-md);
+  transition: color var(--transition-fast);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchButton:hover,
+.searchButton:focus {
+  color: var(--color-primary);
+  /* Keep hover color from theme if desired */
+}
+
+
 /* --- Sidebar Toggle Button --- */
 .sidebarToggleButton {
-    display: none; /* Hidden on desktop by default */
-    background: none;
-    border: none;
-    color: var(--color-text-on-secondary);
-    font-size: 1.5rem; /* Adjust icon size */
-    padding: var(--space-xs);
-    margin-right: var(--space-sm); /* Space between toggle and logo */
-    cursor: pointer;
-    transition: color var(--transition-fast);
-    line-height: 1; /* Ensure icon aligns vertically */
-    vertical-align: middle; /* Align icon with logo text */
+  display: none;
+  /* Hidden on desktop by default */
+  background: none;
+  border: none;
+  color: var(--color-text-on-secondary);
+  font-size: 1.5rem;
+  /* Adjust icon size */
+  padding: var(--space-xs);
+  margin-right: var(--space-sm);
+  /* Space between toggle and logo */
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  line-height: 1;
+  /* Ensure icon aligns vertically */
+  vertical-align: middle;
+  /* Align icon with logo text */
 }
+
 .sidebarToggleButton:hover,
 .sidebarToggleButton:focus {
-    color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 
 /* --- Hamburger Button Styles (Main Mobile Nav) --- */
 .hamburgerButton {
-  display: none; /* Hidden by default */
+  display: none;
+  /* Hidden by default */
   background: none;
   border: none;
   padding: var(--space-xs);
   cursor: pointer;
-  z-index: calc(var(--z-index-mobile-nav) + 1); /* Ensure button is above mobile nav background */
-  position: relative; /* Needed for icon absolute positioning */
-  margin-left: auto; /* Push hamburger to the far right */
+  z-index: calc(var(--z-index-mobile-nav) + 1);
+  /* Ensure button is above mobile nav background */
+  position: relative;
+  /* Needed for icon absolute positioning */
+  margin-left: auto;
+  /* Push hamburger to the far right */
+  color: var(--color-text-on-secondary);
+  /* Hamburger icon color */
 }
 
 .hamburgerIcon {
-  width: 24px; /* Adjust size as needed */
-  height: 18px; /* Adjust size as needed */
+  width: 24px;
+  /* Adjust size as needed */
+  height: 18px;
+  /* Adjust size as needed */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -139,43 +221,54 @@
 .hamburgerIcon span {
   display: block;
   width: 100%;
-  height: 3px; /* Line thickness */
+  height: 3px;
+  /* Line thickness */
   background-color: var(--color-text-on-secondary);
+  /* Line color */
   border-radius: 3px;
   transition: all 0.3s ease-in-out;
 }
 
 /* Animate hamburger to 'X' when open */
 .hamburgerIcon.open span:nth-child(1) {
-  transform: translateY(7.5px) rotate(45deg); /* Adjust translate based on height/thickness */
+  transform: translateY(7.5px) rotate(45deg);
+  /* Adjust translate based on height/thickness */
 }
+
 .hamburgerIcon.open span:nth-child(2) {
   opacity: 0;
 }
+
 .hamburgerIcon.open span:nth-child(3) {
-  transform: translateY(-7.5px) rotate(-45deg); /* Adjust translate based on height/thickness */
+  transform: translateY(-7.5px) rotate(-45deg);
+  /* Adjust translate based on height/thickness */
 }
 
 
 /* --- Mobile Navigation Styles (Main Nav) --- */
 .mobileNav {
-  display: none; /* Hidden by default until activated by JS */
+  display: none;
+  /* Hidden by default until activated by JS */
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  left: 0; /* Full screen */
+  left: 0;
+  /* Full screen */
   z-index: var(--z-index-mobile-nav);
-  pointer-events: none; /* Allow clicks to pass through when hidden */
+  pointer-events: none;
+  /* Allow clicks to pass through when hidden */
   transition: opacity var(--transition-base);
   opacity: 0;
 }
 
 /* Styles applied when mobile menu is open */
 .mobileNav.mobileNavOpen {
-  display: flex; /* Use flex to manage overlay and content */
+  display: flex;
+  /* Use flex to manage overlay and content */
   opacity: 1;
-  pointer-events: auto; /* Capture clicks when open */
+  pointer-events: auto;
+  /* Capture clicks when open */
 }
 
 /* Semi-transparent background overlay */
@@ -185,55 +278,103 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-  transition: opacity var(--transition-base); /* Fade in */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Semi-transparent black */
+  transition: opacity var(--transition-base);
+  /* Fade in */
 }
 
 /* Container for the actual menu content */
 .mobileNavContent {
-  position: relative; /* Keep content above overlay */
-  margin-left: auto; /* Push content to the right */
-  width: 80%; /* Adjust width as needed */
-  max-width: 300px; /* Max width */
+  position: relative;
+  /* Keep content above overlay */
+  margin-left: auto;
+  /* Push content to the right */
+  width: 80%;
+  /* Adjust width as needed */
+  max-width: 300px;
+  /* Max width */
   height: 100%;
-  background-color: var(--color-secondary); /* Same as header */
+  background-color: var(--color-secondary);
+  /* Same as header */
   box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
-  padding: var(--space-xl) var(--space-lg);
-  transform: translateX(100%); /* Start off-screen */
+  padding: var(--space-lg);
+  /* Adjusted padding */
+  transform: translateX(100%);
+  /* Start off-screen */
   transition: transform var(--transition-base);
-  overflow-y: auto; /* Allow scrolling if content overflows */
+  overflow-y: auto;
+  /* Allow scrolling if content overflows */
   display: flex;
   flex-direction: column;
+  gap: var(--space-lg);
+  /* Add space between search and links */
 }
 
 .mobileNav.mobileNavOpen .mobileNavContent {
-  transform: translateX(0); /* Slide in when open */
+  transform: translateX(0);
+  /* Slide in when open */
 }
+
+/* --- Search Form Styles (Mobile) --- */
+.searchFormContainerMobile {
+  margin-top: var(--space-xl);
+  /* Space below close button area */
+  width: 100%;
+  /* Ensure it takes full width */
+}
+
+/* Reuse .searchForm, .searchInput, .searchButton for mobile styles */
+.mobileNavContent .searchForm {
+  /* Adjusted height for mobile */
+  height: 40px;
+  /* Ensure mobile search bar is also visible */
+  background-color: #fff;
+  /* White background */
+  border: 1px solid #ccc;
+  /* Light grey border */
+}
+
+.mobileNavContent .searchInput {
+  font-size: var(--font-size-base);
+  /* Text color is inherited from .searchInput which is now #333 */
+}
+
+/* Removed the empty .mobileNavContent .searchButton rule here */
 
 .mobileNavLinks {
   list-style: none;
   padding: 0;
   margin: 0;
+  /* Removed top margin */
   display: flex;
   flex-direction: column;
-  gap: var(--space-md); /* Spacing between mobile links */
+  gap: var(--space-md);
+  /* Spacing between mobile links */
   width: 100%;
-  margin-top: var(--space-xl); /* Space below logo/close button area */
 }
 
 .mobileNavLink {
-  display: block; /* Make links take full width */
-  padding: var(--space-sm) 0; /* Generous padding for touch targets */
+  display: block;
+  /* Make links take full width */
+  padding: var(--space-sm) 0;
+  /* Generous padding for touch targets */
   color: var(--color-text-on-secondary);
   text-decoration: none;
-  font-size: var(--font-size-lg); /* Larger font size for mobile */
+  font-size: var(--font-size-lg);
+  /* Larger font size for mobile */
   font-weight: 600;
   transition: var(--transition-fast);
-  border: none; /* Reset button styles if applied */
-  background: none; /* Reset button styles if applied */
-  cursor: pointer; /* For button */
-  text-align: left; /* For button */
-  width: 100%; /* For button */
+  border: none;
+  /* Reset button styles if applied */
+  background: none;
+  /* Reset button styles if applied */
+  cursor: pointer;
+  /* For button */
+  text-align: left;
+  /* For button */
+  width: 100%;
+  /* For button */
 }
 
 .mobileNavLink:hover,
@@ -241,8 +382,10 @@
   color: var(--color-accent);
 }
 
-.mobileNav .navLinks a.active, /* Active style for mobile */
-.mobileNavLink.active { /* Ensure mobile active style applies */
+.mobileNav .navLinks a.active,
+/* Active style for mobile */
+.mobileNavLink.active {
+  /* Ensure mobile active style applies */
   color: var(--color-accent);
   font-weight: 700;
 }
@@ -250,36 +393,59 @@
 /* --- Responsive Media Queries --- */
 
 /* BREAKPOINT FOR SIDEBAR TOGGLE */
-@media (max-width: 992px) { /* Matches sidebar hiding breakpoint */
-    .sidebarToggleButton {
-        display: block; /* Show sidebar toggle button */
-        order: -1; /* Place it visually before the logo in flex container */
-    }
+@media (max-width: 992px) {
 
-    /* Optional: Adjust overall container padding */
-    /* .navContainer { padding: 0 var(--space-sm); } */
+  /* Matches sidebar hiding breakpoint */
+  .sidebarToggleButton {
+    display: block;
+    /* Show sidebar toggle button */
+    order: -1;
+    /* Place it visually before the logo in flex container */
+  }
+
+  /* Adjust gap in navLinks to make space for the search bar before it disappears */
+  .navLinks {
+    gap: var(--space-md);
+  }
+
+  /* Reduce search bar width slightly on smaller screens if needed */
+  .searchForm {
+    width: 180px;
+    /* Adjust as needed */
+  }
 }
 
 /* BREAKPOINT FOR MAIN NAV HAMBURGER */
-@media (max-width: 768px) { /* Main nav switches to hamburger */
+@media (max-width: 768px) {
+  /* Main nav switches to hamburger */
 
   .desktopNav {
-      display: none; /* Hide desktop nav */
+    display: none;
+    /* Hide desktop nav */
   }
 
   .hamburgerButton {
-      display: flex; /* Show main nav hamburger button */
-      align-items: center;
-      justify-content: center;
-      /* margin-left: auto; Should be set above */
+    display: flex;
+    /* Show main nav hamburger button */
+    align-items: center;
+    justify-content: center;
   }
 
-  /* Optional: Adjust logo size or padding */
-  /* .logo a { font-size: var(--font-size-md); } */
+  /* Body class to prevent scrolling when mobile menu is open */
+  body.noScroll {
+    overflow: hidden;
+  }
 }
 
-/* Body class to prevent scrolling when mobile menu is open */
-/* This is used by the main mobile nav logic in Header.js */
-body.noScroll {
-  overflow: hidden;
+/* Adjust padding on very small screens if needed */
+@media (max-width: 480px) {
+  .navContainer {
+    padding: 0 var(--space-sm);
+    /* Smaller padding on the sides */
+  }
+
+  .mobileNavContent {
+    width: 90%;
+    /* Mobile menu takes up more width */
+  }
 }
