@@ -44,10 +44,51 @@
     color: var(--color-primary-dark);
 }
 
+/* --- NEW STYLES FOR AVATAR AND AUTHOR INFO CONTAINER --- */
+.authorInfoContainer {
+    display: flex;
+    /* Arrange avatar and meta side-by-side */
+    align-items: center;
+    /* Vertically align items */
+    margin-bottom: var(--space-sm);
+    /* Space below the author line */
+    gap: var(--space-sm);
+    /* Space between avatar and meta text */
+}
+
+.avatarLink {
+    display: block;
+    /* Ensure link takes up space around image */
+    line-height: 0;
+    /* Remove extra space below image */
+    flex-shrink: 0;
+    /* Prevent avatar from shrinking */
+    /* No text-decoration needed as it's an image */
+}
+
+.avatar {
+    width: 30px;
+    /* Set avatar size */
+    height: 30px;
+    border-radius: 50%;
+    /* Make it round */
+    object-fit: cover;
+    /* Ensure image covers the area without distortion */
+    border: var(--border-width) solid var(--color-border);
+    /* Optional border */
+}
+
+/* --- END NEW STYLES --- */
+
+
 .meta {
     font-size: var(--font-size-sm);
     color: var(--color-text-light);
-    margin-bottom: var(--space-sm);
+    /* Removed margin-bottom from here as it's handled by .authorInfoContainer */
+    margin: 0;
+    /* Reset default paragraph margin */
+    line-height: 1.2;
+    /* Adjust line height for better alignment */
 }
 
 .userLink {
@@ -518,6 +559,12 @@
 
     .header h3 {
         font-size: var(--font-size-md);
+    }
+
+    /* Adjust avatar size for mobile */
+    .avatar {
+        width: 25px;
+        height: 25px;
     }
 
     .meta {

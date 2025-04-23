@@ -33,8 +33,10 @@ const CommentItem = ({ comment, onCommentUpdated, onCommentDeleted }) => {
 
     // Use the user's display name if available, otherwise fallback to username, then 'Anonymous'
     const displayUsername = comment.user.displayName || comment.user.username || 'Anonymous';
-    // Get the avatar URL if available
-    const avatarUrl = comment.user.avatarUrl ? getStaticFileUrl(comment.user.avatarUrl) : null;
+
+    // --- MODIFIED: Get the avatar URL using the CORRECT field name profilePictureUrl ---
+    const avatarUrl = comment.user.profilePictureUrl ? getStaticFileUrl(comment.user.profilePictureUrl) : null;
+    // --- END MODIFIED ---
 
     // Determine if the logged-in user is the author of THIS comment
     const isAuthor = user && comment.user && user._id === comment.user._id;
@@ -134,12 +136,14 @@ const CommentItem = ({ comment, onCommentUpdated, onCommentDeleted }) => {
         <div className={styles.commentItem}>
             {/* Avatar Section */}
             <div className={styles.avatarContainer}>
+                 {/* --- MODIFIED: Use avatarUrl variable which now uses profilePictureUrl --- */}
                  {avatarUrl ? (
                     <img src={avatarUrl} alt={`${displayUsername}'s avatar`} className={styles.avatar} />
                  ) : (
                     // Use a default icon if no avatar is available
                     <FaUserCircle size={40} color="var(--color-text-light)" /> // Adjust size/color as needed
                  )}
+                 {/* --- END MODIFIED --- */}
             </div>
 
             {/* Comment Content Section */}
@@ -147,9 +151,15 @@ const CommentItem = ({ comment, onCommentUpdated, onCommentDeleted }) => {
                 <div className={styles.commentMeta}>
                     {/* Link to the comment author's profile */}
                     <strong>
-                        <Link to={`/users/${comment.user._id}`} className={styles.authorLink}>
-                            {displayUsername}
-                        </Link>
+                        {/* Ensure comment.user exists before accessing _id for the link */}
+                        {comment.user?._id ? (
+                             <Link to={`/users/${comment.user._id}`} className={styles.authorLink}>
+                                 {displayUsername}
+                             </Link>
+                        ) : (
+                             // Render just the username if user ID is somehow missing (shouldn't happen with populate)
+                             <span>{displayUsername}</span>
+                        )}
                     </strong>
                     {' on '}
                     {/* Display formatted date/time */}

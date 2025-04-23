@@ -66,7 +66,9 @@ function ConnectionDetailPage() {
                     setCommentsError(null);
                     const response = await getCommentsForConnection(connectionId);
                     setComments(response.data);
-                    // console.log('ConnectionDetailPage: Fetched and set comments:', response.data);
+                    // --- UNCOMMENTED CONSOLE LOG ---
+                    console.log('ConnectionDetailPage: Fetched and set comments:', response.data);
+                    // --- END UNCOMMENTED CONSOLE LOG ---
                 } catch (err) {
                     console.error("ConnectionDetailPage: Error fetching comments:", err);
                     const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch comments.';

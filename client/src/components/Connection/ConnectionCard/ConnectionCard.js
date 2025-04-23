@@ -40,8 +40,12 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (showShareOptions && shareButtonRef.current && !shareButtonRef.current.contains(event.target) && shareOptionsRef.current && !shareOptionsRef.current.contains(event.target)) {
-                 setShowShareOptions(false);
+            if (showShareOptions && shareButtonRef.current && !shareButtonRef.current.contains(event.target) && shareOptionsRef.current && shareOptionsRef.current.contains(event.target)) {
+                 // Adjusted logic to correctly check if click is outside both button and popup
+                 // It should check if the click IS NOT inside the button AND IS NOT inside the options
+                 if (!shareButtonRef.current.contains(event.target) && !shareOptionsRef.current.contains(event.target)) {
+                    setShowShareOptions(false);
+                 }
             }
         };
         if (showShareOptions) { document.addEventListener('mousedown', handleClickOutside); }
@@ -75,8 +79,12 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
     const baseUrl = window.location.origin;
     // The connectionUrl now includes the #comments fragment for sharing/copying
     const connectionUrl = `${baseUrl}/connections/${connection._id}#comments`;
-    const shareTitle = `${connection.movieRef?.title || 'Movie'} & ${connection.bookRef?.title || 'Book'} - MovieBooks Connection`;
-    const shareDescription = `Check out this MovieBooks connection: ${connection.context?.substring(0, 100) || shareTitle}...`;
+    // Adjusted shareTitle to be more robust
+    const shareTitle = `MovieBooks Connection: ${connection.movieRef?.title || 'A Movie'} & ${connection.bookRef?.title || 'A Book'}`;
+    const shareDescription = connection.context?.trim() ?
+        `Check out this MovieBooks connection: "${connection.context.substring(0, 100)}${connection.context.length > 100 ? '...' : ''}"` :
+        `Check out this MovieBooks connection featuring ${connection.movieRef?.title || 'a movie'} and ${connection.bookRef?.title || 'a book'}.`;
+
     const handleShareToggle = () => { setShowShareOptions(prev => !prev); setCopyStatus('Copy Link'); };
     const handleCopyToClipboard = async () => { try { await navigator.clipboard.writeText(connectionUrl); setCopyStatus('Copied!'); setTimeout(() => setCopyStatus('Copy Link'), 2000); } catch (err) { console.error('Failed to copy link: ', err); setCopyStatus('Failed!'); setTimeout(() => setCopyStatus('Copy Link'), 2000); } };
     const handleShareToX = () => { const xUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(connectionUrl)}&text=${encodeURIComponent(shareDescription)}`; window.open(xUrl, '_blank', 'noopener,noreferrer'); setShowShareOptions(false); };
@@ -93,7 +101,6 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
          console.error("[ConnectionCard Render] Incomplete base connection data, rendering error.", { connection });
         return <div className={styles.card}>Error: Incomplete connection data for ID {connection?._id}. Check console.</div>;
     }
-
 
     const isFavoritedByCurrentUser = !!user && !!user.favorites && !!connection._id && user.favorites.includes(connection._id);
     const isOwner = !!user && user._id === connection.userRef._id;
@@ -112,12 +119,33 @@ const ConnectionCard = ({ connection, onUpdate, onDelete }) => {
                      </Link>
                  </h3>
             </header>
-            <p className={styles.meta}> Added by{' '}
-                 <Link to={`/users/${connection.userRef._id}`} className={styles.userLink}>
-                     {displayUsername} {/* Use the variable here */}
-                 </Link>
-                 {' on '} {new Date(connection.createdAt).toLocaleDateString()}
-            </p>
+
+            {/* --- NEW: Container for Avatar and Meta Text --- */}
+            <div className={styles.authorInfoContainer}>
+                 {/* Avatar */}
+                 {/* Add Link around avatar */}
+                 {connection.userRef.profileImageUrl && (
+                     <Link to={`/users/${connection.userRef._id}`} title={`${displayUsername}'s Profile`} className={styles.avatarLink}>
+                         <img
+                             src={getStaticFileUrl(connection.userRef.profileImageUrl)}
+                             alt={`${displayUsername}'s avatar`}
+                             className={styles.avatar}
+                             loading="lazy"
+                         />
+                     </Link>
+                 )}
+                 {/* Meta text */}
+                 <p className={styles.meta}>
+                     Added by{' '}
+                     <Link to={`/users/${connection.userRef._id}`} className={styles.userLink}>
+                         {displayUsername}
+                     </Link>
+                     {' on '} {new Date(connection.createdAt).toLocaleDateString()}
+                 </p>
+            </div>
+            {/* --- END NEW CONTAINER --- */}
+
+
             <div className={styles.contentWrapper}>
                 {/* Added onClick to wrapper div for expand toggle */}
                 <div onClick={handleToggleExpand} style={{ cursor: 'pointer' }} title={isExpanded ? "Click to collapse" : "Click to expand"}>
