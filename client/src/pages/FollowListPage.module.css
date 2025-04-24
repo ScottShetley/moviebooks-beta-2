@@ -1,0 +1,43 @@
+/* client/src/pages/FollowListPage.module.css */
+
+.pageContainer {
+    padding: 1rem;
+    max-width: 600px;
+    /* Adjust max width for list pages */
+    margin: 1rem auto;
+    background-color: var(--color-background-alt);
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow-medium);
+}
+
+.pageTitle {
+    font-size: 1.6rem;
+    color: var(--color-text-primary);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.userList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.emptyMessage {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--color-background);
+    border: 1px dashed var(--color-border-light);
+    border-radius: var(--border-radius-small);
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+/* Loading/Error styles for the page */
+.pageContainer>.loadingSpinner,
+.pageContainer>.errorMessage {
+    margin-top: 2rem;
+    /* Add some space below title */
+}

@@ -1,0 +1,182 @@
+/* client/src/components/User/UserListItem/UserListItem.module.css */
+
+.userListItem {
+    list-style: none;
+    /* Remove default list style */
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--border-radius-small);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    /* Use flexbox to position link and button */
+    align-items: center;
+    /* Vertically center items */
+    justify-content: space-between;
+    /* Space out link and button */
+    gap: 1rem;
+    /* Space between link and button */
+    flex-wrap: wrap;
+    /* Allow items to wrap on small screens */
+}
+
+.userListItem:hover {
+    background-color: var(--color-background-alt);
+    border-color: var(--color-primary-lightest);
+}
+
+.userLink {
+    text-decoration: none;
+    color: inherit;
+    /* Inherit text color from parent */
+    display: flex;
+    /* Arrange avatar and text side-by-side */
+    align-items: center;
+    /* Vertically center items */
+    gap: 1rem;
+    /* Space between avatar and text */
+    flex-grow: 1;
+    /* Allow link area to grow */
+    min-width: 0;
+    /* Prevent link content from overflowing flex container */
+}
+
+.userAvatar {
+    width: 40px;
+    /* Smaller avatar for list item */
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    /* Prevent shrinking */
+    background-color: var(--color-background-body);
+    /* Background for transparency */
+    border: 1px solid var(--color-border-light);
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    /* Stack display name and username */
+    min-width: 0;
+    /* Prevent overflow */
+}
+
+.displayName {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    word-break: break-word;
+    /* Prevent overflow */
+}
+
+.username {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    word-break: break-word;
+    /* Prevent overflow */
+}
+
+/* --- NEW: Follow/Following Button Styles for List Item --- */
+/* Inherit base styles from ProfilePage module's buttons if possible,
+     or define specific styles here */
+.followButton,
+.followingButton {
+    padding: 0.4rem 0.8rem;
+    /* Slightly smaller padding than profile page */
+    border-radius: var(--border-radius-small);
+    font-size: 0.85rem;
+    /* Slightly smaller font size */
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    /* To align spinner */
+    align-items: center;
+    gap: 0.4rem;
+    /* Space for spinner */
+    flex-shrink: 0;
+    /* Prevent button from shrinking */
+}
+
+/* Style for the "Follow" button */
+.followButton {
+    background-color: var(--color-accent);
+    color: var(--color-button-text-primary);
+    /* White text */
+    border: 1px solid var(--color-accent);
+}
+
+.followButton:hover {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.followButton:disabled {
+    background-color: var(--color-background-disabled);
+    border-color: var(--color-border-light);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+}
+
+/* Style for the "Following" button */
+.followingButton {
+    background-color: var(--color-background);
+    /* Lighter background */
+    color: var(--color-text-secondary);
+    /* Darker text */
+    border: 1px solid var(--color-border-light);
+    /* Border matching background */
+}
+
+.followingButton:hover {
+    background-color: var(--color-background-alt);
+    /* Slightly darker hover */
+    color: var(--color-text-primary);
+    border-color: var(--color-primary-dark);
+}
+
+.followingButton:disabled {
+    background-color: var(--color-background-disabled);
+    border-color: var(--color-border-light);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+}
+
+/* Basic style for error message within list item if added */
+.followError {
+    color: var(--color-danger);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    width: 100%;
+    /* Take full width if it wraps */
+}
+
+/* --- END NEW: Follow/Following Button Styles --- */
+
+/* Media query for smaller screens to stack button below info if needed */
+@media (max-width: 400px) {
+    .userListItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        /* Reduce gap when stacked */
+    }
+
+    .userLink {
+        width: 100%;
+        /* Allow link to take full width */
+    }
+
+    /* If the follow button is present, make it take full width below the user info */
+    .followButton,
+    .followingButton {
+        width: 100%;
+        justify-content: center;
+        /* Center the button text/spinner */
+    }
+
+    .userInfo {
+        width: 100%;
+        /* Ensure user info takes full width */
+    }
+}

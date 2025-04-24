@@ -1,6 +1,7 @@
 // server/controllers/userController.js (ES Modules - Includes Profile Picture Upload)
 import User from '../models/User.js';
 import Connection from '../models/Connection.js';
+import Follow from '../models/Follow.js'; // <-- NEW: Import Follow model
 import mongoose from 'mongoose';
 import asyncHandler from 'express-async-handler';
 import cloudinary from '../config/cloudinary.js'; // Import Cloudinary config
@@ -11,7 +12,8 @@ import cloudinary from '../config/cloudinary.js'; // Import Cloudinary config
 const getMyProfile = asyncHandler(async (req, res) => {
   // req.user is attached by 'protect' middleware and should be the full user document
   if (req.user) {
-    // Return all relevant fields for the logged-in user's own view
+    // Note: Follower/Following counts are typically fetched separately or added to this endpoint if needed.
+    // For now, we're adding them to the public profile endpoint as per the plan.
     res.json({
       _id: req.user._id,
       username: req.user.username,
@@ -88,7 +90,8 @@ const updateUserProfilePicture = asyncHandler(async (req, res) => {
         // Clean up the uploaded file if user not found (optional)
         try {
             console.log(`[updateUserProfilePicture] User not found, attempting to delete uploaded file: ${req.file.filename}`);
-            await cloudinary.uploader.destroy(req.file.filename); // filename IS the public_id we set
+            // filename IS the public_id we set in the Cloudinary storage options
+            await cloudinary.uploader.destroy(req.file.filename);
         } catch (cleanupError) {
             console.error(`[updateUserProfilePicture] Failed to cleanup uploaded file after user not found error: ${cleanupError.message}`);
         }
@@ -103,18 +106,26 @@ const updateUserProfilePicture = asyncHandler(async (req, res) => {
     if (oldProfilePictureUrl && oldProfilePictureUrl !== newProfilePictureUrl) {
         try {
             // Extract public_id from the old URL.
-            // Example URL: https://res.cloudinary.com/<cloud_name>/image/upload/v12345/<folder>/<public_id>.<ext>
-            // We need the folder/public_id part
+            // The public_id is usually the part after the version number and before the extension
+            // e.g. .../upload/v1234567890/users/profile_pics/abcdef12345.jpg -> users/profile_pics/abcdef12345
             const urlParts = oldProfilePictureUrl.split('/');
-            const publicIdWithFolderAndExt = urlParts.slice(urlParts.indexOf('upload') + 2).join('/');
-            // Remove the extension (.jpg, .png etc)
-            const publicIdWithFolder = publicIdWithFolderAndExt.substring(0, publicIdWithFolderAndExt.lastIndexOf('.'));
+            // Find the 'upload' segment and take parts after + 2 (version and public_id)
+             const uploadIndex = urlParts.indexOf('upload');
+             if (uploadIndex !== -1 && urlParts.length > uploadIndex + 2) {
+                const publicIdWithFolderAndExt = urlParts.slice(uploadIndex + 2).join('/');
+                // Remove the extension (.jpg, .png etc)
+                const publicIdWithFolder = publicIdWithFolderAndExt.substring(0, publicIdWithFolderAndExt.lastIndexOf('.'));
 
-            if (publicIdWithFolder) {
-                 console.log(`[updateUserProfilePicture] Attempting to delete old image from Cloudinary: ${publicIdWithFolder}`);
-                 const result = await cloudinary.uploader.destroy(publicIdWithFolder);
-                 console.log(`[updateUserProfilePicture] Old image deletion result:`, result); // result.result should be 'ok' or 'not found'
-            }
+                if (publicIdWithFolder) {
+                     console.log(`[updateUserProfilePicture] Attempting to delete old image from Cloudinary: ${publicIdWithFolder}`);
+                     const result = await cloudinary.uploader.destroy(publicIdWithFolder);
+                     console.log(`[updateUserProfilePicture] Old image deletion result:`, result); // result.result should be 'ok' or 'not found'
+                } else {
+                     console.warn(`[updateUserProfilePicture] Could not extract public_id from old URL: ${oldProfilePictureUrl}`);
+                }
+             } else {
+                  console.warn(`[updateUserProfilePicture] Unexpected old image URL format: ${oldProfilePictureUrl}`);
+             }
         } catch (deleteError) {
             console.error(`[updateUserProfilePicture] Failed to delete old image from Cloudinary: ${deleteError.message}. Continuing update.`);
             // Don't block the update if deletion fails, just log it.
@@ -141,7 +152,7 @@ const updateUserProfilePicture = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Get public profile info for a specific user by ID
+// @desc    Get public profile info for a specific user by ID, including follow counts
 // @route   GET /api/users/:userId/profile
 // @access  Public
 const getPublicUserProfile = asyncHandler(async (req, res) => {
@@ -151,18 +162,39 @@ const getPublicUserProfile = asyncHandler(async (req, res) => {
     throw new Error('Invalid User ID format');
   }
 
-  // Select only the fields safe for public display
-  const userProfile = await User.findById(userId).select(
-    'username displayName bio location profilePictureUrl createdAt _id'
-  );
+  // Use Promise.all to fetch profile data and calculate counts concurrently
+  const [userProfile, followerCount, followingCount] = await Promise.all([
+      // Fetch user profile data, selecting only public fields and returning a lean object
+      User.findById(userId).select(
+        'username displayName bio location profilePictureUrl createdAt _id'
+      ).lean(),
+
+      // Count documents where the 'followee' is the target user (these are the user's followers)
+      Follow.countDocuments({ followee: userId }),
+
+      // Count documents where the 'follower' is the target user (these are the users this user is following)
+      Follow.countDocuments({ follower: userId })
+  ]);
+
 
   if (!userProfile) {
     res.status(404);
     throw new Error('User not found');
   }
 
-  res.json(userProfile); // Send the selected public profile fields
+  // Combine the user profile data (which is a plain object due to .lean()) and the counts
+  const profileDataWithCounts = {
+      ...userProfile, // Spread all fields from the userProfile object
+      followerCount,    // Add the calculated follower count
+      followingCount    // Add the calculated following count
+  };
+
+  console.log(`[getPublicUserProfile] Profile for ${userProfile.username} (ID: ${userId}) fetched. Followers: ${followerCount}, Following: ${followingCount}`);
+
+
+  res.json(profileDataWithCounts); // Send the combined data including counts
 });
+
 
 // @desc    Get all connections created by a specific user
 // @route   GET /api/users/:userId/connections
@@ -194,6 +226,6 @@ export {
   getMyProfile,
   updateUserProfile, // Handles text fields ONLY now
   updateUserProfilePicture, // Handles picture upload
-  getPublicUserProfile,
+  getPublicUserProfile, // Now includes follow counts
   getUserConnections,
 };

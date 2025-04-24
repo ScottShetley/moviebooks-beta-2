@@ -110,7 +110,6 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
   const getMobileNavLinkClass = ({ isActive }) => `${styles.mobileNavLink} ${isActive ? styles.active : ''}`;
 
   // Helper for mobile link clicks that also closes the menu
-  // Note: Function name is handleMobileLinkClick, NOT handleMobileLinkClass
   const handleMobileLinkClick = useCallback((focusToggle = true) => {
        closeMobileMenu(focusToggle);
    }, [closeMobileMenu]); // Added closeMobileMenu as dependency
@@ -172,8 +171,8 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                                  )}
                              </NavLink>
                          </li>
-                         {/* Desktop Profile Link */}
-                         <li><NavLink to="/profile" className={getNavLinkClass}>My Profile</NavLink></li>
+                         {/* Desktop Profile Link - UPDATED */}
+                         <li><NavLink to={user ? `/users/${user._id}` : '#'} className={getNavLinkClass}>My Profile</NavLink></li>
                          {/* Desktop Logout Button */}
                          <li><button onClick={handleLogout} className={styles.logoutButton}>Logout</button></li>
                      </>
@@ -239,8 +238,8 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                                     )}
                                 </NavLink>
                             </li>
-                             {/* Mobile Profile Link */}
-                            <li><NavLink to="/profile" className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>My Profile</NavLink></li>
+                             {/* Mobile Profile Link - UPDATED */}
+                            <li><NavLink to={user ? `/users/${user._id}` : '#'} className={getMobileNavLinkClass} onClick={() => handleMobileLinkClick(true)}>My Profile</NavLink></li>
                              {/* Mobile Logout Button */}
                             <li><button onClick={handleLogout} className={`${styles.mobileNavLink} ${styles.logoutButton}`}>Logout</button></li>
                         </>

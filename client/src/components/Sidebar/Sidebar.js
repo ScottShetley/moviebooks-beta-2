@@ -40,7 +40,7 @@ const PopularTagsList = ({ tags, onTagClick, currentFilterTag }) => {
 };
 
 
-// Main Sidebar component updated to revert My Favorites to Link
+// Main Sidebar component updated with corrected links
 const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar }) => {
     const { user } = useAuth();
     const sidebarClasses = `${styles.sidebar} ${className || ''} ${isOpen ? styles.sidebarOpen : ''}`;
@@ -54,6 +54,7 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
     const [isTagsExpanded, setIsTagsExpanded] = useState(true);
 
     // Define NavLink active style logic (Only needed for Connections, About, Help now)
+    // This logic also applies to My Connections below
     const getNavLinkClass = ({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink;
 
     // Fetch tags logic (no changes)
@@ -78,7 +79,7 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
         fetchTags();
     }, []);
 
-    // Wrapper for ALL link clicks
+    // Wrapper for ALL link clicks to close sidebar
     const handleLinkClick = () => {
         if (isOpen && typeof closeSidebar === 'function') {
             closeSidebar();
@@ -98,7 +99,7 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
       }
     };
 
-    // *** ADDED: Prevent clicks inside sidebar from closing it via overlay ***
+    // Prevent clicks inside sidebar content from closing sidebar via overlay
     const handleSidebarClick = (e) => {
         e.stopPropagation();
     };
@@ -108,13 +109,13 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
         <aside
             id="app-sidebar"
             className={sidebarClasses}
-            onClick={handleSidebarClick} // *** ADDED onClick handler ***
+            onClick={handleSidebarClick} // Handles clicks within sidebar content
         >
             {user && (
                 <>
-                    {/* User Profile Section */}
+                    {/* User Profile Section - UPDATED LINK */}
                     <div className={styles.sidebarSection}>
-                        <Link to="/profile" className={styles.profileLink} onClick={handleLinkClick}>
+                        <Link to={user ? `/users/${user._id}` : '#'} className={styles.profileLink} onClick={handleLinkClick}>
                             <FaUserCircle size={24} className={styles.icon} />
                             <span className={styles.username}>{user.username}</span>
                         </Link>
@@ -125,15 +126,16 @@ const Sidebar = ({ className, onTagClick, currentFilterTag, isOpen, closeSidebar
                         <h3 className={styles.sectionTitle}>Your Content</h3>
                         <ul className={styles.navList}>
                             <li>
-                                {/* My Connections remains a NavLink */}
-                                <NavLink to="/profile" className={getNavLinkClass} onClick={handleLinkClick} end>
+                                {/* My Connections NavLink - UPDATED LINK */}
+                                {/* Links to the base profile page which shows connections by default */}
+                                <NavLink to={user ? `/users/${user._id}` : '#'} className={getNavLinkClass} onClick={handleLinkClick} end>
                                     <FaRegListAlt className={styles.icon} /> My Connections
                                 </NavLink>
                             </li>
                             <li>
-                                {/* *** CHANGED NavLink back to Link *** */}
+                                {/* My Favorites Link - UPDATED LINK WITH HASH */}
                                 {/* Use basic styles.navLink, no 'end' prop, no getNavLinkClass */}
-                                <Link to="/profile" className={styles.navLink} onClick={handleLinkClick}>
+                                <Link to={user ? `/users/${user._id}#favorites` : '#'} className={styles.navLink} onClick={handleLinkClick}>
                                     <FaRegStar className={styles.icon} /> My Favorites
                                 </Link>
                             </li>

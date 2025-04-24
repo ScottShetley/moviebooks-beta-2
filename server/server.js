@@ -18,6 +18,7 @@ import bookRoutes from './routes/bookRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
+import followRoutes from './routes/followRoutes.js'; // <-- NEW: Import follow routes
 
 
 // --- Replicate __dirname ---
@@ -89,6 +90,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/follows', followRoutes); // <-- NEW: Mount follow routes
 
 
 // --- Serve Static Files (Uploaded Images) ---

@@ -1,54 +1,67 @@
 // server/models/Notification.js
 import mongoose from 'mongoose';
 
-const notificationSchema = mongoose.Schema (
-  {
+const notificationSchema = new mongoose.Schema({
     recipientRef: {
-      // The user who receives the notification
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'User',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // References the User model
+        required: true,
+        index: true // Index for efficient querying
     },
     senderRef: {
-      // The user who triggered the notification (e.g., liked the post)
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Can be null for system notifications (though not used in BETA)
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // References the User model (the user who caused the notification)
+        required: true
     },
     type: {
-      type: String,
-      required: true,
-      enum: ['NEW_CONNECTION', 'LIKE', 'FAVORITE'], // Define allowed notification types
+        type: String,
+        required: true,
+        // Define allowed notification types
+        // *** IMPORTANT: Ensure all types you use are listed here ***
+        // Including uppercase versions handles any existing data saved that way.
+        enum: [
+            'like',          // User liked your connection
+            'comment',       // User commented on your connection
+            'new_follower',  // User started following you
+            'favorite',      // User favorited your connection
+            // Add uppercase versions if your database contains them:
+            'LIKE',
+            'COMMENT',
+            'FAVORITE'
+            // Add other types as needed (e.g., 'reply', 'mention')
+        ],
+        // Optional: Add a custom validator message
+        message: 'Invalid notification type.'
     },
-    connectionRef: {
-      // The specific connection this notification relates to
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Connection',
-      // Required for LIKE, FAVORITE, NEW_CONNECTION (if notifying others)
-      // Might not be required for other future notification types
-      required: function () {
-        return ['LIKE', 'FAVORITE', 'NEW_CONNECTION'].includes (this.type);
-      },
-    },
-    // --- NEW FIELD ---
     message: {
         type: String,
-        required: true, // Make the message required
+        // Optional, backend might generate a message string,
+        // or frontend might construct it based on type and populated refs
+        required: false // Make message optional as frontend can construct
     },
-    // --- END NEW FIELD ---
+    link: {
+        type: String,
+        // Optional: A specific frontend route the user should navigate to
+        // when clicking the notification (e.g., '/connections/abc#comments')
+        required: false
+    },
+    connectionRef: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Connection', // References the Connection model if the notification is connection-related
+        required: false // Make connectionRef optional
+    },
     read: {
-      // Has the recipient seen this notification?
-      type: Boolean,
-      default: false,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+        type: Boolean,
+        default: false,
+        required: true
+    }
+}, {
+    timestamps: true // Adds createdAt and updatedAt timestamps
+});
 
-// Index for efficient fetching of a user's unread notifications, sorted by newest first
-notificationSchema.index ({recipientRef: 1, read: 1, createdAt: -1});
+// Ensure compound index for faster lookups by recipient and read status
+notificationSchema.index({ recipientRef: 1, read: 1, createdAt: -1 });
 
-const Notification = mongoose.model ('Notification', notificationSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
 
 export default Notification;

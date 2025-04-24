@@ -1,120 +1,149 @@
-// server/controllers/notificationController.js (Corrected)
+// server/controllers/notificationController.js
 import Notification from '../models/Notification.js'; // Use .js extension
 import mongoose from 'mongoose';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from 'express-async-handler'; // Correctly importing from the package
+
+// --- Helper function to generate and save a new notification ---
+// This function is called by other controllers (like follow, like, comment)
+// It does NOT send an HTTP response itself.
+const generateNotification = async ({ recipient, sender, type, message, link = null, connectionRef = null }) => {
+    try {
+        // Basic validation (optional, but good practice)
+        if (!recipient || !sender || !type || !message) {
+            console.error('[generateNotification] Missing required fields:', { recipient, sender, type, message });
+            // Depending on how critical, you could throw an error here, but usually logging is enough for internal helpers
+            return null;
+        }
+
+        // Ensure recipient and sender are distinct (optional based on desired behavior,
+        // but usually you don't notify yourself of your own actions)
+        if (recipient.toString() === sender.toString()) {
+             // console.log('[generateNotification] Skipping self-notification.'); // Log if you skip
+             return null; // Don't create notification if sender is recipient
+        }
+
+
+        const newNotification = new Notification({
+            recipientRef: recipient,
+            senderRef: sender,
+            type,
+            message,
+            link, // Optional link related to the notification (e.g., link to profile, connection)
+            connectionRef, // Optional reference to a connection if relevant
+            read: false, // Notifications are unread by default
+        });
+
+        // --- START DIAGNOSTIC LOGGING ---
+        console.log(`[generateNotification] Creating notification for user ${recipient} (Type: ${type})`);
+        // --- END DIAGNOSTIC LOGGING ---
+
+        const createdNotification = await newNotification.save();
+
+        console.log(`[generateNotification] Notification created: ${createdNotification._id}`); // Log success
+
+        return createdNotification; // Return the created notification object
+    } catch (error) {
+        console.error('[generateNotification] Error creating notification:', error);
+        // Log the error but don't re-throw, as the calling controller might not expect it
+        // This prevents a notification failure from crashing the main request (e.g., like/follow)
+        return null; // Indicate failure
+    }
+};
+// --- End Helper function ---
+
 
 // @desc    Get notifications for the logged-in user
 // @route   GET /api/notifications
 // @access  Private
 const getNotifications = asyncHandler(async (req, res) => {
-    // --- START DIAGNOSTIC LOGGING ---
     console.log('[getNotifications] Controller invoked.');
-    if (req.user && req.user._id) {
-        console.log(`[getNotifications] Fetching notifications for user ID: ${req.user._id}`);
-    } else {
+    if (!req.user || !req.user._id) {
         console.error('[getNotifications] User ID not found on request!');
         res.status(401); // Unauthorized
         throw new Error('User not authenticated');
     }
-    // --- END DIAGNOSTIC LOGGING ---
+    console.log(`[getNotifications] Fetching notifications for user ID: ${req.user._id}`);
 
-    try {
-        const notifications = await Notification.find({
-            recipientRef: req.user._id // CORRECTED: Use recipientRef from model
-        })
-        .populate('senderRef', 'username _id profilePictureUrl') // ADDED profilePictureUrl
-        .populate({
-            path: 'connectionRef',
-            select: 'movieRef bookRef context screenshotUrl', // CORRECTED: Use screenshotUrl (verify this field name in Connection model)
-            populate: [
-                { path: 'movieRef', select: 'title' },
-                { path: 'bookRef', select: 'title' }
-            ]
-         })
-        .sort({ createdAt: -1 })
-        .limit(30) // Limit the number of notifications returned
-        .lean(); // --- ADDED .lean() HERE ---
 
-        // --- START DIAGNOSTIC LOGGING ---
-        console.log(`[getNotifications] Found ${notifications.length} notifications.`);
+    const notifications = await Notification.find({
+        recipientRef: req.user._id // Use recipientRef
+    })
+    // Populate sender and connection details
+    .populate('senderRef', 'username _id profilePictureUrl')
+    .populate({
+        path: 'connectionRef',
+        select: 'movieRef bookRef context screenshotUrl',
+        populate: [
+            { path: 'movieRef', select: 'title' },
+            { path: 'bookRef', select: 'title' }
+        ]
+     })
+    .sort({ createdAt: -1 })
+    .limit(50) // Increased limit slightly, adjust as needed
+    .lean(); // Return plain JavaScript objects
 
-        // --- Existing DIAGNOSTIC LOG: Inspect the data before sending ---
-        console.log('[getNotifications] Notifications data structure/sample:');
-        if (notifications && notifications.length > 0) {
-            // Log the first item, or summary info
-            // JSON.stringify works reliably on plain objects from .lean()
-            console.log('  First notification sample:', JSON.stringify(notifications[0], null, 2));
-        } else {
-             console.log('  No notifications found or array is empty.');
-        }
-        // --- END Existing DIAGNOSTIC LOG ---
 
-        // --- Existing DIAGNOSTIC LOG: Immediately before sending response ---
-        console.log('[getNotifications] Attempting to send response.');
-        // --- END Existing DIAGNOSTIC LOG ---
+    console.log(`[getNotifications] Found ${notifications.length} notifications.`);
+    // console.log('[getNotifications] Sample notification:', notifications.length > 0 ? JSON.stringify(notifications[0], null, 2) : 'None'); // Log sample if exists
 
-        res.status(200).json(notifications); // Send 200 status with data
-
-    } catch (error) {
-        // --- START DIAGNOSTIC LOGGING ---
-        console.error('[getNotifications] Error fetching notifications:', error);
-        // --- END DIAGNOSTIC LOGGING ---
-        res.status(500); // Internal Server Error
-        // Don't send a response here, asyncHandler will handle it
-        // res.json({ message: 'Server error fetching notifications', error: error.message });
-        throw new Error('Server error fetching notifications'); // Let error handler manage response
-    }
+    res.status(200).json(notifications); // Send 200 status with data
 });
 
-// @desc    Mark a specific notification as read
-// @route   PATCH /api/notifications/:id/read
+// @desc    Mark a specific notification as read or batch mark
+// @route   PUT /api/notifications/mark-read (changed from PATCH)
 // @access  Private
+// Added ability to mark single ID or multiple IDs
 const markNotificationAsRead = asyncHandler(async (req, res) => {
-    const notificationId = req.params.id;
+    // Expects { notificationIds: ['id1', 'id2'] } in body, or can still handle single ID from params
+    const notificationIdsFromBody = req.body.notificationIds;
+    const notificationIdFromParam = req.params.id; // Old route structure, still supported for single
 
-    console.log(`[markNotificationAsRead] Attempting for ID: ${notificationId}, User: ${req.user?._id}`); // Logging
+    let idsToMark = [];
 
-    if (!mongoose.Types.ObjectId.isValid(notificationId)) {
-        console.error('[markNotificationAsRead] Invalid ID format:', notificationId);
-        res.status(400); throw new Error('Invalid Notification ID format');
-    }
-
-    const notification = await Notification.findById(notificationId);
-
-    if (!notification) {
-        console.error('[markNotificationAsRead] Notification not found:', notificationId);
-        res.status(404); throw new Error('Notification not found');
-    }
-
-    // Ensure model uses 'recipientRef' field name
-    // CORRECTED: Use recipientRef
-    if (!notification.recipientRef.equals(req.user._id)) {
-        console.warn(`[markNotificationAsRead] Unauthorized attempt. Notif Recipient: ${notification.recipientRef}, User: ${req.user._id}`);
-        res.status(403); throw new Error('Not authorized to update this notification');
-    }
-
-    if (!notification.read) {
-        notification.read = true;
-        await notification.save();
-        console.log(`[markNotificationAsRead] Marked notification ${notificationId} as read.`); // Logging
+    if (Array.isArray(notificationIdsFromBody) && notificationIdsFromBody.length > 0) {
+        idsToMark = notificationIdsFromBody.filter(id => mongoose.Types.ObjectId.isValid(id));
+        console.log(`[markNotificationAsRead] Received ${notificationIdsFromBody.length} IDs in body, valid: ${idsToMark.length}`); // Logging
+    } else if (notificationIdFromParam && mongoose.Types.ObjectId.isValid(notificationIdFromParam)) {
+        // Fallback for old single-ID PATCH route if it still exists/is used
+        idsToMark.push(notificationIdFromParam);
+         console.log(`[markNotificationAsRead] Received single valid ID from params: ${notificationIdFromParam}`); // Logging
     } else {
-        console.log(`[markNotificationAsRead] Notification ${notificationId} was already read.`); // Logging
+         console.log('[markNotificationAsRead] No valid notification IDs provided.'); // Logging
+        res.status(400); throw new Error('No valid notification IDs provided.');
     }
 
-    // Return the updated notification as a plain object
-    res.status(200).json(notification.toObject()); // Send 200 status with updated notification as plain object
+    if (idsToMark.length === 0) {
+         console.log('[markNotificationAsRead] No valid IDs to process.'); // Logging
+         res.status(200).json({ message: 'No valid notifications to mark as read.', count: 0 });
+         return; // Exit early
+    }
+
+    // Use updateMany to mark all specified notifications as read for the current user
+    // Ensure the notification belongs to the logged-in user before marking
+    const result = await Notification.updateMany(
+        {
+            _id: { $in: idsToMark }, // Match any of the provided IDs
+            recipientRef: req.user._id, // Ensure notification belongs to the user
+            read: false // Only mark if currently unread
+        },
+        { $set: { read: true } } // Set read to true
+    );
+
+     console.log(`[markNotificationAsRead] Marked ${result.modifiedCount} notifications as read for user ${req.user._id}`); // Logging
+
+    res.status(200).json({ message: 'Notifications marked as read', count: result.modifiedCount, updatedIds: idsToMark });
 });
+
 
 // @desc    Mark all unread notifications for the user as read
-// @route   PATCH /api/notifications/read-all
+// @route   PUT /api/notifications/mark-all-read (changed from PATCH read-all for clarity)
 // @access  Private
 const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
     // Ensure model uses 'recipientRef' field name
-    // CORRECTED: Use recipientRef
     console.log(`[markAllNotificationsAsRead] Attempting for User: ${req.user?._id}`); // Logging
 
     const result = await Notification.updateMany(
-        { recipientRef: req.user._id, read: false }, // CORRECTED: Use recipientRef
+        { recipientRef: req.user._id, read: false }, // Only mark unread notifications for the user
         { $set: { read: true } }
     );
 
@@ -123,9 +152,11 @@ const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'All notifications marked as read', count: result.modifiedCount });
 });
 
+
 // --- Use NAMED exports ---
 export {
     getNotifications,
-    markNotificationAsRead,
-    markAllNotificationsAsRead
+    markNotificationAsRead, // Note: This function handles both single ID (via params, if route exists) and batch IDs (via body)
+    markAllNotificationsAsRead,
+    generateNotification // <-- NEW: Export the helper function
 };

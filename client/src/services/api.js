@@ -122,6 +122,15 @@ export const getPublicUserProfile = (userId) => api.get(`/users/${userId}/profil
 export const getUserConnections = (userId) => api.get(`/users/${userId}/connections`);
 
 
+// --- Follow API Functions --- <-- NEW SECTION
+export const followUser = (userId) => api.post(`/follows/${userId}`);
+export const unfollowUser = (userId) => api.delete(`/follows/${userId}`);
+export const getFollowing = (userId) => api.get(`/follows/following/${userId}`);
+export const getFollowers = (userId) => api.get(`/follows/followers/${userId}`);
+export const isFollowing = (userId) => api.get(`/follows/is-following/${userId}`);
+// --- END Follow API Functions ---
+
+
 // --- Connection API Functions ---
 
 // Get connections (feed) - supports filters, sorting, pagination
