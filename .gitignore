@@ -33,3 +33,6 @@ server/.env
 
 # Uploaded Files (Should not be in version control)
 /server/uploads/
+# Ignore generated project tree files
+project_tree.txt
+project_tree_filtered.txt
