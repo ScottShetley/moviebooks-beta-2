@@ -113,16 +113,21 @@ export const signup = (username, email, password) => api.post('/auth/signup', { 
 // but with pure JWT and no sessions, client-side removal is sufficient.
 
 export const getMyProfile = () => api.get('/users/me');
-export const updateMyProfile = (profileData) => api.put('/users/me', profileData, {
-    headers: {
-        'Content-Type': 'multipart/form-data' // Use FormData for image upload
-    }
-});
+// NOTE: updateUserProfile will handle the isPrivate field now as well
+// --- FIX: REMOVE hardcoded multipart/form-data header ---
+export const updateMyProfile = (profileData) => api.put('/users/profile', profileData);
+// --- END FIX ---
+
 export const getPublicUserProfile = (userId) => api.get(`/users/${userId}/profile`);
+
+// --- NEW: Get list of all public users ---
+export const getPublicUsers = () => api.get('/users');
+// --- END NEW ---
+
 export const getUserConnections = (userId) => api.get(`/users/${userId}/connections`);
 
 
-// --- Follow API Functions --- <-- NEW SECTION
+// --- Follow API Functions ---
 export const followUser = (userId) => api.post(`/follows/${userId}`);
 export const unfollowUser = (userId) => api.delete(`/follows/${userId}`);
 export const getFollowing = (userId) => api.get(`/follows/following/${userId}`);

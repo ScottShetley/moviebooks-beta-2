@@ -10,49 +10,101 @@ import cloudinary from '../config/cloudinary.js'; // Import Cloudinary config
 // @route   GET /api/users/me
 // @access  Private
 const getMyProfile = asyncHandler(async (req, res) => {
-  // req.user is attached by 'protect' middleware and should be the full user document
-  if (req.user) {
-    // Note: Follower/Following counts are typically fetched separately or added to this endpoint if needed.
-    // For now, we're adding them to the public profile endpoint as per the plan.
+  // req.user is attached by 'protect' middleware and contains user ID from token
+  if (!req.user || !req.user._id) {
+     res.status(401); // Or 404, depending on desired behavior
+     throw new Error('User not authenticated or user ID missing.');
+  }
+
+  // --- FIX: Explicitly fetch the user from the DB to get the latest data ---
+  const user = await User.findById(req.user._id);
+  // --- END FIX ---
+
+  if (user) {
+    // --- ADD THIS LOG ---
+    console.log(`[getMyProfile] Fetched user ID ${user._id}. isPrivate is: ${user.isPrivate}`);
+    // --- END LOG ---
+
     res.json({
-      _id: req.user._id,
-      username: req.user.username,
-      email: req.user.email, // Okay to return email for user's own view
-      displayName: req.user.displayName,
-      bio: req.user.bio,
-      location: req.user.location,
-      profilePictureUrl: req.user.profilePictureUrl,
-      favorites: req.user.favorites, // Include favorites for 'me' view if needed later
-      createdAt: req.user.createdAt,
-      updatedAt: req.user.updatedAt,
+      _id: user._id, // Use the freshly fetched user object
+      username: user.username,
+      email: user.email, // Okay to return email for user's own view
+      displayName: user.displayName,
+      bio: user.bio,
+      location: user.location,
+      profilePictureUrl: user.profilePictureUrl,
+      favorites: user.favorites, // Include favorites for 'me' view
+      isPrivate: user.isPrivate, // <-- Use isPrivate from the freshly fetched user
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     });
   } else {
-    // Should be caught by protect middleware, but good failsafe
+    // Should not happen if protect middleware works, but good failsafe
     res.status(404);
-    throw new Error('User not found');
+    throw new Error('User profile data not found in database.');
   }
 });
 
-// @desc    Update current logged-in user's profile TEXT info (bio, location, displayName)
+// @desc    Update current logged-in user's profile TEXT info (bio, location, displayName, isPrivate)
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
+
+  // --- ADD THIS LOG AT THE START ---
+  console.log('[updateUserProfile] Received request body:', req.body);
+  // --- END LOG ---
+
   const user = await User.findById(req.user._id); // Get user document from DB
 
   if (user) {
-    // Update only the allowed profile fields from req.body
+    // Update allowed profile fields from req.body
     // Use ?? to allow setting fields to an empty string if desired
+    // Add a check here too to see what values are being assigned
     user.displayName = req.body.displayName ?? user.displayName;
+    console.log(`[updateUserProfile] Setting displayName to: ${user.displayName}`);
+
     user.bio = req.body.bio ?? user.bio;
+    console.log(`[updateUserProfile] Setting bio to: ${user.bio}`);
+
     user.location = req.body.location ?? user.location;
+     console.log(`[updateUserProfile] Setting location to: ${user.location}`);
 
-    // IMPORTANT: profilePictureUrl is now handled by the dedicated picture upload endpoint
-    // Do NOT update it here from req.body to avoid conflicts/overwrites
-    // user.profilePictureUrl = req.body.profilePictureUrl ?? user.profilePictureUrl; // REMOVED THIS LINE
 
-    const updatedUser = await user.save();
+    // IMPORTANT: profilePictureUrl is handled by the dedicated picture upload endpoint
 
-    // Return the updated user profile data (matching 'getMyProfile' structure, excluding email/password)
+    // --- Allow updating isPrivate field ---
+    // Check if req.body.isPrivate is provided and is a boolean
+    if (req.body.isPrivate !== undefined && typeof req.body.isPrivate === 'boolean') {
+        user.isPrivate = req.body.isPrivate;
+        console.log(`[updateUserProfile] Setting user.isPrivate to: ${user.isPrivate} based on req.body`);
+    } else {
+        // --- ADD LOGGING FOR WHY isPrivate ISN'T SET ---
+        console.log(`[updateUserProfile] isPrivate not set: req.body.isPrivate is "${req.body.isPrivate}" (Type: ${typeof req.body.isPrivate})`);
+        // --- END LOG ---
+    }
+    // --- END NEW ---
+
+    // --- ADD LOGGING AROUND SAVE ---
+    console.log(`[updateUserProfile] User document before save (isPrivate): ${user.isPrivate}`);
+    let updatedUser;
+    try {
+        updatedUser = await user.save();
+        console.log(`[updateUserProfile] User document AFTER successful save (isPrivate): ${updatedUser.isPrivate}`);
+    } catch (saveError) {
+        console.error("[updateUserProfile] Error during user.save():", saveError);
+        // Check for Mongoose validation errors specifically
+         if (saveError.name === 'ValidationError') {
+             const messages = Object.values(saveError.errors).map(val => val.message);
+             res.status(400).json({ message: messages.join(', ') });
+         } else {
+            res.status(500).json({ message: `Failed to save user profile: ${saveError.message}` });
+         }
+        return; // Stop execution after sending response
+    }
+    // --- END LOGGING ---
+
+
+    // Return the updated user profile data (consistent with getMyProfile)
     res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
@@ -62,6 +114,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       location: updatedUser.location,
       profilePictureUrl: updatedUser.profilePictureUrl, // Return existing pic URL
       favorites: updatedUser.favorites,
+      isPrivate: updatedUser.isPrivate, // <-- NEW: Return updated privacy status
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
     });
@@ -134,6 +187,9 @@ const updateUserProfilePicture = asyncHandler(async (req, res) => {
 
     // Update the user's profilePictureUrl with the new secure URL from Cloudinary
     user.profilePictureUrl = newProfilePictureUrl;
+    // If profile picture is updated, maybe make profile public?
+    // Or leave it to user's explicit privacy setting
+    // user.isPrivate = false; // Optional: uncomment to make profile public on pic upload
 
     const updatedUser = await user.save();
 
@@ -146,6 +202,7 @@ const updateUserProfilePicture = asyncHandler(async (req, res) => {
       location: updatedUser.location,
       profilePictureUrl: updatedUser.profilePictureUrl, // The newly updated URL
       favorites: updatedUser.favorites,
+      isPrivate: updatedUser.isPrivate, // <-- NEW: Include updated privacy status
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
     });
@@ -162,37 +219,55 @@ const getPublicUserProfile = asyncHandler(async (req, res) => {
     throw new Error('Invalid User ID format');
   }
 
-  // Use Promise.all to fetch profile data and calculate counts concurrently
-  const [userProfile, followerCount, followingCount] = await Promise.all([
-      // Fetch user profile data, selecting only public fields and returning a lean object
-      User.findById(userId).select(
-        'username displayName bio location profilePictureUrl createdAt _id'
-      ).lean(),
+  // Fetch the user profile first to check privacy status
+  // Only select necessary fields for the check + public display
+  const userProfile = await User.findById(userId).select(
+    'username displayName bio location profilePictureUrl createdAt _id isPrivate' // Ensure isPrivate is selected
+  ).lean(); // Use lean for performance as we are just checking and adding counts
 
-      // Count documents where the 'followee' is the target user (these are the user's followers)
+  if (!userProfile) {
+    res.status(404); // User not found
+    throw new Error('User not found.');
+  }
+
+  // --- NEW PRIVACY CHECK ---
+  // Check if the profile is private AND the requesting user is NOT the owner of the profile.
+  // req.user is available if the user is logged in (due to 'protect' middleware likely running on other routes in the app,
+  // although this specific route doesn't have 'protect', req.user *might* be populated
+  // if the user was authenticated by a preceding middleware like in App.js or server.js,
+  // but it's safer and more standard practice to ensure 'protect' middleware is used
+  // *if* you rely on req.user being present for authentication checks.
+  // However, for a *public* route, we shouldn't *require* auth, just check if they *are* the user if they *are* logged in.
+  // Let's assume `req.user` exists only if they are logged in because of the global protect middleware
+  // or AuthContext flow setting it up. Using req.user? is safer.
+  const isViewingOwnProfile = req.user && userProfile._id && req.user._id.toString() === userProfile._id.toString();
+
+  if (userProfile.isPrivate && !isViewingOwnProfile) {
+    console.log(`[getPublicUserProfile] Access denied for private profile: ${userProfile.username} (ID: ${userId})`);
+    // Return 404 to not reveal whether the user exists but is private
+    res.status(404);
+    throw new Error('User not found or profile is private.');
+  }
+  // --- END NEW PRIVACY CHECK ---
+
+
+  // If not private OR viewing own profile, fetch counts concurrently
+  // Note: Even for private profiles when viewed by the owner, we fetch counts.
+  const [followerCount, followingCount] = await Promise.all([
       Follow.countDocuments({ followee: userId }),
-
-      // Count documents where the 'follower' is the target user (these are the users this user is following)
       Follow.countDocuments({ follower: userId })
   ]);
 
-
-  if (!userProfile) {
-    res.status(404);
-    throw new Error('User not found');
-  }
-
   // Combine the user profile data (which is a plain object due to .lean()) and the counts
   const profileDataWithCounts = {
-      ...userProfile, // Spread all fields from the userProfile object
+      ...userProfile, // Spread all fields from the userProfile object (now including isPrivate)
       followerCount,    // Add the calculated follower count
       followingCount    // Add the calculated following count
   };
 
-  console.log(`[getPublicUserProfile] Profile for ${userProfile.username} (ID: ${userId}) fetched. Followers: ${followerCount}, Following: ${followingCount}`);
+  console.log(`[getPublicUserProfile] Profile for ${userProfile.username} (ID: ${userId}) fetched successfully.`);
 
-
-  res.json(profileDataWithCounts); // Send the combined data including counts
+  res.json(profileDataWithCounts); // Send the combined data including counts and isPrivate
 });
 
 
@@ -206,26 +281,69 @@ const getUserConnections = asyncHandler(async (req, res) => {
     throw new Error('Invalid User ID format');
   }
 
-  const userExists = await User.exists({ _id: userId });
-  if (!userExists) {
-      res.status(404); throw new Error('User not found');
-  }
+  // --- NEW PRIVACY CHECK (Similar to getPublicUserProfile) ---
+  // We need to fetch the user document first to check the isPrivate flag
+  const user = await User.findById(userId).select('_id isPrivate').lean();
 
+   if (!user) {
+      res.status(404); // User not found
+      throw new Error('User not found.');
+   }
+
+   // Check if the requesting user is the owner
+   const isViewingOwnConnections = req.user && user._id && req.user._id.toString() === user._id.toString();
+
+   if (user.isPrivate && !isViewingOwnConnections) {
+      console.log(`[getUserConnections] Access denied for connections of private profile: ${user._id}`);
+      // Return 404 to not reveal whether the user exists but is private
+      res.status(404);
+      throw new Error('User not found or profile is private.');
+   }
+  // --- END NEW PRIVACY CHECK ---
+
+
+  // If not private OR viewing own connections, fetch connections
   const connections = await Connection.find({ userRef: userId })
-    .populate('userRef', 'username _id')
+    // Populate userRef but only select specific fields for privacy reasons when not viewing own profile
+    // We already did the privacy check above based on the *target* user's isPrivate status.
+    // The fields populated here are for displaying the *author* info on the connection card/list item.
+    // Even for a private profile (viewed by owner), or a public profile, we just need the author's basic public info.
+    // Let's ensure we are not exposing sensitive fields like email here.
+    .populate('userRef', 'username _id displayName profilePictureUrl') // Populate relevant user fields
     .populate('movieRef', 'title year director posterUrl _id')
     .populate('bookRef', 'title year author coverImageUrl _id')
     .sort({ createdAt: -1 });
 
+  console.log(`[getUserConnections] Fetched ${connections.length} connections for user ID: ${userId}`);
+
   res.json(connections);
+});
+
+
+// @desc    Get a list of all public users
+// @route   GET /api/users (This is a proposed route, already added to userRoutes)
+// @access  Public
+const getPublicUsersList = asyncHandler(async (req, res) => {
+  console.log('[getPublicUsersList] Fetching public users...');
+  // Find all users where isPrivate is false
+  // Select only the fields needed for a user list item
+  const publicUsers = await User.find({ isPrivate: false })
+    .select('username displayName profilePictureUrl _id') // Select relevant public fields
+    .sort({ username: 1 }) // Optional: Sort alphabetically by username
+    .lean(); // Get plain JavaScript objects for performance
+
+  console.log(`[getPublicUsersList] Found ${publicUsers.length} public users.`);
+
+  res.json(publicUsers); // Send the list of public users
 });
 
 
 // --- Use NAMED exports ---
 export {
   getMyProfile,
-  updateUserProfile, // Handles text fields ONLY now
+  updateUserProfile, // Handles text fields AND isPrivate now
   updateUserProfilePicture, // Handles picture upload
-  getPublicUserProfile, // Now includes follow counts
-  getUserConnections,
+  getPublicUserProfile, // Updated with privacy check and includes follow counts
+  getUserConnections, // Updated with privacy check
+  getPublicUsersList, // Returns list of public users
 };

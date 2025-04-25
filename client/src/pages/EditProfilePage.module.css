@@ -105,14 +105,7 @@
 }
 
 /* Optional Avatar Preview Style */
-.avatarPreview {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-top: 0.75rem;
-    border: 2px solid var(--color-border-light);
-}
+/* .avatarPreview { ... } - Assuming this is not used anymore based on js file */
 
 .retryButton {
     /* Style similarly to cancelButton or create unique style */
@@ -131,29 +124,35 @@
 .retryButton:hover {
     background-color: var(--color-background-hover);
 }
-/* Add these styles to client/src/pages/EditProfilePage.module.css */
 
-/* --- NEW Styles for Avatar Upload --- */
+/* --- Styles for Avatar Upload --- */
 .avatarUploadContainer {
     display: flex;
-    align-items: center; /* Vertically align image and button */
-    gap: 1rem; /* Space between image and button */
-    margin-top: 0.5rem; /* Space below the label */
+    align-items: center;
+    /* Vertically align image and button */
+    gap: 1rem;
+    /* Space between image and button */
+    margin-top: 0.5rem;
+    /* Space below the label */
 }
 
 .avatarPreviewLarge {
-    width: 100px; /* Larger preview on edit page */
+    width: 100px;
+    /* Larger preview on edit page */
     height: 100px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--color-border-light);
-    cursor: pointer; /* Indicate it's clickable */
+    cursor: pointer;
+    /* Indicate it's clickable */
     transition: filter 0.2s ease;
-    background-color: var(--color-background); /* Ensure background */
+    background-color: var(--color-background);
+    /* Ensure background */
 }
 
 .avatarPreviewLarge:hover {
-    filter: brightness(0.9); /* Slight dim effect on hover */
+    filter: brightness(0.9);
+    /* Slight dim effect on hover */
 }
 
 .changePictureButton {
@@ -181,23 +180,50 @@
     font-size: 0.85rem;
     color: var(--color-text-tertiary);
     margin-top: 0.5rem;
-    display: block; /* Ensure it takes its own line */
+    /* Add space above hint */
+    display: block;
+    /* Ensure it takes its own line */
 }
 
-/* --- END NEW Avatar Styles --- */
-
-
-/* --- Existing Styles Below --- */
-/* Keep .pageContainer, .profileForm, .formGroup, label, input, textarea, */
-/* .formActions, .submitButton, .cancelButton, .retryButton etc. */
-
-.pageContainer {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: var(--color-background-alt);
-  border-radius: var(--border-radius-medium);
-  box-shadow: var(--shadow-medium);
+/* --- NEW STYLES FOR CHECKBOX GROUP --- */
+.checkboxGroup {
+    /* Override default column flex direction */
+    flex-direction: row;
+    align-items: center;
+    /* Vertically align checkbox and label */
+    gap: 0.5rem;
+    /* Space between checkbox and label */
+    margin-bottom: 0;
+    /* Adjust bottom margin if needed */
 }
 
-/* ... rest of your existing styles ... */
+/* Style for the checkbox label */
+.checkboxLabel {
+    /* Override margin-bottom from generic label style */
+    margin-bottom: 0;
+    /* Allow label to grow to push hint below */
+    flex-grow: 1;
+    /* Ensure label is clickable and cursor changes */
+    cursor: pointer;
+    /* Inherit color from .formGroup or set explicitly */
+    color: var(--color-text-primary);
+    /* Or var(--color-text-secondary) */
+    font-weight: 400;
+    /* Checkbox labels are often lighter weight */
+}
+
+/* Style for the hint text specifically within the checkbox group */
+.checkboxGroup .fieldHint {
+    /* Ensure hint text is below the checkbox/label row */
+    display: block;
+    width: 100%;
+    /* Take full width to push below */
+    margin-top: 0.25rem;
+    /* Smaller space above hint */
+    /* Inherit color or set explicitly */
+    color: var(--color-text-tertiary);
+    font-size: 0.8rem;
+    /* Maybe slightly smaller for hint */
+}
+
+/* --- END NEW STYLES FOR CHECKBOX GROUP --- */

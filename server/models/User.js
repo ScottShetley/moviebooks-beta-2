@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, 'Please add an email'],
       unique: true,
-      match: [/.+\@.+\..+/, 'Please fill a valid email address'],
+      match: [/.+@.+\..+/, 'Please fill a valid email address'],
       lowercase: true,
       trim: true,
     },
@@ -62,10 +62,15 @@ const userSchema = mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Connection', // Reference the Connection model
-        // Removed 'required: true' here as an empty favorites array is valid
-        // required: true, // Ensure entries are valid ObjectIds (though array can be empty) -- This was likely incorrect for an array field itself
       },
     ],
+
+    // --- NEW PRIVACY FIELD ---
+    isPrivate: {
+      type: Boolean,
+      default: false, // Default to public profile
+    },
+    // ---------------------------
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields
@@ -73,7 +78,6 @@ const userSchema = mongoose.Schema(
     toJSON: {
       transform(doc, ret) {
         delete ret.password;
-        // Optionally, ensure new fields are always present even if empty? No, default handles this.
         return ret;
       },
     },
@@ -110,8 +114,9 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 // Indexing username and email for faster lookups
 userSchema.index({ username: 1 });
 userSchema.index({ email: 1 });
-// Optional: Index the favorites array if you anticipate querying users based on favorites frequently
-// userSchema.index({ favorites: 1 }); // Consider adding this later if performance dictates
+// Optional: Index isPrivate for faster queries filtering private users
+userSchema.index({ isPrivate: 1 });
+
 
 const User = mongoose.model('User', userSchema);
 

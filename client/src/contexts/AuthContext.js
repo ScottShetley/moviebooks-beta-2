@@ -7,7 +7,7 @@ const AuthContext = createContext();
 
 // Create the provider component
 export const AuthProvider = ({ children }) => {
-  // Holds user info { _id, username, email, token, createdAt, favorites } or null
+  // Holds user info { _id, username, email, token, createdAt, favorites, isPrivate, etc. } or null
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,10 +25,14 @@ export const AuthProvider = ({ children }) => {
             if (!userInfo.favorites) {
                 userInfo.favorites = [];
             }
-            // --- End favorites check ---
+            // --- Ensure isPrivate exists, default to false if missing ---
+             if (userInfo.isPrivate === undefined) {
+                userInfo.isPrivate = false;
+            }
+            // --- End favorites/isPrivate check ---
             if (isMounted && userInfo && userInfo.token) {
                  console.log('[AuthContext] Found user info in storage, setting user and API header.');
-                 setUser(userInfo); // Store the full user info, including favorites
+                 setUser(userInfo); // Store the full user info, including favorites and isPrivate
                  api.defaults.headers.common['Authorization'] = `Bearer ${userInfo.token}`;
             } else if (isMounted) {
                 console.log('[AuthContext] Invalid user info found in storage, clearing.');
@@ -63,12 +67,12 @@ export const AuthProvider = ({ children }) => {
       const { data } = await api.post('/auth/login', { email, password });
       console.log('[AuthContext] API call successful. Response data:', data);
 
-      // Ensure data includes favorites (backend should provide it now)
-      const userData = { ...data, favorites: data.favorites || [] };
+      // Ensure data includes favorites and isPrivate
+      const userData = { ...data, favorites: data.favorites || [], isPrivate: data.isPrivate ?? false }; // Use ?? for nullish coalescing
 
       localStorage.setItem('userInfo', JSON.stringify(userData));
       api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-      setUser(userData); // Set the full user object including favorites
+      setUser(userData); // Set the full user object including favorites and isPrivate
       setLoading(false);
       return true;
     } catch (err) {
@@ -100,12 +104,12 @@ export const AuthProvider = ({ children }) => {
        const { data } = await api.post('/auth/register', { username, email, password });
        console.log('[AuthContext] Signup API call successful. Response data:', data);
 
-       // Ensure data includes favorites (backend should provide it now)
-       const userData = { ...data, favorites: data.favorites || [] };
+       // Ensure data includes favorites and isPrivate (new users default to not private)
+       const userData = { ...data, favorites: data.favorites || [], isPrivate: data.isPrivate ?? false }; // Use ?? for nullish coalescing
 
        localStorage.setItem('userInfo', JSON.stringify(userData));
        api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-       setUser(userData); // Set the full user object including favorites
+       setUser(userData); // Set the full user object including favorites and isPrivate
        setLoading(false);
        return true;
      } catch (err) {
@@ -138,7 +142,7 @@ export const AuthProvider = ({ children }) => {
       }
   }, [error]);
 
-  // --- NEW: Function to update user's favorites list in context and localStorage ---
+  // Function to update user's favorites list in context and localStorage
   // This function should be called AFTER a successful API call to favorite/unfavorite
   const updateUserFavorites = useCallback((connectionId) => {
     if (!connectionId) {
@@ -183,6 +187,37 @@ export const AuthProvider = ({ children }) => {
     });
   }, []); // No external dependencies needed as it uses the functional update form of setUser
 
+  // --- NEW: Function to update the user object in context and localStorage ---
+  // This will be used after a successful profile update API call
+  const updateUser = useCallback((updatedUserData) => {
+      console.log('[AuthContext] updateUser function initiated with data:', updatedUserData);
+      if (!updatedUserData || typeof updatedUserData !== 'object') {
+          console.error('[AuthContext] updateUser called with invalid data.');
+          return;
+      }
+
+      // Update localStorage
+      try {
+          // Read current user from storage to merge, in case something changed elsewhere
+          const storedUserInfo = localStorage.getItem('userInfo');
+          const currentUserInfo = storedUserInfo ? JSON.parse(storedUserInfo) : {};
+
+          // Merge old data with new data
+          const newUserInfo = { ...currentUserInfo, ...updatedUserData };
+
+          localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+          console.log('[AuthContext] Updated localStorage with new user data.');
+
+          // Update context state
+          setUser(newUserInfo);
+          console.log('[AuthContext] User state updated in context.');
+
+      } catch (e) {
+          console.error('[AuthContext] Failed to update user info in localStorage or state:', e);
+          // Handle error - perhaps log out or show a critical error message
+      }
+  }, []); // No external dependencies needed as it uses the functional update form of setUser
+
   // Value provided by the context
   const contextValue = {
       user,
@@ -193,7 +228,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       clearError,
       updateUserFavorites,
-      // --- ADD isAuthenticated property here ---
+      updateUser, // --- ADD the new updateUser function here ---
       isAuthenticated: user !== null, // Derived directly from user state
   };
 

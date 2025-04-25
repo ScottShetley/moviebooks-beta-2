@@ -1,6 +1,6 @@
 // client/src/pages/ProfilePage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'; // <-- Import useLocation
 import { useAuth } from '../contexts/AuthContext';
 import {
   getPublicUserProfile,
@@ -21,21 +21,25 @@ const ProfilePage = () => {
   const { userId: paramsUserId } = useParams();
   const { user: loggedInUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation(); // <-- Initialize useLocation
 
   // State for profile info
   const [profileData, setProfileData] = useState(null);
-  const [pageLoading, setPageLoading] = useState(true); // Used for initial fetch of profile + created connections
-  const [pageError, setPageError] = useState(null);
+  // Use a single loading state for the initial profile/created connections fetch
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [pageError, setPageError] = useState(null); // For errors during initial fetch
 
   // State for connection lists
   const [createdConnections, setCreatedConnections] = useState([]);
-  const [errorCreated, setErrorCreated] = useState(null); // Still keep error state
+  // We'll mostly rely on pageError for initial created connections errors,
+  // but keeping a dedicated state could be useful if we add separate fetches later.
+  // const [errorCreated, setErrorCreated] = useState(null);
 
   const [favoriteConnections, setFavoriteConnections] = useState([]);
-  const [activeView, setActiveView] = useState('created');
+  const [activeView, setActiveView] = useState('created'); // Default view
   const [loadingFavorites, setLoadingFavorites] = useState(false);
   const [errorFavorites, setErrorFavorites] = useState(null);
-  const [favoritesFetched, setFavoritesFetched] = useState(false);
+  const [favoritesFetched, setFavoritesFetched] = useState(false); // To prevent re-fetching favorites unnecessarily
 
   // State for Follow Status and Counts
   const [isFollowingStatus, setIsFollowingStatus] = useState(false);
@@ -46,12 +50,12 @@ const ProfilePage = () => {
   const [followingCount, setFollowingCount] = useState(0);
 
 
-  // Check if viewing own profile (derived state)
-  // Use profileData?._id after it's successfully fetched
+  // Check if viewing own profile (derived state). Use profileData?._id after it's successfully fetched
+  // This also updates when profileData changes
   const viewingOwnProfile = loggedInUser && profileData && loggedInUser._id === profileData._id;
 
 
-  // Combined Update/Delete Callbacks
+  // Combined Update/Delete Callbacks (used for both created and favorites lists)
   const updateConnectionInBothLists = useCallback((updatedConnection) => {
     setCreatedConnections(prev =>
       prev.map(conn => conn._id === updatedConnection._id ? updatedConnection : conn)
@@ -66,40 +70,67 @@ const ProfilePage = () => {
     setFavoriteConnections(prev => prev.filter(conn => conn._id !== deletedConnectionId));
   }, []);
 
-  // Fetch Initial Profile Data, Created Connections, and Follow Status
+
+  // Effect 1: Read URL hash and set activeView state
   useEffect(() => {
+    console.log("[ProfilePage Effect 1] Reading hash:", location.hash);
+    if (location.hash === '#favorites') {
+      setActiveView('favorites');
+    } else {
+      setActiveView('created');
+    }
+    // This effect should react to changes in the URL path or hash
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, location.hash]); // Depend on location changes
+
+
+  // Effect 2: Fetch Initial Profile Data, Created Connections, and Follow Status
+  useEffect(() => {
+     console.log("[ProfilePage Effect 2] Starting Effect 2..."); // LOG 1
+     console.log("[ProfilePage Effect 2] Effect dependencies:", { paramsUserId, loggedInUser: loggedInUser?._id, authLoading, locationPathname: location.pathname }); // LOG 2
+
      // Wait for auth to load to know if logged in
     if (authLoading) {
-        setPageLoading(true);
+        console.log("[ProfilePage Effect 2] authLoading is true, returning early."); // LOG 3a
+        setInitialLoading(true); // Ensure loading is true while waiting for auth
         return;
     }
+
+    console.log("[ProfilePage Effect 2] authLoading is false."); // LOG 3b
 
     // If no userId in params and not logged in after auth loads, redirect to login
     if (!paramsUserId && !loggedInUser) {
-        console.log("[ProfilePage Effect] No user ID in params and not logged in. Redirecting.");
-        navigate('/login', { replace: true, state: { from: '/users' } }); // Changed from /profile to /users
+        console.log("[ProfilePage Effect 2] No user ID in params and not logged in. Redirecting."); // LOG 4a
+        navigate('/login', { replace: true, state: { from: location.pathname } }); // Use current path for 'from'
         return;
     }
 
+     console.log("[ProfilePage Effect 2] User ID determined."); // LOG 4b
     // Determine the actual userId to fetch profile for
     // Use paramsUserId if it exists. If not, and loggedInUser exists, use loggedInUser._id (for own profile)
     const idToFetch = paramsUserId || loggedInUser?._id;
 
+    console.log("[ProfilePage Effect 2] idToFetch:", idToFetch); // LOG 5
+
+
     // If still no ID (shouldn't happen if logic above is correct, but a safeguard)
     if (!idToFetch) {
-        console.error("[ProfilePage Effect] No ID determined to fetch profile.");
-        setPageLoading(false);
+        console.error("[ProfilePage Effect 2] No ID determined to fetch profile. Returning early."); // LOG 6a
+        setInitialLoading(false);
         setPageError("No user specified or found.");
         return;
     }
 
-    console.log(`[ProfilePage Fetch] Fetching initial data for user ID: ${idToFetch}`);
-    setPageLoading(true);
-    setPageError(null);
-    setProfileData(null);
-    setCreatedConnections([]);
-    setErrorCreated(null);
-    setActiveView('created'); // Reset view on profile change
+     console.log("[ProfilePage Effect 2] ID to fetch profile is available."); // LOG 6b
+
+
+    console.log(`[ProfilePage Effect 2] Fetching initial data for user ID: ${idToFetch}`); // LOG 7
+    setInitialLoading(true); // Start initial loading
+    setPageError(null); // Clear previous page errors
+    setProfileData(null); // Clear previous profile data
+    setCreatedConnections([]); // Clear previous connections
+
+    // Reset favorites specific states as well, as a new profile means new favorites list
     setFavoritesFetched(false);
     setFavoriteConnections([]);
     setErrorFavorites(null);
@@ -115,15 +146,20 @@ const ProfilePage = () => {
 
     const fetchInitialData = async () => {
       try {
+        console.log(`[ProfilePage Effect 2] Inside fetchInitialData async function for ID: ${idToFetch}`); // LOG 8
+        // Fetch profile and created connections concurrently
+        console.log(`[ProfilePage Effect 2] Calling getPublicUserProfile(${idToFetch}) and getUserConnections(${idToFetch})...`); // LOG 9
         const [profileRes, connectionsRes] = await Promise.all([
           getPublicUserProfile(idToFetch),
           getUserConnections(idToFetch)
         ]);
+        console.log(`[ProfilePage Effect 2] API calls completed. Profile status: ${profileRes.status}, Connections status: ${connectionsRes.status}`); // LOG 10
+
 
         setProfileData(profileRes.data);
         setCreatedConnections(connectionsRes.data || []);
 
-        // Extract and set follower/following counts
+        // Extract and set follower/following counts from the fetched profile
         setFollowerCount(profileRes.data.followerCount || 0);
         setFollowingCount(profileRes.data.followingCount || 0);
 
@@ -132,190 +168,212 @@ const ProfilePage = () => {
         const isCurrentUser = loggedInUser && loggedInUser._id === profileRes.data._id;
         setIsSelf(isCurrentUser); // Set isSelf based on fetched profile data
 
-        // Fetch Follow Status if viewing another user's profile
-        // Only fetch if not viewing own profile AND logged in (cannot follow/check status if not logged in)
+        // Fetch Follow Status if viewing another user's profile AND logged in
         if (!isCurrentUser && loggedInUser) {
-            console.log(`[ProfilePage Fetch] Checking follow status for user ${loggedInUser._id} following ${idToFetch}`);
+            console.log(`[ProfilePage Effect 2] Checking follow status for user ${loggedInUser._id} following ${idToFetch}`);
             setIsFollowingLoading(true);
             try {
                 const followStatusRes = await isFollowing(idToFetch);
-                // The backend returns { isFollowing: boolean, isSelf: boolean }
                 setIsFollowingStatus(followStatusRes.data.isFollowing);
-                 // Although backend sends isSelf, we rely on our frontend check based on fetched profile for render logic primarily
-                 // setIsSelf(followStatusRes.data.isSelf); // Can log or use this if needed, but redundant with our check
-                console.log(`[ProfilePage Fetch] Follow status: ${followStatusRes.data.isFollowing}`);
+                console.log(`[ProfilePage Effect 2] Follow status: ${followStatusRes.data.isFollowing}`);
 
             } catch (followErr) {
                  const followErrorMessage = followErr.response?.data?.message || followErr.message || "Failed to check follow status.";
-                 console.error("[ProfilePage Fetch] Error checking follow status:", followErr);
+                 console.error("[ProfilePage Effect 2] Error checking follow status:", followErr);
                  setIsFollowingError(followErrorMessage);
                  setIsFollowingStatus(false); // Assume not following on error
             } finally {
                  setIsFollowingLoading(false);
             }
         } else if (isCurrentUser) {
-             console.log("[ProfilePage Fetch] Viewing own profile. Skipping follow status check.");
+             console.log("[ProfilePage Effect 2] Viewing own profile. Skipping follow status check.");
              setIsSelf(true); // Explicitly set isSelf true if it's own profile
         } else if (!loggedInUser) {
-             console.log("[ProfilePage Fetch] Not logged in. Cannot check/show follow button.");
+             console.log("[ProfilePage Effect 2] Not logged in. Cannot check/show follow button.");
              setIsSelf(false); // Explicitly set isSelf false if not logged in
         }
         // End Fetch Follow Status
 
       } catch (err) {
-        const message = err.response?.data?.message || err.message || "Failed to load profile data.";
-        console.error("[ProfilePage Fetch] Error:", err);
+        console.error("[ProfilePage Effect 2] Error during initial fetch:", err); // Log full error object
+
+        let message = err.response?.data?.message || err.message || "Failed to load profile data.";
+
+        // Check specifically for the 404 status code from the backend
         if (err.response?.status === 404) {
-          setPageError("User not found.");
+             // Use a more specific message for 404s, which might indicate a private profile
+             message = "User not found or profile is private.";
+             console.warn(`[ProfilePage Effect 2] Received 404 for user ID ${idToFetch}. Displaying private/not found message.`);
         } else {
-          setPageError(`Error loading profile: ${message}`);
+             // For other errors, use the default error message
+             console.error(`[ProfilePage Effect 2] Non-404 error (${err.response?.status || 'network'}): ${message}`);
         }
-        setProfileData(null); // Ensure profileData is null on error
-        setCreatedConnections([]);
+
+        setPageError(message); // Set the state with the determined message
+        setProfileData(null); // Ensure profileData is null on *any* error
+        setCreatedConnections([]); // Ensure connections are empty on *any* error
         // Reset counts on error
         setFollowerCount(0);
         setFollowingCount(0);
+
       } finally {
-        setPageLoading(false); // End overall page loading
+        console.log("[ProfilePage Effect 2] fetchInitialData finished."); // LOG 11
+        setInitialLoading(false); // End initial loading
       }
     };
 
      // Only fetch if we have an ID to fetch
     if (idToFetch) {
+        console.log("[ProfilePage Effect 2] Calling fetchInitialData..."); // LOG 12
         fetchInitialData();
+    } else {
+        console.log("[ProfilePage Effect 2] No ID to fetch, not calling fetchInitialData."); // LOG 13
     }
 
-  }, [paramsUserId, loggedInUser, authLoading, navigate]); // Depend on auth status, params ID, and loggedInUser change
+
+    // Dependencies: authLoading, paramsUserId, loggedInUser, navigate, location.pathname
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, paramsUserId, loggedInUser, navigate, location.pathname]);
 
 
-  // Fetch Favorite Connections (This effect only runs for the logged-in user's profile)
+  // Effect 3: Fetch Favorite Connections (This effect only runs for the logged-in user's profile when favorites view is active)
   useEffect(() => {
     // Only fetch if viewing own profile, 'favorites' tab is active, favorites not fetched, and not already loading
     // Check loggedInUser?._id against profileData?._id to be sure it's the logged-in user's *fetched* profile
+    // Also ensure loggedInUser and their favorites list exists before attempting to fetch
     if (loggedInUser?._id === profileData?._id && activeView === 'favorites' && !favoritesFetched && !loadingFavorites && loggedInUser?.favorites) {
       const fetchFavorites = async () => {
-        setLoadingFavorites(true);
-        setErrorFavorites(null);
-        console.log("[ProfilePage Fetch] Fetching favorite connections.");
+        setLoadingFavorites(true); // Start favorites loading
+        setErrorFavorites(null); // Clear previous favorites errors
+        console.log("[ProfilePage Effect 3] Fetching favorite connections.");
         try {
           const favoriteIds = loggedInUser.favorites; // Favorites list is on the loggedInUser context object
           if (favoriteIds.length > 0) {
             const response = await getConnectionsByIds(favoriteIds);
             setFavoriteConnections(response.data || []);
-            console.log(`[ProfilePage Fetch] Found ${response.data?.length || 0} favorites.`);
+            console.log(`[ProfilePage Effect 3] Found ${response.data?.length || 0} favorites.`);
           } else {
-            setFavoriteConnections([]);
-            console.log("[ProfilePage Fetch] No favorite IDs found for user.");
+            setFavoriteConnections([]); // Set empty array if no favorites IDs
+            console.log("[ProfilePage Effect 3] No favorite IDs found for user.");
           }
           setFavoritesFetched(true); // Mark as fetched on success
         } catch (err) {
           const message = err.response?.data?.message || err.message || "Failed to load favorites.";
           setErrorFavorites(message);
+          setFavoriteConnections([]); // Clear list on error
           setFavoritesFetched(false); // Allow retry if there was an error
-          console.error("[ProfilePage Fetch] Error fetching favorites:", err);
+          console.error("[ProfilePage Effect 3] Error fetching favorites:", err);
         } finally {
-          setLoadingFavorites(false);
+          setLoadingFavorites(false); // End favorites loading
         }
       };
-      fetchFavorites();
+
+      // Only fetch if we are viewing our own profile AND the activeView is 'favorites'
+      // This check is already in the outer if, but reinforcing intent.
+      if (viewingOwnProfile && activeView === 'favorites') {
+           fetchFavorites();
+      }
+
     } else if (activeView === 'favorites' && (!loggedInUser || loggedInUser?._id !== profileData?._id)) {
-        // If 'favorites' tab is active but not viewing own profile, should ideally not happen due to render logic,
-        // but log a warning or reset view if needed.
-        console.warn("[ProfilePage Effect] Favorites view active but not viewing own profile. This state should be prevented by UI logic.");
-        // Optionally setActiveView('created') here if you want to auto-switch back
+        // Log or handle the case where favorites view is somehow active but not viewing own profile
+        // This should be prevented by UI render logic and the initial checks in this effect.
+        console.warn("[ProfilePage Effect 3] Favorites view active but not viewing own profile. Resetting view.");
+        setActiveView('created'); // Auto-switch back if somehow in this state
     }
-     // Dependencies: activeView, loggedInUser (to get favorites list & _id), profileData (_id check), favoritesFetched, loadingFavorites
+     // Dependencies: activeView, loggedInUser (to get favorites list & _id), profileData (_id check), favoritesFetched
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeView, loggedInUser, profileData, favoritesFetched]);
 
 
-  // Follow/Unfollow Handlers
+  // Follow/Unfollow Handlers (No changes needed here, they use existing state)
   const handleFollow = async () => {
-    // Only proceed if not viewing self, logged in, and not already loading
-    if (isSelf || !loggedInUser || isFollowingLoading || !profileData?._id) {
-        console.warn("[ProfilePage] Follow attempted under invalid conditions.");
-        return;
-    }
+    if (isSelf || !loggedInUser || isFollowingLoading || !profileData?._id) { console.warn("[ProfilePage] Follow attempted under invalid conditions."); return; }
     console.log(`[ProfilePage] Attempting to follow user ${profileData._id}`);
-    setIsFollowingLoading(true);
-    setIsFollowingError(null);
-    try {
-      await followUser(profileData._id); // Call the follow API
-      setIsFollowingStatus(true); // Optimistically update state to 'following'
-      setFollowerCount(prevCount => prevCount + 1); // Optimistically increment follower count
-      console.log(`Successfully followed user ${profileData.username}`);
-       // Consider adding logic here to trigger a refetch of profile stats (like follower count)
-    } catch (err) {
-      const message = err.response?.data?.message || err.message || "Failed to follow user.";
-      setIsFollowingError(message);
-      console.error("[ProfilePage] Follow Error:", err);
-       // If follow failed, revert the status and count back
-       setIsFollowingStatus(false); // Revert optimistic update
-       setFollowerCount(prevCount => Math.max(0, prevCount - 1)); // Revert count, ensure not negative
-    } finally {
-      setIsFollowingLoading(false);
-    }
+    setIsFollowingLoading(true); setIsFollowingError(null);
+    try { await followUser(profileData._id); setIsFollowingStatus(true); setFollowerCount(prevCount => prevCount + 1); console.log(`Successfully followed user ${profileData.username}`); }
+    catch (err) { const message = err.response?.data?.message || err.message || "Failed to follow user."; setIsFollowingError(message); console.error("[ProfilePage] Follow Error:", err); setIsFollowingStatus(false); setFollowerCount(prevCount => Math.max(0, prevCount - 1)); }
+    finally { setIsFollowingLoading(false); }
   };
 
   const handleUnfollow = async () => {
-     // Only proceed if not viewing self, logged in, currently following, and not already loading
-    if (isSelf || !loggedInUser || !isFollowingStatus || isFollowingLoading || !profileData?._id) {
-       console.warn("[ProfilePage] Unfollow attempted under invalid conditions.");
-       return;
-    }
+    if (isSelf || !loggedInUser || !isFollowingStatus || isFollowingLoading || !profileData?._id) { console.warn("[ProfilePage] Unfollow attempted under invalid conditions."); return; }
     console.log(`[ProfilePage] Attempting to unfollow user ${profileData._id}`);
-    setIsFollowingLoading(true);
-    setIsFollowingError(null);
-     try {
-      await unfollowUser(profileData._id); // Call the unfollow API
-      setIsFollowingStatus(false); // Optimistically update state to 'not following'
-      setFollowerCount(prevCount => Math.max(0, prevCount - 1)); // Optimistically decrement follower count
-       console.log(`Successfully unfollowed user ${profileData.username}`);
-       // Consider adding logic here to trigger a refetch of profile stats (like follower count)
-    } catch (err) {
-       const message = err.response?.data?.message || err.message || "Failed to unfollow user.";
-       setIsFollowingError(message);
-       console.error("[ProfilePage] Unfollow Error:", err);
-        // If unfollow failed, revert the status and count back
-        setIsFollowingStatus(true); // Revert optimistic update
-        setFollowerCount(prevCount => prevCount + 1); // Revert count
-    } finally {
-       setIsFollowingLoading(false);
-    }
+    setIsFollowingLoading(true); setIsFollowingError(null);
+     try { await unfollowUser(profileData._id); setIsFollowingStatus(false); setFollowerCount(prevCount => Math.max(0, prevCount - 1)); console.log(`Successfully unfollowed user ${profileData.username}`); }
+     catch (err) { const message = err.response?.data?.message || err.message || "Failed to unfollow user."; setIsFollowingError(message); console.error("[ProfilePage] Unfollow Error:", err); setIsFollowingStatus(true); setFollowerCount(prevCount => prevCount + 1); }
+     finally { setIsFollowingLoading(false); }
+  };
+
+  // Helper function to render a list of connections (created or favorites)
+  const renderConnectionsList = (connections, loading, error) => { // Removed isOwnProfileForCard param - now using viewingOwnProfile + activeView inside card
+      console.log("[renderConnectionsList] Rendering list", {
+          connectionsReceived: connections,
+          connectionsCount: connections?.length, // Use ?. for safety
+          loading: loading,
+          error: error,
+          activeView: activeView, // Check which view it's rendering for
+          // Add profileData details here to see if it's available
+          profileDataAvailable: !!profileData,
+          viewingOwnProfileCheck: viewingOwnProfile // See the derived state value
+      }); // <-- NEW LOG
+
+      if (loading) return <div className={styles.loadingSection}><LoadingSpinner /> Loading...</div>;
+      if (error) return <ErrorMessage message={error} />;
+
+      // The length check should be inside the list renderer
+      if (!Array.isArray(connections) || connections.length === 0) { // Added array check for robustness
+        console.log("[renderConnectionsList] Connections list is empty or not an array, showing empty message."); // NEW LOG for empty case
+        let message;
+        if (viewingOwnProfile) { // Use the component-level viewingOwnProfile
+          message = activeView === 'created'
+            ? "You haven't added any connections yet."
+            : "You haven't favorited any connections yet.";
+        } else {
+           // For other users, we only show 'created' list, so the message is simpler
+           message = `${displayName || 'This user'} hasn't added any connections yet.`;
+        }
+        return <p className={styles.emptyMessage}>{message}</p>;
+      }
+
+      console.log(`[renderConnectionsList] Rendering ${connections.length} connections.`); // NEW LOG for non-empty case
+      return (
+          <div className={styles.connectionsGrid}>
+              {connections.map((connection) => {
+                   console.log("[renderConnectionsList] Mapping connection:", connection?._id); // NEW LOG inside map
+                   if (!connection?._id) {
+                       console.warn("[renderConnectionsList] Skipping rendering for connection object without _id:", connection); // Warn if missing ID
+                       return null; // Skip if no ID
+                   }
+                   return (
+                       <ConnectionCard
+                           key={connection._id}
+                           connection={connection}
+                           onUpdate={updateConnectionInBothLists}
+                           onDelete={deleteConnectionFromBothLists}
+                           // isAuthor prop for the card's edit/delete *connection* buttons
+                           // Only allow editing/deleting the connection itself if viewing own profile AND on the 'created' tab AND the logged-in user is the connection's author
+                           isAuthor={viewingOwnProfile && activeView === 'created' && connection.author === loggedInUser?._id}
+                           // Note: Favoriting/Unfavoriting is handled inside ConnectionCard based on loggedInUser.favorites
+                       />
+                   );
+              })}
+          </div>
+      );
   };
 
 
   // Determine display name
-  // Use profileData.displayName if available, fallback to profileData.username
   const displayName = profileData?.displayName || profileData?.username;
 
-  // Render Logic for Follow Button (No changes needed here, uses isFollowingStatus)
+  // Render Logic for Follow Button
   const renderFollowButton = () => {
-      // Don't show button if:
-      // - Viewing own profile (isSelf is true)
-      // - Auth is loading or user is not logged in (cannot follow if not logged in)
-      // - Profile data hasn't loaded yet or there was a page error during initial load
-      if (isSelf || authLoading || !loggedInUser || !profileData || pageError) {
-          return null;
-      }
-
-      // Show loading spinner inside the button if action is in progress
-      const buttonContent = isFollowingLoading ? (
-          <LoadingSpinner size="small" inline color="white" />
-      ) : (
-          isFollowingStatus ? 'Following' : 'Follow'
-      );
-
+      if (isSelf || authLoading || !loggedInUser || !profileData || pageError) { return null; }
+      const buttonContent = isFollowingLoading ? (<LoadingSpinner size="small" inline color="white" />) : (isFollowingStatus ? 'Following' : 'Follow');
       const buttonClass = isFollowingStatus ? styles.followingButton : styles.followButton;
-
       return (
           <>
-            {/* isFollowingError is displayed below buttons */}
-            <button
-                className={buttonClass}
-                onClick={isFollowingStatus ? handleUnfollow : handleFollow}
-                disabled={isFollowingLoading} // Disable button while action is loading
-            >
+            {isFollowingError && !isFollowingLoading && <ErrorMessage message={isFollowingError} />}
+            <button className={buttonClass} onClick={isFollowingStatus ? handleUnfollow : handleFollow} disabled={isFollowingLoading}>
                 {buttonContent}
             </button>
           </>
@@ -323,137 +381,34 @@ const ProfilePage = () => {
   };
 
 
-  // Render Logic for Connections (No changes needed here)
-  const renderConnections = () => {
-    if (activeView === 'created') {
-      // Use pageLoading for initial fetch of created connections
-      if (pageLoading) return <div className={styles.loadingSection}><LoadingSpinner /> Loading Creations...</div>;
-      // Use errorCreated state specifically for created connections list errors if they were fetched separately later
-      // For initial load errors, pageError handles it.
-      if (errorCreated) return <ErrorMessage message={errorCreated} />; // Keep this in case we add specific fetch later
-
-      return (
-        <>
-          {/* Title is rendered outside this function when not viewing own profile */}
-          {viewingOwnProfile && <h2 className={styles.sectionTitle}>My Creations ({createdConnections.length})</h2>}
-          {createdConnections.length === 0 ? (
-            <p className={styles.emptyMessage}>{viewingOwnProfile ? "You haven't" : `${displayName || 'This user'} hasn't`} added any connections yet.</p>
-          ) : (
-            <div className={styles.connectionsGrid}>
-              {createdConnections.map((connection) => (
-                // Pass isOwnProfile down to ConnectionCard if needed for edit/delete buttons
-                <ConnectionCard
-                  key={`created-${connection._id}`}
-                  connection={connection}
-                  onUpdate={updateConnectionInBothLists}
-                  onDelete={deleteConnectionFromBothLists}
-                  isAuthor={viewingOwnProfile} // Pass down whether the logged-in user is the author
-                />
-              ))}
-            </div>
-          )}
-        </>
-      );
-    } else if (activeView === 'favorites') {
-      // Favorites view is only for own profile
-      if (!viewingOwnProfile) return null;
-
-      if (loadingFavorites) {
-        return <div className={styles.loadingSection}><LoadingSpinner /> Loading Favorites...</div>;
-      }
-      if (errorFavorites) {
-        return <ErrorMessage message={errorFavorites} />;
-      }
-      // Only render the list if favoritesFetched is true and there's no error
-      if (favoritesFetched && !errorFavorites) {
-         return (
-          <>
-            <h2 className={styles.sectionTitle}>My Favorites ({favoriteConnections.length})</h2>
-            {favoriteConnections.length === 0 ? (
-              <p className={styles.emptyMessage}>You haven't favorited any connections yet.</p>
-            ) : (
-              <div className={styles.connectionsGrid}>
-                {favoriteConnections.map((connection) => (
-                   // Pass isOwnProfile down (true for favorites)
-                  <ConnectionCard
-                    key={`favorite-${connection._id}`}
-                    connection={connection}
-                    onUpdate={updateConnectionInBothLists}
-                    onDelete={deleteConnectionFromBothLists}
-                    isAuthor={viewingOwnProfile} // This will be true here
-                  />
-                ))}
-              </div>
-            )}
-          </>
-         );
-      }
-      return null; // Don't render anything if not own profile or not fetched/loading
-    }
-    return null; // Should not happen with current activeView values
-  };
-
   // Main Component Return (Handles initial page loading/errors before rendering profile structure)
 
   // --- DIAGNOSTIC LOGS ---
-  // These logs will help us see the state right before the component decides what to render.
-  if (pageLoading) {
-      console.log("[ProfilePage Render] Status: Loading", {
-          pageLoading: pageLoading,
-          pageError: pageError,
-          profileData: profileData,
-          paramsUserId: paramsUserId,
-          loggedInUser: loggedInUser?._id,
-          isSelf: isSelf // Check if this derived state is correct while loading (it might not be until data loads)
-      });
-      return <div className={styles.pageLoading}><LoadingSpinner size="large"/></div>;
-  }
-
-  if (pageError) {
-      console.log("[ProfilePage Render] Status: Error", {
-           pageLoading: pageLoading, // Should be false
-           pageError: pageError,     // Should be the error object/string
-           profileData: profileData, // Should be null
-           paramsUserId: paramsUserId,
-           loggedInUser: loggedInUser?._id,
-           isSelf: isSelf,
-           errorMessage: pageError // Log the actual error message
-      });
-      return <div className={styles.pageError}><ErrorMessage message={pageError} /></div>;
-  }
-
-  // Render profile only if profileData is available after loading and no pageError
-  if (!profileData) {
-       // This case should ideally be caught by pageError or pageLoading, but as a fallback:
-        console.log("[ProfilePage Render] Status: Not Loading, No Error, but NO Profile Data", {
-           pageLoading: pageLoading, // Should be false
-           pageError: pageError,     // Should be null
-           profileData: profileData, // Should be null
-           paramsUserId: paramsUserId,
-           loggedInUser: loggedInUser?._id,
-           isSelf: isSelf // Check if this derived state is correct
-        });
-      return <div className={styles.pageError}><ErrorMessage message="Profile data could not be loaded." /></div>;
-  }
-
-  // If we reach here, profileData should be available and no page error.
-  // Proceed with rendering the main profile JSX.
-  console.log("[ProfilePage Render] Status: Rendering Profile", {
-      pageLoading: pageLoading, // Should be false
-      pageError: pageError,     // Should be null
-      profileData: profileData, // Should be an object. >>> EXPAND THIS IN CONSOLE <<<
-      paramsUserId: paramsUserId,
-      loggedInUser: loggedInUser?._id,
-      isSelf: isSelf, // Check if this derived state is correct (true for own, false for others)
-      activeView: activeView,
-      followerCount: followerCount,
-      followingCount: followingCount,
-      isFollowingStatus: isFollowingStatus,
-      isFollowingLoading: isFollowingLoading
-  });
+  // Keeping logs to help debug state transitions
+  // console.log("[ProfilePage Render]", { initialLoading, pageError, profileData: profileData ? { _id: profileData._id, username: profileData.username, isPrivate: profileData.isPrivate } : null, paramsUserId, loggedInUser: loggedInUser?._id, isSelf, viewingOwnProfile, activeView, followerCount, followingCount, isFollowingStatus, isFollowingLoading, createdConnectionsCount: createdConnections.length, favoriteConnectionsCount: favoriteConnections.length, loadingFavorites, favoritesFetched, locationHash: location.hash });
   // --- END DIAGNOSTIC LOGS ---
 
 
+  // Handle initial page loading state
+  if (initialLoading) {
+      console.log("[ProfilePage Render] Rendering Loading Spinner"); // LOG RENDER A
+      return <div className={styles.pageLoading}><LoadingSpinner size="large"/></div>;
+  }
+
+  // Handle page error state (including the specific message for private/not found)
+  if (pageError) {
+       console.log("[ProfilePage Render] Rendering Error Message:", pageError); // LOG RENDER B
+      return <div className={styles.pageError}><ErrorMessage message={pageError} /></div>;
+  }
+
+  // Fallback if profileData is unexpectedly null after loading ends without error
+  if (!profileData) {
+       console.error("[ProfilePage Render] unexpected state: not loading, no error, but no profileData"); // LOG RENDER C
+       return <div className={styles.pageError}><ErrorMessage message="Profile data could not be loaded." /></div>;
+  }
+
+  // If we reach here, profileData is available and no page error occurred.
+   console.log("[ProfilePage Render] Rendering Profile Content"); // LOG RENDER D
   // Correctly calculate profileImageUrl AFTER profileData is confirmed available
    const profileImageUrl = profileData?.profilePictureUrl
       ? getStaticFileUrl(profileData.profilePictureUrl)
@@ -462,92 +417,83 @@ const ProfilePage = () => {
 
   return (
     <div className={styles.profilePage}>
-      {/* --- Profile Header Section --- */}
-      <div className={styles.profileHeader}>
+      {/* ... (rest of the JSX remains unchanged) ... */}
+       <div className={styles.profileHeader}>
           <img
               src={profileImageUrl}
               alt={`${displayName || 'User'}'s avatar`}
               className={styles.profileAvatar}
-              onError={(e) => { e.target.onerror = null; e.target.src=defaultAvatar }}
+              onError={(e) => { e.target.onerror = null; e.target.src=defaultAvatar }} // Fallback on error
           />
           <div className={styles.profileInfo}>
               <h1 className={styles.profileName}>{displayName}</h1>
-              {/* Only show @username if displayName is also set, otherwise displayName is the username */}
               {profileData.displayName && <p className={styles.profileUsername}>@{profileData.username}</p>}
               {profileData.bio && <p className={styles.profileBio}>{profileData.bio}</p>}
               {profileData.location && <p className={styles.profileLocation}>📍 {profileData.location}</p>}
 
-              {/* --- NEW: Follower/Following Counts Display (now using Links) --- */}
                <div className={styles.followCounts}>
-                   {/* Only display counts if profileData is loaded */}
-                   {profileData && profileData._id && ( // Ensure profileData and its ID are available
+                   {profileData && profileData._id && (
                        <>
-                           {/* Use /users/ path consistent with App.js */}
                            <Link to={`/users/${profileData._id}/followers`} className={styles.followCountLink}>
                                <span><strong>{followerCount}</strong> Followers</span>
                            </Link>
-                           {/* Use /users/ path consistent with App.js */}
                            <Link to={`/users/${profileData._id}/following`} className={styles.followCountLink}>
                                <span><strong>{followingCount}</strong> Following</span>
                            </Link>
                        </>
                    )}
                </div>
-              {/* --- END NEW --- */}
 
               <p className={styles.profileJoined}>Joined: {new Date(profileData.createdAt).toLocaleDateString()}</p>
 
-              {/* --- Action Buttons (Edit or Follow/Unfollow) --- */}
               <div className={styles.actionButtons}>
                   {viewingOwnProfile ? (
-                      // Show Edit Profile button for own profile - uses /profile/edit route
                       <Link to="/profile/edit" className={styles.editProfileButton}>
                           Edit Profile
                       </Link>
                   ) : (
-                      // Show Follow/Unfollow button for other users' profiles IF logged in and profileData exists
-                      renderFollowButton() // Call the helper function
+                      renderFollowButton()
                   )}
               </div>
-              {/* --- Display follow error message below buttons if needed --- */}
               {isFollowingError && !isFollowingLoading && <ErrorMessage message={isFollowingError} />}
-
-              {/* --- End Action Buttons --- */}
           </div>
       </div>
 
-      {/* --- View Toggle (Only for Own Profile) --- */}
-      {viewingOwnProfile && ( // Use viewingOwnProfile derived state
+      {viewingOwnProfile && (
         <div className={styles.viewToggleContainer}>
           <button
             className={`${styles.toggleButton} ${activeView === 'created' ? styles.active : ''}`}
-            onClick={() => setActiveView('created')}
-            disabled={activeView === 'created'} // Disable while already on this tab
+            onClick={() => { setActiveView('created'); navigate(location.pathname, { replace: true }); }}
+            disabled={activeView === 'created'}
           >
             My Creations ({createdConnections.length})
-             {/* Don't show specific loading spinner here, pageLoading covers initial load */}
           </button>
           <button
             className={`${styles.toggleButton} ${activeView === 'favorites' ? styles.active : ''}`}
-            onClick={() => setActiveView('favorites')}
-            disabled={activeView === 'favorites' || loadingFavorites} // Disable while already on this tab or favorites are loading
+            onClick={() => { setActiveView('favorites'); navigate(location.pathname + '#favorites', { replace: true }); }}
+            disabled={activeView === 'favorites' || (activeView !== 'favorites' && loadingFavorites)}
           >
             My Favorites ({loggedInUser?.favorites?.length || 0})
-            {loadingFavorites && <LoadingSpinner size="small" inline marginLeft="0.5rem" />}
+            {loadingFavorites && activeView === 'favorites' && <LoadingSpinner size="small" inline marginLeft="0.5rem" />}
           </button>
         </div>
       )}
-      {/* If viewing another user's profile, only the 'Created Connections' list is relevant and we need a title */}
-      {/* Ensure profileData is available before showing this title */}
-      {!viewingOwnProfile && profileData && (
-           <h2 className={styles.sectionTitle}>Connections Added ({createdConnections.length})</h2>
+
+      {profileData && (
+          <h2 className={styles.sectionTitle}>
+              {viewingOwnProfile
+                  ? (activeView === 'created' ? `My Creations (${createdConnections.length})` : `My Favorites (${favoriteConnections.length})`)
+                  : `Connections Added (${createdConnections.length})`
+              }
+          </h2>
       )}
 
-
-      {/* --- Connections Section --- */}
-      {/* Render the connections list/grid */}
        <div className={styles.connectionsSection}>
-            {renderConnections()}
+            {/* Conditionally call the helper based on activeView and if it's the user's own profile */}
+            {/* Pass initialLoading and pageError for the created list. The renderConnectionsList will handle these. */}
+            {activeView === 'created' && renderConnectionsList(createdConnections, initialLoading, pageError)}
+            {/* Pass favorites specific loading/error. This is only rendered for own profile. */}
+            {activeView === 'favorites' && viewingOwnProfile && renderConnectionsList(favoriteConnections, loadingFavorites, errorFavorites)}
        </div>
 
     </div>
