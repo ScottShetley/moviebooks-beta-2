@@ -30,7 +30,29 @@ const UpdatesPage = () => {
         {/* Restore formattedDate in the heading */}
         <h2>✨ Latest Progress Highlights - {formattedDate} ✨</h2>
 
-         {/* --- NEW: Profile Privacy & Public User List --- */}
+         {/* --- NEW: Production Deployment Resolved --- */}
+         <section>
+           <h3 className={styles.subHeading}>🚀 Production Deployment & Stability</h3>
+           <ul>
+             <li>
+                <strong>Critical Production 404 Resolved:</strong> Successfully addressed the issue where the deployed site was showing a "Not Found" error. The site is now correctly accessible at its main URL.
+             </li>
+             <li>
+                <strong>Single Service Architecture:</strong> Configured the Render Node.js service to build and serve the frontend React application's static files, streamlining the deployment process for production.
+             </li>
+             <li>
+                <strong>Improved Build Process:</strong> Ensured the Render build command correctly installs dependencies for both backend and frontend and runs the client build process.
+             </li>
+              <li>
+                <strong>Uptime Monitoring Configured:</strong> Updated UptimeRobot to monitor the correct production URL, confirming the site is accessible and helping prevent the Render free tier service from spinning down due to inactivity.
+             </li>
+           </ul>
+           <p>The application is now reliably accessible in production, laying the groundwork for future releases!</p>
+         </section>
+        {/* --- END NEW --- */}
+
+
+         {/* --- NEW: Profile Privacy & Public User List (Previous Latest, still relevant) --- */}
          <section>
            <h3 className={styles.subHeading}>🔒 Profile Privacy & Public Users List</h3>
            <ul>
@@ -49,7 +71,7 @@ const UpdatesPage = () => {
            </ul>
            <p>Gain more control over who sees your MovieBooks activity!</p>
          </section>
-        {/* --- END NEW --- */}
+        {/* --- END Previous Latest --- */}
 
 
         {/* --- Edit Connection & User Following Core (Previous Latest, still relevant) --- */}
@@ -69,6 +91,7 @@ const UpdatesPage = () => {
          <p>These additions bring important editing capabilities and lay the groundwork for social interactions like following!</p>
         </section>
         {/* --- END Previous Latest --- */}
+
 
       </section>
 
