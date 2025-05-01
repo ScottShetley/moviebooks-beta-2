@@ -1,8 +1,9 @@
 // client/src/components/Notification/NotificationItem/NotificationItem.js
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { useNotifications } from '../../../contexts/NotificationContext';
 import styles from './NotificationItem.module.css';
+import { getStaticFileUrl } from '../../../services/api'; // Import the helper utility
 
 // Helper function to format time difference (simple version)
 const timeSince = (date) => {
@@ -22,6 +23,7 @@ const timeSince = (date) => {
 
 const NotificationItem = ({ notification }) => {
   const { markAsRead } = useNotifications();
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   // Determine the target link for the entire notification item
   let notificationLink = null;
@@ -46,14 +48,17 @@ const NotificationItem = ({ notification }) => {
   // 'like' and 'favorite' also typically link to the connection,
   // which is covered by the connectionRef logic above if it exists.
 
-  // Only add item click handler if there's a link
-  const handleItemClick = notificationLink ? () => {
-     if (!notification.read) {
-        markAsRead(notification._id);
+  // Handle click on the entire item
+   const handleItemClick = () => {
+     // Only navigate if there's a link defined for the item
+     if (notificationLink) {
+        // Mark as read *before* navigating
+        if (!notification.read) {
+           markAsRead(notification._id);
+        }
+        navigate(notificationLink); // Navigate using hook
      }
-     // Navigation is handled by the Link component itself via the 'to' prop
-     // No need for manual navigation here if using <Link> for the wrapper
-  } : undefined; // No handler if it's just a div
+  };
 
 
    const handleMarkReadButtonClick = (e) => {
@@ -70,37 +75,26 @@ const NotificationItem = ({ notification }) => {
 
   let displayContent; // This will hold the JSX or string to render
 
-  // Always try to get sender username
+  // Always try to get sender username and avatar
   const senderUsername = notification.senderRef?.username;
-  const senderId = notification.senderRef?._id; // Also get sender ID for linking
+  const senderId = notification.senderRef?._id;
+  const senderAvatarUrl = notification.senderRef?.profilePictureUrl; // Get avatar URL
 
   // Decide how to display the sender's name element.
-  // It should be a Link *only if* the whole notification item is NOT already
-  // linking to the sender's profile. Otherwise, it's just text.
-  const isItemLinkingToSenderProfile = notificationLink && senderId && notificationLink === `/users/${senderId}`;
-
+  // It should ALWAYS be a Link to the sender's profile, as the outer element is no longer always a Link.
   const SenderNameElement = (
     senderUsername
     ? (
-        // If the whole item is NOT linking to the sender's profile,
-        // make the sender name itself a link.
-        !isItemLinkingToSenderProfile
-         ? (
-              <Link
-                 to={`/users/${senderId}`} // Link to sender's profile using correct path
-                 className={styles.senderLink}
-                 onClick={(e) => e.stopPropagation()} // Prevent parent div/link click if it existed
-              >
-                  {senderUsername}
-              </Link>
-         ) : (
-             // If the whole item IS the link to the sender's profile (like new_follower),
-             // just render the username as text/span to avoid nested links.
-             // The outer Wrapper Link handles navigation.
-             <span className={styles.senderNameText}>{senderUsername}</span>
-         )
+        // Always render as a Link to the sender's profile
+        <Link
+           to={`/users/${senderId}`} // Link to sender's profile using correct path
+           className={styles.senderLink} // Apply sender link styles
+           onClick={(e) => e.stopPropagation()} // IMPORTANT: Prevent parent div click handler when clicking the sender link
+        >
+            {senderUsername}
+        </Link>
       )
-    : <span className={styles.senderNameText}>Someone</span> // Fallback if no sender or username
+    : <span className={styles.senderNameText}>Someone</span> // Fallback if no sender or username, apply sender name text styles
   );
 
 
@@ -112,7 +106,7 @@ const NotificationItem = ({ notification }) => {
                   {SenderNameElement} {' is now following you.'}
               </>
           );
-          // Outer link is handled by the notificationLink = `/users/${notification.senderRef._id}` logic above.
+          // The outer div click will navigate to the sender's profile because notificationLink is set to /users/:senderId
           break;
 
       case 'like':
@@ -122,10 +116,13 @@ const NotificationItem = ({ notification }) => {
 
           displayContent = (
               <>
-                  {SenderNameElement} {` liked your connection: "${connectionTitleLike}"`}
+                  {SenderNameElement} {` liked your connection: `}
+                  <span className={styles.connectionTitleText}> {/* Wrap title in span */}
+                      {`"${connectionTitleLike}"`}
+                  </span>
               </>
           );
-          // Outer link is handled by the notificationLink = `/connections/...` logic above.
+           // The outer div click will navigate to the connection because notificationLink is set to /connections/:id
           break;
 
       case 'comment':
@@ -135,10 +132,13 @@ const NotificationItem = ({ notification }) => {
 
           displayContent = (
               <>
-               {SenderNameElement} {` commented on your connection: "${connectionTitleComment}"`}
+               {SenderNameElement} {` commented on your connection: `}
+                <span className={styles.connectionTitleText}> {/* Wrap title in span */}
+                    {`"${connectionTitleComment}"`}
+                </span>
               </>
           );
-          // Outer link is handled by the notificationLink = `/connections/...` logic above.
+           // The outer div click will navigate to the connection because notificationLink is set to /connections/:id
           break;
 
       case 'favorite':
@@ -148,10 +148,13 @@ const NotificationItem = ({ notification }) => {
 
           displayContent = (
               <>
-               {SenderNameElement} {` favorited your connection: "${connectionTitleFavorite}"`}
+               {SenderNameElement} {` favorited your connection: `}
+                <span className={styles.connectionTitleText}> {/* Wrap title in span */}
+                    {`"${connectionTitleFavorite}"`}
+                </span>
               </>
           );
-          // Outer link is handled by the notificationLink = `/connections/...` logic above.
+           // The outer div click will navigate to the connection because notificationLink is set to /connections/:id
           break;
 
       default:
@@ -166,41 +169,61 @@ const NotificationItem = ({ notification }) => {
                displayContent = (
                    <>
                        {parts[0]}
-                       {SenderNameElement} {/* Use the component which might be Link or span */}
+                       {SenderNameElement} {/* Use the component which is now always a Link */}
                        {parts.slice(1).join(senderUsername)} {/* Join remaining parts */}
                    </>
                );
            } else {
               // If no senderRef or username not found in message, just display the message and SenderNameElement
-              // In this default case, the SenderNameElement would be "Someone" as the link logic above wouldn't apply.
+              // In this default case, the SenderNameElement would be "Someone" as a Link.
               displayContent = (
                   <>
                       {SenderNameElement}: {message} {/* Add a colon for clarity */}
                   </>
               );
            }
-          // Outer link is handled by the notificationLink logic above (e.g., if notification.link existed).
+          // Outer link handling via notificationLink logic above remains the same.
           break;
   }
   // --- End Notification Content Logic ---
 
-    // Decide whether the outer div should be a link based on notificationLink
-    // Use the Wrapper component (Link or div)
-    // Pass the link target and click handler if it's a Link
-    const Wrapper = notificationLink ? Link : 'div';
-    const wrapperProps = notificationLink
-      ? { to: notificationLink, onClick: handleItemClick }
-      : {}; // No click handler needed if it's just a div
+    // The outer element is now always a div to prevent nested links
+    const Wrapper = 'div';
+    // The click handler is attached to this outer div
+    const wrapperProps = {
+      onClick: handleItemClick,
+      // Add a cursor style to indicate it's clickable *if* there's a link
+      style: { cursor: notificationLink ? 'pointer' : 'default' }
+    };
+
+
+    // Determine avatar source URL
+    const DEFAULT_AVATAR_PATH = '/images/default-avatar.png'; // <--- **SET YOUR DEFAULT AVATAR PATH HERE**
+    const avatarSrc = senderAvatarUrl
+        ? getStaticFileUrl(senderAvatarUrl)
+        : getStaticFileUrl(DEFAULT_AVATAR_PATH);
 
 
   return (
-    // Use the Wrapper component (Link or div)
-    // If Wrapper is Link, it handles the primary navigation on click.
-    <Wrapper className={itemClasses} {...wrapperProps}>
-        <div className={styles.content}>
-            {displayContent}
-            <span className={styles.timestamp}>{timeSince(notification.createdAt)}</span>
+    // Outer element is a div
+    <Wrapper className={itemClasses} {...wrapperProps}> {/* Use the div Wrapper with onClick */}
+        {/* Wrap avatar and content in the avatarAndContent div */}
+        <div className={styles.avatarAndContent}>
+            {/* Render Avatar */}
+            {avatarSrc && (
+                <img
+                    src={avatarSrc}
+                    alt={`${senderUsername || 'User'}'s avatar`}
+                    className={styles.avatar}
+                />
+            )}
+            {/* Original Content */}
+            <div className={styles.content}>
+                {displayContent}
+                <span className={styles.timestamp}>{timeSince(notification.createdAt)}</span>
+            </div>
         </div>
+
         {/* Only show Mark Read button if unread */}
         {!notification.read && (
             <div className={styles.actions}>

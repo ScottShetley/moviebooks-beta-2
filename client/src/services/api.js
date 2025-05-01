@@ -14,7 +14,7 @@ const STATIC_FILE_URL = process.env.REACT_APP_STATIC_FILE_URL || 'http://localho
 // --- Axios Instance Creation ---
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000, // Optional: Add a timeout
+  timeout: 60000, // Increased timeout to 60 seconds (60000 ms)
 });
 
 

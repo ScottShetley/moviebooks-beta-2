@@ -5,11 +5,17 @@ import { useNavigate } from 'react-router-dom';
 // Assuming your AuthContext provides an 'updateUser' function
 import { useAuth } from '../contexts/AuthContext';
 // --- END UPDATED import ---
+// Import getStaticFileUrl from api.js
 import api, { getMyProfile, updateMyProfile, getStaticFileUrl } from '../services/api';
 import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage';
 import styles from './EditProfilePage.module.css';
-import defaultAvatar from '../assets/images/default-avatar.png';
+// Removed the direct import of defaultAvatar
+// import defaultAvatar from '../assets/images/default-avatar.png'; // REMOVED
+
+// Define the path to the default avatar in the public folder
+const DEFAULT_AVATAR_PUBLIC_PATH = '/images/default-avatar.png'; // <--- CONFIRM THIS PATH IS CORRECT IN PUBLIC
+
 
 const EditProfilePage = () => {
   // --- UPDATED useAuth destructuring ---
@@ -55,7 +61,7 @@ const EditProfilePage = () => {
       setCurrentProfilePictureUrl(res.data.profilePictureUrl || '');
 
       // Set initial preview to the current URL (or default)
-      setPreviewUrl(res.data.profilePictureUrl ? getStaticFileUrl(res.data.profilePictureUrl) : defaultAvatar);
+      setPreviewUrl(res.data.profilePictureUrl ? getStaticFileUrl(res.data.profilePictureUrl) : getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH)); // Use helper and public path
 
       // Set initial privacy state
       const initialIsPrivate = !!res.data.isPrivate;
@@ -70,7 +76,7 @@ const EditProfilePage = () => {
       setBio('');
       setLocation('');
       setCurrentProfilePictureUrl('');
-      setPreviewUrl(defaultAvatar);
+      setPreviewUrl(getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH)); // Use helper and public path on error
       setIsPrivate(false);
     } finally {
       setLoading(false);
@@ -96,13 +102,13 @@ const EditProfilePage = () => {
       if (!file.type.startsWith('image/')) {
           setSubmitError("Please select an image file (jpg, png, gif).");
           setSelectedFile(null);
-          setPreviewUrl(currentProfilePictureUrl ? getStaticFileUrl(currentProfilePictureUrl) : defaultAvatar);
+          setPreviewUrl(currentProfilePictureUrl ? getStaticFileUrl(currentProfilePictureUrl) : getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH)); // Use helper and public path
           return;
       }
        if (file.size > 5 * 1024 * 1024) { // 5MB limit match backend
            setSubmitError("File is too large. Maximum size is 5MB.");
            setSelectedFile(null);
-           setPreviewUrl(currentProfilePictureUrl ? getStaticFileUrl(currentProfilePictureUrl) : defaultAvatar);
+           setPreviewUrl(currentProfilePictureUrl ? getStaticFileUrl(currentProfilePictureUrl) : getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH)); // Use helper and public path
            return;
        }
 
@@ -117,7 +123,7 @@ const EditProfilePage = () => {
       reader.readAsDataURL(file);
     } else {
         setSelectedFile(null);
-        setPreviewUrl(currentProfilePictureUrl ? getStaticFileUrl(currentProfilePictureUrl) : defaultAvatar);
+        setPreviewUrl(currentProfilePictureUrl ? getStaticFileUrl(currentProfilePictureUrl) : getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH)); // Use helper and public path
     }
   };
 
@@ -235,7 +241,7 @@ const EditProfilePage = () => {
 
   // Added a check for necessary profile data fields to render the form
   // This prevents rendering an empty form if fetchProfile somehow failed silently
-  if (!displayName && !bio && !location && !currentProfilePictureUrl && !isPrivate) {
+  if (!displayName && !bio && !location && !currentProfilePictureUrl && !isPrivate && !previewUrl) { // Also check previewUrl
        console.warn("[EditProfilePage] render: Profile data fields are mostly empty after loading.");
        // You might want to add a specific message here or rely on the fetch error above
   }
@@ -252,7 +258,7 @@ const EditProfilePage = () => {
             <label>Profile Picture</label>
             <div className={styles.avatarUploadContainer}>
                 <img
-                    src={previewUrl || defaultAvatar}
+                    src={previewUrl || getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH)} // Use helper and public path if previewUrl is somehow null
                     alt="Avatar Preview"
                     className={styles.avatarPreviewLarge}
                     onClick={handleAvatarClick}

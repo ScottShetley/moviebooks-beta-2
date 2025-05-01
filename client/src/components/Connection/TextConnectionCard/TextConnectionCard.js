@@ -8,13 +8,17 @@ import {
 } from 'react-icons/fa';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { useAuth } from '../../../contexts/AuthContext';
+// Removed the direct import of defaultAvatar
 import api, { getStaticFileUrl, getCommentsForConnection } from '../../../services/api';
 import LoadingSpinner from '../../Common/LoadingSpinner/LoadingSpinner';
 import CommentList from '../../comments/CommentList';
 import AddCommentForm from '../../comments/AddCommentForm';
 import LikeButton from '../../Common/LikeButton/LikeButton';
-import defaultAvatar from '../../../assets/images/default-avatar.png';
+// import defaultAvatar from '../../../assets/images/default-avatar.png'; // REMOVED
 import styles from './TextConnectionCard.module.css';
+
+// Define the path to the default avatar in the public folder
+const DEFAULT_AVATAR_PUBLIC_PATH = '/images/default-avatar.png'; // <--- CONFIRM THIS PATH IS CORRECT IN PUBLIC
 
 const TextConnectionCard = ({ connection, onUpdate, onDelete }) => {
     // --- HOOK CALLS AT THE TOP ---
@@ -230,9 +234,13 @@ const TextConnectionCard = ({ connection, onUpdate, onDelete }) => {
     // --- DERIVED VALUES ---
     const isOwner = !!user && user._id === userRef._id;
     const timeAgo = formatDistanceToNowStrict(new Date(createdAt), { addSuffix: true });
-    const avatarUrl = userRef.profileImageUrl
-        ? getStaticFileUrl(userRef.profileImageUrl)
-        : defaultAvatar;
+
+    // Determine the avatar URL, using the default path if none is provided
+    // Use getStaticFileUrl for both cases
+    const avatarUrl = userRef.profilePictureUrl // Changed from profileImageUrl to profilePictureUrl
+        ? getStaticFileUrl(userRef.profilePictureUrl)
+        : getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH); // Use the new constant
+
     const displayedUserName = userRef.username; // Use username as primary display name
     const isFavoritedByCurrentUser = !!user?.favorites?.includes(connectionId);
 
@@ -244,10 +252,11 @@ const TextConnectionCard = ({ connection, onUpdate, onDelete }) => {
             <div className={styles.userInfo}>
                 <Link to={`/users/${userRef._id}`} className={styles.avatarLink}>
                     <img
-                        src={avatarUrl}
+                        src={avatarUrl} // Use the determined avatarUrl
                         alt={`${displayedUserName}'s avatar`}
                         className={styles.avatar}
-                        onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }} // Fallback for broken image links
+                        // Fallback for broken image links - use the default avatar path
+                        onError={(e) => { e.target.onerror = null; e.target.src = getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH); }}
                     />
                 </Link>
                 <div className={styles.nameTime}>

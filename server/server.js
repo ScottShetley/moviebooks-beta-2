@@ -1,4 +1,8 @@
 // server/server.js (Converted to ES Modules)
+
+// TEMPORARILY HARDCODE NODE_ENV for debugging static file serving (REMOVED)
+// END TEMPORARY HARDCODE (REMOVED)
+
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -18,7 +22,7 @@ import bookRoutes from './routes/bookRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
-import followRoutes from './routes/followRoutes.js'; // <-- NEW: Import follow routes
+import followRoutes from './routes/followRoutes.js';
 
 
 // --- Replicate __dirname ---
@@ -28,6 +32,11 @@ const __dirname = path.dirname(__filename);
 
 // Load environment variables
 dotenv.config();
+
+
+// *** Added Console Log for NODE_ENV verification (REMOVED) ***
+// ***************************************** (REMOVED)
+
 
 // Connect to MongoDB
 connectDB();
@@ -61,16 +70,34 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+// --- Serve Static Files (Uploaded Images) ---
+// This should be available in both production and development
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 // --- Basic Logging Middleware ---
+// This block runs if NODE_ENV is 'development' (set by cross-env in package.json)
 if (process.env.NODE_ENV === 'development') {
+    console.log("Running in Development mode."); // Keep this confirmation log
+
+    // Serve static files from client/public in development
+    // This allows frontend to request assets like default avatars directly from backend during dev
+    // Make sure this comes *before* API routes or any specific development-only routes
+    const staticPublicPath = path.join(__dirname, '../client/public');
+    // *** ADDED THIS LOG LINE TO SHOW THE STATIC PATH (REMOVED) ***
+    // **************************************************** (REMOVED)
+
+    app.use(express.static(staticPublicPath)); // This should now be active
+
     app.use((req, res, next) => {
-        // Only log if not requesting a static file from client build or uploads
-        if (!req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/')) {
+        // Only log if not requesting a static file from client public, build or uploads
+        if (!req.originalUrl.startsWith('/images/') && !req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/')) {
              console.log(`${req.method} ${req.originalUrl}`);
         }
         next();
     });
 } else {
+    // This block runs if NODE_ENV is not 'development' (e.g., production)
      app.use((req, res, next) => {
         // Only log if not requesting a static file from client build or uploads
          if (!req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/')) {
@@ -82,7 +109,9 @@ if (process.env.NODE_ENV === 'development') {
 
 
 // --- Mount API Routes ---
-// Order matters: API routes should be processed before static file or SPA fallback routes
+// Order matters: API routes should be processed after static file serving in development,
+// but before the production static file or SPA fallback routes.
+// In development, static files from client/public and uploads are served first.
 app.use('/api/auth', authRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/connections', connectionRoutes);
@@ -90,11 +119,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/follows', followRoutes); // <-- NEW: Mount follow routes
-
-
-// --- Serve Static Files (Uploaded Images) ---
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/follows', followRoutes);
 
 
 // --- Serve Client Build in Production ---
@@ -125,6 +150,7 @@ if (process.env.NODE_ENV === 'production') {
   }
 } else {
     // In development, provide a simple root message as the frontend is served by Create React App's server (localhost:3000)
+    // Static files from client/public are served by the express.static middleware added above.
      app.get('/', (req, res) => {
         res.send(`MovieBooks API is running... (${process.env.NODE_ENV || 'development'} Mode)`);
       });
@@ -133,7 +159,7 @@ if (process.env.NODE_ENV === 'production') {
 
 
 // --- Error Handling Middleware ---
-// 1. Catch 404s (These will only be hit if the request wasn't caught by API routes, /uploads, or the production SPA fallback)
+// 1. Catch 404s (These will only be hit if the request wasn't caught by API routes, /uploads, client/public static in dev, or the production SPA fallback)
 app.use(notFound);
 
 // 2. Catch all other errors

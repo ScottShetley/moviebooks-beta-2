@@ -7,9 +7,12 @@
     background-color: var(--color-card);
     transition: background-color var(--transition-fast);
     display: flex;
+    /* Already flex */
     justify-content: space-between;
     align-items: center;
+    /* Vertically center items */
     gap: var(--space-md);
+    /* Space between avatar, content, and actions */
 }
 
 .item.unread {
@@ -17,50 +20,74 @@
     /* Light yellow for unread */
     border-left: 4px solid var(--color-notification-border);
     /* Accent border for unread */
-    font-weight: 600;
-    /* Slightly bolder text for unread */
 }
 
-/* Make unread item's specific sender link bolder too */
-.item.unread .senderLink {
+/* Make unread item's specific sender link and connection title bolder */
+.item.unread .senderLink,
+.item.unread .connectionTitleText,
+.item.unread .senderNameText {
+    /* Apply bolding to sender name text too if not a link */
     font-weight: 700;
-    /* Even bolder for the link in unread items */
+    /* Bolder for the link/text in unread items */
+}
+
+/* Container for avatar and text content */
+.avatarAndContent {
+    display: flex;
+    align-items: center;
+    /* Align avatar and text vertically */
+    gap: var(--space-sm);
+    /* Space between avatar and text content */
+    flex-grow: 1;
+    /* Allow this container to take available space */
+    /* Remove flex-grow from .content itself */
+}
+
+
+/* Style for the avatar image */
+.avatar {
+    width: 30px;
+    /* Set desired avatar size */
+    height: 30px;
+    /* Set desired avatar size */
+    border-radius: 50%;
+    /* Make it round */
+    object-fit: cover;
+    /* Ensure image covers the area without distortion */
+    flex-shrink: 0;
+    /* Prevent avatar from shrinking */
 }
 
 
 .content {
-    flex-grow: 1;
-    /* Allow content to take available space */
+    /* Removed flex-grow: 1; it's now on .avatarAndContent */
     font-size: var(--font-size-sm);
     /* Ensure text wraps correctly */
     word-break: break-word;
     /* Helps prevent long messages overflowing */
     overflow-wrap: break-word;
     /* Standard property */
+    line-height: var(--line-height-body);
+    /* Use token for line height */
 }
 
-/* Remove the generic 'a' styling if it conflicts */
-/* .content a {
-      font-weight: 600;
-      color: var(--color-primary);
-  }
-   .content a:hover {
-       color: var(--color-accent);
-   } */
 
 /* Style specifically for the sender link */
+/* Making sender link accent color for better visibility */
 .senderLink {
     font-weight: 600;
-    /* Or 700 for more prominence */
-    color: var(--color-primary);
+    color: var(--color-accent);
+    /* Use accent color for links */
     text-decoration: none;
-    /* Optional: remove underline */
     margin: 0 2px;
     /* Add tiny space around the link if needed */
+    /* Ensure smooth color transition */
+    transition: color var(--transition-fast);
 }
 
 .senderLink:hover {
-    color: var(--color-accent);
+    color: var(--color-accent-hover);
+    /* Darker gold on hover */
     text-decoration: underline;
     /* Optional: add underline on hover */
 }
@@ -69,6 +96,25 @@
     outline: 2px solid var(--color-accent);
     /* Accessibility */
     outline-offset: 2px;
+}
+
+/* Style for the sender name text when it's not a link (to match link style visually) */
+.senderNameText {
+    font-weight: 600;
+    /* Match link weight */
+    color: var(--color-accent);
+    /* Use accent color */
+    margin: 0 2px;
+    /* Add tiny space around if needed */
+}
+
+
+/* Style for the connection title text */
+/* Using primary color for connection titles to differentiate from sender and main text */
+.connectionTitleText {
+    font-weight: 600;
+    color: var(--color-primary);
+    /* Use primary color for connection title */
 }
 
 
@@ -80,23 +126,37 @@
     margin-top: var(--space-xxs);
 }
 
+.actions {
+    flex-shrink: 0;
+    /* Prevent actions button from shrinking */
+}
+
 .actions button {
     font-size: var(--font-size-xs);
     padding: var(--space-xxs) var(--space-xs);
-    /* Use ghost or outline variant from Button component? Or style here */
     color: var(--color-text-light);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: var(--transition-fast);
+    background-color: transparent;
+    /* Ensure background is transparent by default */
 }
 
 .actions button:hover {
-    background-color: var(--color-background);
-    border-color: var(--color-text-light);
+    background-color: var(--color-background-hover);
+    /* Use hover background token */
+    border-color: var(--color-text);
+    /* Darker border on hover */
+    color: var(--color-text);
+    /* Darker text on hover */
 }
 
 .actions button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+    background-color: transparent;
+    /* Ensure disabled state is also transparent */
+    border-color: var(--color-border);
+    color: var(--color-text-light);
 }

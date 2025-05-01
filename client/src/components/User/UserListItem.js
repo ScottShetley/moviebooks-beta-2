@@ -3,14 +3,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 // Corrected import paths from client/src/components/User/
-import { getStaticFileUrl, followUser, unfollowUser, isFollowing } from '../../services/api'; // Path from User/ to services/api (Correct)
-import defaultAvatar from '../../assets/images/default-avatar.png'; // Path from User/ to assets/images/ (Correct)
+// Import getStaticFileUrl from api.js
+import { getStaticFileUrl, followUser, unfollowUser, isFollowing } from '../../services/api';
+// Removed the direct import of defaultAvatar
+// import defaultAvatar from '../../assets/images/default-avatar.png'; // REMOVED
 import styles from './UserListItem.module.css'; // Path from User/ to UserListItem.module.css (same dir) (Correct)
 // Corrected import paths for Common components
 import LoadingSpinner from '../Common/LoadingSpinner/LoadingSpinner'; // **CORRECTED PATH** from User/ to Common/LoadingSpinner/
 import ErrorMessage from '../Common/ErrorMessage/ErrorMessage'; // **CORRECTED PATH** from User/ to Common/ErrorMessage/
 // Corrected import path for AuthContext
 import { useAuth } from '../../contexts/AuthContext'; // **CORRECTED PATH** from User/ to contexts/AuthContext
+
+// Define the path to the default avatar in the public folder
+const DEFAULT_AVATAR_PUBLIC_PATH = '/images/default-avatar.png'; // <--- CONFIRM THIS PATH IS CORRECT IN PUBLIC
 
 const UserListItem = ({ user }) => {
   const { user: loggedInUser, loading: authLoading } = useAuth();
@@ -143,9 +148,11 @@ const UserListItem = ({ user }) => {
   // --- End Early return ---
 
 
-  const profileImageUrl = user.profilePictureUrl
+  // Determine the avatar URL, using the default path if none is provided
+  // Use getStaticFileUrl for both cases
+  const avatarUrl = user.profilePictureUrl // Make sure this matches your user model field
     ? getStaticFileUrl(user.profilePictureUrl)
-    : defaultAvatar;
+    : getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH); // Use the new constant
 
   const displayName = user.displayName || user.username;
 
@@ -185,12 +192,13 @@ const UserListItem = ({ user }) => {
         {/* The main link wraps the avatar and user info */}
         {/* Ensure user._id is valid for the link */}
         {user._id ? (
-            <Link to={`/profile/${user._id}`} className={styles.userLink}>
+            <Link to={`/users/${user._id}`} className={styles.userLink}> {/* Corrected link to /users/:id */}
                 <img
-                  src={profileImageUrl}
+                  src={avatarUrl} // Use the determined avatarUrl
                   alt={`${displayName}'s avatar`}
                   className={styles.userAvatar}
-                  onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar }}
+                  // Fallback for broken image links - use the default avatar path
+                  onError={(e) => { e.target.onerror = null; e.target.src = getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH); }}
                 />
                 <div className={styles.userInfo}>
                   <span className={styles.displayName}>{displayName}</span>
@@ -201,10 +209,11 @@ const UserListItem = ({ user }) => {
             // Render plain text if user ID is missing to avoid invalid link
              <div className={styles.userLink} style={{ cursor: 'default' }}>
                  <img
-                   src={profileImageUrl}
+                   src={avatarUrl} // Use the determined avatarUrl
                    alt={`${displayName}'s avatar`}
                    className={styles.userAvatar}
-                   onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar }}
+                   // Fallback for broken image links - use the default avatar path
+                   onError={(e) => { e.target.onerror = null; e.target.src = getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH); }}
                  />
                  <div className={styles.userInfo}>
                    <span className={styles.displayName}>{displayName}</span>
@@ -232,7 +241,7 @@ UserListItem.propTypes = {
     _id: PropTypes.string.isRequired,
     username: PropTypes.string.isRequired,
     displayName: PropTypes.string,
-    profilePictureUrl: PropTypes.string,
+    profilePictureUrl: PropTypes.string, // Make sure this matches your user model field
   }).isRequired,
 };
 

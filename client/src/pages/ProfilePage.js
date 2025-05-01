@@ -6,7 +6,7 @@ import {
   getPublicUserProfile,
   getUserConnections,
   getConnectionsByIds,
-  getStaticFileUrl,
+  getStaticFileUrl, // Import the helper utility
   followUser,
   unfollowUser,
   isFollowing,
@@ -15,7 +15,12 @@ import ConnectionCard from '../components/Connection/ConnectionCard/ConnectionCa
 import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage';
 import styles from './ProfilePage.module.css';
-import defaultAvatar from '../assets/images/default-avatar.png';
+// Removed the direct import of defaultAvatar
+// import defaultAvatar from '../assets/images/default-avatar.png'; // REMOVED
+
+// Define the path to the default avatar in the public folder
+const DEFAULT_AVATAR_PUBLIC_PATH = '/images/default-avatar.png'; // <--- CONFIRM THIS PATH IS CORRECT IN PUBLIC
+
 
 const ProfilePage = () => {
   const { userId: paramsUserId } = useParams();
@@ -300,7 +305,7 @@ const ProfilePage = () => {
     console.log(`[ProfilePage] Attempting to unfollow user ${profileData._id}`);
     setIsFollowingLoading(true); setIsFollowingError(null);
      try { await unfollowUser(profileData._id); setIsFollowingStatus(false); setFollowerCount(prevCount => Math.max(0, prevCount - 1)); console.log(`Successfully unfollowed user ${profileData.username}`); }
-     catch (err) { const message = err.response?.data?.message || err.message || "Failed to unfollow user."; setIsFollowingError(message); console.error("[ProfilePage] Unfollow Error:", err); setIsFollowingStatus(true); setFollowerCount(prevCount => prevCount + 1); }
+     catch (err) { const message = err.response?.data?.message || err.message || "Failed to unfollow user."; setIsFollowingError(message); console.error("[ProfilePage] Unfollow Error:", err); setIsFollowingStatus(true); setFollowerCount(prevCount => Math.max(0, prevCount + 1)); }
      finally { setIsFollowingLoading(false); }
   };
 
@@ -409,21 +414,22 @@ const ProfilePage = () => {
 
   // If we reach here, profileData is available and no page error occurred.
    console.log("[ProfilePage Render] Rendering Profile Content"); // LOG RENDER D
-  // Correctly calculate profileImageUrl AFTER profileData is confirmed available
+
+  // Correctly determine profileImageUrl using getStaticFileUrl and the public path
    const profileImageUrl = profileData?.profilePictureUrl
       ? getStaticFileUrl(profileData.profilePictureUrl)
-      : defaultAvatar;
+      : getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH); // Use helper and public path
 
 
   return (
     <div className={styles.profilePage}>
-      {/* ... (rest of the JSX remains unchanged) ... */}
        <div className={styles.profileHeader}>
           <img
-              src={profileImageUrl}
+              src={profileImageUrl} // Use the determined profileImageUrl
               alt={`${displayName || 'User'}'s avatar`}
               className={styles.profileAvatar}
-              onError={(e) => { e.target.onerror = null; e.target.src=defaultAvatar }} // Fallback on error
+              // Fallback on error - use the default avatar public path with the helper
+              onError={(e) => { e.target.onerror = null; e.target.src = getStaticFileUrl(DEFAULT_AVATAR_PUBLIC_PATH); }}
           />
           <div className={styles.profileInfo}>
               <h1 className={styles.profileName}>{displayName}</h1>
