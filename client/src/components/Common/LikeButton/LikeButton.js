@@ -25,7 +25,7 @@ const LikeButton = ({ connectionId, initialLikes = [], onLikeUpdate }) => {
     const handleLikeToggle = async () => {
         if (!user || isLiking || !connectionId) return;
         setIsLiking(true);
-        setError(null);
+        setError(null); // Clear previous errors
 
         try {
             // Perform API call
@@ -72,7 +72,7 @@ const LikeButton = ({ connectionId, initialLikes = [], onLikeUpdate }) => {
             )}
             <span className={styles.count}>{likeCount}</span>
             {/* Optional: Display local error near the button */}
-            {/* {error && <span className={styles.inlineError}>{error}</span>} */}
+            {error && <span className={styles.inlineError}>{error}</span>} {/* <-- Uncommented this line */}
         </button>
     );
 };
