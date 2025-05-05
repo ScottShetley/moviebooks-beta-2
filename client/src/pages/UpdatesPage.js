@@ -15,13 +15,13 @@ const UpdatesPage = () => {
   return (
     <div className={styles.updatesContainer || 'container'}> {/* Use styles or a default class */}
       <Helmet>
-        <title>App Updates & Roadmap - MovieBooks</title>
-        <meta name="description" content="Stay informed about the latest features, improvements, and future plans for the MovieBooks application." />
+        <title>App Updates & Roadmap - Movie-Books</title>
+        <meta name="description" content="Stay informed about the latest features, improvements, and future plans for the Movie-Books application." />
       </Helmet>
 
-      <h1>MovieBooks: Updates & Roadmap</h1>
+      <h1>Movie-Books: Updates & Roadmap</h1>
       <p style={{ textAlign: 'center', marginBottom: 'var(--space-lg)' }}>
-          Tracking the evolution of MovieBooks, from initial features to the latest enhancements.
+          Tracking the evolution of Movie-Books, from initial features to the latest enhancements.
       </p>
 
       {/* --- LATEST UPDATE SECTION (Edit Connection & User Following Core) --- */}
@@ -49,7 +49,7 @@ const UpdatesPage = () => {
            </ul>
            <p>The application is now reliably accessible in production, laying the groundwork for future releases!</p>
          </section>
-        {/* --- END NEW --- */}
+        {/* --- END NEW --- */} {/* Corrected comment syntax */}
 
 
          {/* --- NEW: Profile Privacy & Public User List (Previous Latest, still relevant) --- */}
@@ -69,9 +69,9 @@ const UpdatesPage = () => {
                 <strong>Public Users List (`/all-users`):</strong> Implemented a page listing all users with public profiles. Ensured all existing users are included in this list by default (set to public unless they change the setting).
              </li>
            </ul>
-           <p>Gain more control over who sees your MovieBooks activity!</p>
+           <p>Gain more control over who sees your Movie-Books activity!</p>
          </section>
-        {/* --- END Previous Latest --- */}
+        {/* --- END Previous Latest --- */} {/* Corrected comment syntax */}
 
 
         {/* --- Edit Connection & User Following Core (Previous Latest, still relevant) --- */}
@@ -90,7 +90,7 @@ const UpdatesPage = () => {
          </ul>
          <p>These additions bring important editing capabilities and lay the groundwork for social interactions like following!</p>
         </section>
-        {/* --- END Previous Latest --- */}
+        {/* --- END Previous Latest --- */} {/* Corrected comment syntax */}
 
 
       </section>
@@ -171,7 +171,7 @@ const UpdatesPage = () => {
           <li><strong>Advanced Search & Filtering:</strong> More powerful ways to search and filter connections, movies, and books.</li>
           <li><strong>Tagging System Improvements:</strong> Refining how tags are created, managed, and utilized.</li>
           <li><strong>User Roles & Permissions (Potential):</strong> Exploring different roles (e.g., moderators).</li>
-          <li><strong>API Documentation (Potential):</strong> Publishing documentation for the MovieBooks API.</li>
+          <li><strong>API Documentation (Potential):</strong> Publishing documentation for the Movie-Books API.</li> {/* Updated text */}
           {/* Add more future plans here */}
         </ul>
         <p>Your feedback is valuable! Let us know if you have suggestions for future features.</p>

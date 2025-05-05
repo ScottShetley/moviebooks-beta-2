@@ -115,7 +115,7 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     // --- Render Logic ---
     return (
          <div className={styles.mainContentArea}>
-             <h1>MovieBooks Feed</h1>
+             <h1>Movie-Books Feed</h1> {/* Updated name here */}
 
              {/* --- Filters UI (Restored Correctly) --- */}
              {currentFilterTag && (

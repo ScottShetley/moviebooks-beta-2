@@ -10,7 +10,7 @@ const Footer = () => {
       {/* Use the container class for centering content if needed, or style directly */}
       <div className="container">
         <p>
-          © {currentYear} MovieBooks BETA. All Rights Reserved (sort of).
+          © {currentYear} Movie-Books BETA. All Rights Reserved (sort of). {/* Updated name here */}
           {/* Example Link */}
           {/* | <a href="/about">About</a> */}
         </p>

@@ -128,7 +128,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
         <div className={styles.logo}>
              {/* Logo links to the Updates page */}
              {/* Use handleMobileLinkClick for the onClick handler */}
-             <Link to="/updates" onClick={() => handleMobileLinkClick(false)} aria-label="MovieBooks Updates">MovieBooks</Link>
+             <Link to="/updates" onClick={() => handleMobileLinkClick(false)} aria-label="Movie-Books Updates">Movie-Books</Link>
         </div>
 
          {/* Main Nav Hamburger Button (only visible <= 768px) */}
