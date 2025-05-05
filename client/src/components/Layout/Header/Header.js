@@ -128,7 +128,11 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
         <div className={styles.logo}>
              {/* Logo links to the Updates page */}
              {/* Use handleMobileLinkClick for the onClick handler */}
-             <Link to="/updates" onClick={() => handleMobileLinkClick(false)} aria-label="Movie-Books Updates">Movie-Books</Link>
+             <Link to="/updates" onClick={() => handleMobileLinkClick(false)} aria-label="Movie-Books Updates">
+                 {/* Corrected the image src to match the file name you have */}
+                 <img src="/MovieBooks-logo.png" alt="Movie-Books Logo" className={styles.logoImage} />
+                 Movie-Books
+             </Link>
         </div>
 
          {/* Main Nav Hamburger Button (only visible <= 768px) */}

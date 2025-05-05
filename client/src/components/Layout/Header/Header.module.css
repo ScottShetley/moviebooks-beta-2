@@ -25,11 +25,21 @@
   color: var(--color-text-on-secondary);
   text-decoration: none;
   transition: var(--transition-fast);
-  display: inline-block;
-  /* Prevents layout shift */
+  display: flex; /* Changed to flex to easily align image and text */
+  align-items: center; /* Vertically center image and text */
+  gap: var(--space-xs); /* Space between image and text */
   padding: var(--space-xs) 0;
   /* Add padding to match nav links roughly */
 }
+
+/* Revised style for the logo image to prevent distortion */
+.logoImage {
+  height: var(--font-size-lg); /* Set height to match text */
+  width: var(--font-size-lg); /* Set width to match text (making it square) */
+  object-fit: contain; /* Crucial: Prevents stretching and maintains aspect ratio */
+  /* If your logo isn't naturally square but should appear square, 'cover' could be used too, but 'contain' is usually better for logos */
+}
+
 
 .logo a:hover,
 .logo a:focus {
