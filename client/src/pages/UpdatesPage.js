@@ -30,26 +30,32 @@ const UpdatesPage = () => {
         {/* Restore formattedDate in the heading */}
         <h2>✨ Latest Progress Highlights - {formattedDate} ✨</h2>
 
-         {/* --- NEW: Production Deployment Resolved --- */}
+         {/* --- NEW: Production Launch & Stability --- */}
          <section>
-           <h3 className={styles.subHeading}>🚀 Production Deployment & Stability</h3>
+           <h3 className={styles.subHeading}>🚀 Production Launch on movie-books.com & Stability</h3>
            <ul>
              <li>
-                <strong>Critical Production 404 Resolved:</strong> Successfully addressed the issue where the deployed site was showing a "Not Found" error. The site is now correctly accessible at its main URL.
+                <strong>Launched on movie-books.com:</strong> The application is now live and accessible at its official custom domain: <a href="https://movie-books.com" target="_blank" rel="noopener noreferrer">https://movie-books.com</a>.
              </li>
              <li>
-                <strong>Single Service Architecture:</strong> Configured the Render Node.js service to build and serve the frontend React application's static files, streamlining the deployment process for production.
+                <strong>HTTPS/SSL Enabled:</strong> The site is secured with HTTPS, ensuring a safe and encrypted connection for all users.
+             </li>
+              <li>
+                <strong>Seamless Single Service Deployment:</strong> Successfully configured the Render service to efficiently handle both the backend API and serve the built frontend files from a single Node.js service in production.
              </li>
              <li>
-                <strong>Improved Build Process:</strong> Ensured the Render build command correctly installs dependencies for both backend and frontend and runs the client build process.
+                <strong>Improved Build & Runtime Stability:</strong> Resolved various deployment errors, ensuring the build process completes correctly and the application runs reliably on Render.
+             </li>
+             <li>
+                <strong>API Connectivity Resolved:</strong> Addressed issues preventing the frontend from communicating with the backend API after the domain change (resolving Network/CORS errors for actions like login).
              </li>
               <li>
                 <strong>Uptime Monitoring Configured:</strong> Updated UptimeRobot to monitor the correct production URL, confirming the site is accessible and helping prevent the Render free tier service from spinning down due to inactivity.
              </li>
            </ul>
-           <p>The application is now reliably accessible in production, laying the groundwork for future releases!</p>
+           <p>Visiting <a href="https://movie-books.com" target="_blank" rel="noopener noreferrer">movie-books.com</a> will now take you directly to the live application!</p>
          </section>
-        {/* --- END NEW --- */} {/* Corrected comment syntax */}
+        {/* --- END NEW --- */}
 
 
          {/* --- NEW: Profile Privacy & Public User List (Previous Latest, still relevant) --- */}
@@ -71,7 +77,7 @@ const UpdatesPage = () => {
            </ul>
            <p>Gain more control over who sees your Movie-Books activity!</p>
          </section>
-        {/* --- END Previous Latest --- */} {/* Corrected comment syntax */}
+        {/* --- END Previous Latest --- */}
 
 
         {/* --- Edit Connection & User Following Core (Previous Latest, still relevant) --- */}
@@ -90,7 +96,7 @@ const UpdatesPage = () => {
          </ul>
          <p>These additions bring important editing capabilities and lay the groundwork for social interactions like following!</p>
         </section>
-        {/* --- END Previous Latest --- */} {/* Corrected comment syntax */}
+        {/* --- END Previous Latest --- */}
 
 
       </section>
@@ -167,7 +173,7 @@ const UpdatesPage = () => {
           {/* Add back section switching and counts here as they were previously mentioned but maybe done now? Or keep them as refinements? Let's keep them as refinements if already done on ProfilePage */}
            <li><strong>Profile Section Switching/Counts:</strong> Enhancing the profile page to easily view different sections (like favorites vs created) and displaying counts (like connection count, follower/following counts).</li> {/* Added back explicitly */}
           <li><strong>Dynamic Social Media Previews:</strong> Making shared links for specific connections or profiles show relevant titles and images on social media.</li>
-          <li><strong>Refine Edit Connection:</strong> Add ability to explicitly remove existing screenshots, improve tag input, add more frontend validation.</li>
+          <li><li><strong>Refine Edit Connection:</strong> Add ability to explicitly remove existing screenshots, improve tag input, add more frontend validation.</li></li> {/* Corrected duplicate list item tag */}
           <li><strong>Advanced Search & Filtering:</strong> More powerful ways to search and filter connections, movies, and books.</li>
           <li><strong>Tagging System Improvements:</strong> Refining how tags are created, managed, and utilized.</li>
           <li><strong>User Roles & Permissions (Potential):</strong> Exploring different roles (e.g., moderators).</li>
