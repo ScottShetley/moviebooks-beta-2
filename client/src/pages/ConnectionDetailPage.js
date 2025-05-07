@@ -32,14 +32,12 @@ function ConnectionDetailPage() {
     const siteBaseUrl = window.location.origin;
 
     // Effect to fetch connection details
-    const fetchConnection = useCallback(async () => { // Made fetchConnection a useCallback
-        // console.log("ConnectionDetailPage: Fetching connection with ID:", connectionId);
+    const fetchConnection = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
             const response = await getConnectionById(connectionId);
             setConnection(response.data);
-            // console.log("ConnectionDetailPage: Fetched connection data:", response.data);
         } catch (err) {
             console.error("ConnectionDetailPage: Error fetching connection:", err);
             const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch connection details.';
@@ -50,25 +48,22 @@ function ConnectionDetailPage() {
         } finally {
             setLoading(false);
         }
-    }, [connectionId]); // Dependency connectionId
+    }, [connectionId]);
 
     useEffect(() => {
-         fetchConnection(); // Call the useCallback version
-    }, [fetchConnection]); // Dependency fetchConnection
+         fetchConnection();
+    }, [fetchConnection]);
 
     // Effect to fetch comments after connection data is loaded
     useEffect(() => {
         if (connectionId) {
             const fetchComments = async () => {
-                // console.log("ConnectionDetailPage: Fetching comments for connection ID:", connectionId);
                 try {
                     setCommentsLoading(true);
                     setCommentsError(null);
                     const response = await getCommentsForConnection(connectionId);
                     setComments(response.data);
-                    // --- UNCOMMENTED CONSOLE LOG ---
                     console.log('ConnectionDetailPage: Fetched and set comments:', response.data);
-                    // --- END UNCOMMENTED CONSOLE LOG ---
                 } catch (err) {
                     console.error("ConnectionDetailPage: Error fetching comments:", err);
                     const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch comments.';
@@ -83,16 +78,15 @@ function ConnectionDetailPage() {
 
     // Effect: Scroll to comments if URL hash is #comments
     useEffect(() => {
-        // Ensure connection data is loaded before attempting to scroll
         if (connection && !loading && location.hash === '#comments') {
             const commentsSection = document.getElementById('comments');
             if (commentsSection) {
                 setTimeout(() => {
                      commentsSection.scrollIntoView({ behavior: 'smooth' });
-                }, 100); // A slight delay can sometimes help ensure the element is rendered
+                }, 100);
             }
         }
-    }, [connection, loading, location.hash]); // Added connection and loading to dependencies
+    }, [connection, loading, location.hash]);
 
     // Handler for new comment input change
     const handleNewCommentChange = (e) => {
@@ -102,38 +96,22 @@ function ConnectionDetailPage() {
     // Handler for submitting a new comment
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
-
         if (!newCommentText.trim()) {
             setCommentSubmissionError('Comment cannot be empty.');
             return;
         }
-
         if (!isAuthenticated) {
              setCommentSubmissionError('You must be logged in to post a comment.');
              return;
         }
-
         setIsSubmittingComment(true);
         setCommentSubmissionError(null);
-
         try {
-            // Call the API to create the comment
             await createComment(connectionId, newCommentText);
-            // console.log("Comment submitted successfully");
-
-            // Clear input field
             setNewCommentText('');
-
-            // Re-fetch comments to include the new one
             const updatedCommentsResponse = await getCommentsForConnection(connectionId);
-            // --- CONSOLE LOG: Re-fetched comments ---
             console.log('ConnectionDetailPage: Re-fetched and set comments after submission:', updatedCommentsResponse.data);
-            // --- END CONSOLE LOG ---
             setComments(updatedCommentsResponse.data);
-
-            // Optional: Re-fetch connection to potentially update comment count shown in header (if implemented)
-            // fetchConnection(); // Now callable because it's a useCallback
-
         } catch (err) {
             console.error("Error submitting comment:", err);
             const errorMsg = err.response?.data?.message || err.message || 'Failed to submit comment.';
@@ -159,8 +137,6 @@ function ConnectionDetailPage() {
         setComments(prevComments =>
             prevComments.filter(comment => comment._id !== deletedCommentId)
         );
-        // Optional: Re-fetch connection to potentially update comment count
-        // fetchConnection(); // Now callable because it's a useCallback
     }, []);
 
     // --- Loading State ---
@@ -168,7 +144,8 @@ function ConnectionDetailPage() {
         return (
             <>
                 <Helmet>
-                    <title>Loading Connection... | MovieBooks</title>
+                    {/* Updated to Movie-Books */}
+                    <title>Loading Connection... | Movie-Books</title>
                 </Helmet>
                 <div className={styles.pageContainer}><LoadingSpinner /></div>
             </>
@@ -180,7 +157,8 @@ function ConnectionDetailPage() {
         return (
             <>
                 <Helmet>
-                    <title>Error | MovieBooks</title>
+                     {/* Updated to Movie-Books */}
+                    <title>Error | Movie-Books</title>
                 </Helmet>
                 <div className={styles.pageContainer}>
                     <ErrorMessage message={error} />
@@ -192,12 +170,11 @@ function ConnectionDetailPage() {
 
     // --- No Connection Data State ---
     if (!connection) {
-        // This case should theoretically be caught by the 404 error handler in fetchConnection,
-        // but it's good practice to have a fallback if connection is null after loading finishes without an error.
         return (
             <>
                  <Helmet>
-                    <title>Connection Not Found | MovieBooks</title>
+                     {/* Updated to Movie-Books */}
+                    <title>Connection Not Found | Movie-Books</title>
                 </Helmet>
                 <div className={styles.pageContainer}>
                     <ErrorMessage message="Connection data could not be loaded." />
@@ -210,11 +187,12 @@ function ConnectionDetailPage() {
     // --- Success State - Prepare Meta Data ---
     const { movieRef, bookRef, context: connectionContext, screenshotUrl } = connection;
 
-    const pageTitle = `Connection: ${movieRef?.title || 'Unknown Movie'} & ${bookRef?.title || 'Unknown Book'} | MovieBooks`;
+    // Updated to Movie-Books in title and description
+    const pageTitle = `Connection: ${movieRef?.title || 'Unknown Movie'} & ${bookRef?.title || 'Unknown Book'} | Movie-Books`;
     const metaDescription = connectionContext
         ? `${connectionContext.substring(0, 155)}${connectionContext.length > 155 ? '...' : ''}`
-        : `Explore the connection between ${movieRef?.title || 'a movie'} and ${bookRef?.title || 'a book'} on MovieBooks.`;
-    const metaImageUrl = getStaticFileUrl(movieRef?.posterPath) || getStaticFileUrl(bookRef?.coverPath) || getStaticFileUrl(screenshotUrl) || `${siteBaseUrl}/logo512.png`;
+        : `Explore the connection between ${movieRef?.title || 'a movie'} and ${bookRef?.title || 'a book'} on Movie-Books.`;
+    const metaImageUrl = getStaticFileUrl(movieRef?.posterPath) || getStaticFileUrl(bookRef?.coverPath) || getStaticFileUrl(screenshotUrl) || `${siteBaseUrl}/logo512.png`; // Assuming logo512.png is your preferred fallback
     const canonicalUrl = `${siteBaseUrl}/connections/${connectionId}`;
 
 
@@ -225,7 +203,6 @@ function ConnectionDetailPage() {
     const bookCoverDisplayUrl = getStaticFileUrl(bookRef?.coverPath);
     const screenshotDisplayUrl = getStaticFileUrl(screenshotUrl);
 
-    // Determine if the current user is the author of the connection
     const isAuthor = isAuthenticated && user && connection?.userRef?._id === user._id;
 
     return (
@@ -253,9 +230,8 @@ function ConnectionDetailPage() {
             <div className={styles.pageContainer}>
                 <div className={styles.connectionHeader}>
                     <h1 className={styles.title}>Connection Details</h1>
-                    {/* Conditional rendering for the Edit button */}
                     {isAuthor && (
-                         <Link to={`/connections/${connectionId}/edit`} className={styles.editButton}> {/* Use a CSS class for styling */}
+                         <Link to={`/connections/${connectionId}/edit`} className={styles.editButton}>
                             Edit Connection
                          </Link>
                     )}
@@ -321,7 +297,6 @@ function ConnectionDetailPage() {
                     {/* Context & Screenshot Section */}
                     <div className={styles.contextSection}>
                         <h2 className={styles.sectionTitle}>Context</h2>
-                        {/* Use 'context' here for rendering */}
                         <p className={styles.contextText}>{context || 'No context provided.'}</p>
                         {screenshotDisplayUrl && (
                             <>
@@ -337,7 +312,6 @@ function ConnectionDetailPage() {
                     </div>
 
                     {/* Tags Section */}
-                    {/* Use 'tags' here for rendering */}
                     {tags?.length > 0 && (
                         <div className={styles.tagsSection}>
                             <h2 className={styles.sectionTitle}>Tags</h2>
@@ -352,11 +326,9 @@ function ConnectionDetailPage() {
                     )}
                 </div>
 
-                {/* --- START: Comments Section - Added id="comments" and use CommentItem --- */}
+                {/* --- START: Comments Section --- */}
                 <div className={styles.commentsSection} id="comments">
                     <h2 className={styles.sectionTitle}>Discussion ({comments.length})</h2>
-
-                    {/* Comment Input Form */}
                     {isAuthenticated ? (
                         <form className={styles.commentForm} onSubmit={handleCommentSubmit}>
                             <textarea
@@ -374,8 +346,6 @@ function ConnectionDetailPage() {
                     ) : (
                         <p>Please <Link to="/login" state={{ from: window.location.pathname }}>log in</Link> to post a comment.</p>
                     )}
-
-                    {/* Comments List */}
                     <div className={styles.commentList}>
                         {commentsLoading && <LoadingSpinner />}
                         {commentsError && <ErrorMessage message={commentsError} />}
@@ -384,21 +354,17 @@ function ConnectionDetailPage() {
                         )}
                         {!commentsLoading && !commentsError && comments.length > 0 && (
                             comments.map(comment => (
-                                // --- RENDER CommentItem COMPONENT ---
-                                // Pass the comment data and the new handlers as props
                                 <CommentItem
                                     key={comment._id}
                                     comment={comment}
-                                    onCommentUpdated={handleCommentUpdated} // <-- Pass handler
-                                    onCommentDeleted={handleCommentDeleted} // <-- Pass handler
+                                    onCommentUpdated={handleCommentUpdated}
+                                    onCommentDeleted={handleCommentDeleted}
                                 />
-                                // --- END RENDER CommentItem ---
                             ))
                         )}
                     </div>
                 </div>
                 {/* --- END: Comments Section --- */}
-
 
                 <div className={styles.backLinkContainer}>
                     <button onClick={() => navigate(-1)} className={styles.backButton}>Go Back</button>

@@ -1,12 +1,11 @@
 // client/src/pages/UsersPage.js
 import React, { useState, useEffect } from 'react';
-// No need for useParams as we're not fetching a specific user's list
-// No need for useAuth unless we want to hide the page/certain elements for logged out users (optional for now)
-import { getPublicUsers } from '../services/api'; // We will add this API function next
+import { Helmet } from 'react-helmet-async'; // Step 1: Import Helmet
+import { getPublicUsers } from '../services/api';
 import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../components/Common/ErrorMessage/ErrorMessage';
 import UserListItem from '../components/User/UserListItem';
-import styles from './FollowListPage.module.css'; // Can reuse styles from FollowListPage if they are suitable
+import styles from './FollowListPage.module.css';
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -18,41 +17,67 @@ const UsersPage = () => {
       setLoading(true);
       setError(null);
       try {
-        // Call the new API function to get the list of public users
-        const response = await getPublicUsers(); // This function needs to be added to api.js
-        setUsers(response.data); // Assuming the response data is the array of users
+        const response = await getPublicUsers();
+        setUsers(response.data);
         console.log(`[UsersPage] Fetched ${response.data.length} public users.`);
       } catch (err) {
         const message = err.response?.data?.message || err.message || "Failed to load users.";
         console.error("[UsersPage] Error fetching users:", err);
         setError(`Error: ${message}`);
-        setUsers([]); // Ensure list is empty on error
+        setUsers([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPublicUsers(); // Fetch users when the component mounts
+    fetchPublicUsers();
+  }, []);
 
-  }, []); // Empty dependency array means this effect runs once on mount
+  // Step 2: Add Helmet for loading and error states as well
+  if (loading) {
+    return (
+      <>
+        <Helmet>
+          <title>Loading Users... | Movie-Books</title>
+        </Helmet>
+        <div className={styles.pageContainer}><LoadingSpinner size="large"/></div>
+      </>
+    );
+  }
 
-  if (loading) return <div className={styles.pageContainer}><LoadingSpinner size="large"/></div>;
-  if (error) return <div className={styles.pageContainer}><ErrorMessage message={error} /></div>;
+  if (error) {
+    return (
+      <>
+        <Helmet>
+          <title>Error Loading Users | Movie-Books</title>
+        </Helmet>
+        <div className={styles.pageContainer}><ErrorMessage message={error} /></div>
+      </>
+    );
+  }
 
   return (
-    <div className={styles.pageContainer}>
-      <h1 className={styles.pageTitle}>All Public Users ({users.length})</h1> {/* Title for the page */}
-      {users.length === 0 ? (
-        <p className={styles.emptyMessage}>No public users found at this time.</p>
-      ) : (
-        <ul className={styles.userList}>
-          {users.map((user) => (
-            // Use the existing UserListItem component to display each user
-            <UserListItem key={user._id} user={user} />
-          ))}
-        </ul>
-      )}
-    </div>
+    <>
+      {/* Step 3: Add Helmet for the main content */}
+      <Helmet>
+        <title>Discover Users | Movie-Books Community</title>
+        <meta name="description" content="Browse the list of public users on Movie-Books. Find and connect with others who share your passion for movie and book connections." />
+        {/* Optional: Add canonical URL if this page will have a fixed path */}
+        {/* <link rel="canonical" href={`${window.location.origin}/all-users`} /> */}
+      </Helmet>
+      <div className={styles.pageContainer}>
+        <h1 className={styles.pageTitle}>All Public Users ({users.length})</h1>
+        {users.length === 0 ? (
+          <p className={styles.emptyMessage}>No public users found at this time.</p>
+        ) : (
+          <ul className={styles.userList}>
+            {users.map((user) => (
+              <UserListItem key={user._id} user={user} />
+            ))}
+          </ul>
+        )}
+      </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 // client/src/pages/HomePage.js
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async'; // Step 1: Import Helmet
 import ConnectionCard from '../components/Connection/ConnectionCard/ConnectionCard';
 import TextConnectionCard from '../components/Connection/TextConnectionCard/TextConnectionCard';
 import LoadingSpinner from '../components/Common/LoadingSpinner/LoadingSpinner';
@@ -61,7 +62,7 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
         } catch (err) {
             const message = err.response?.data?.message || err.message || "Failed to fetch connections.";
             console.error("[HomePage] Fetch Connections Error:", err);
-            setError(message); setConnections([]); setPage(1); setPages(1);
+setError(message); setConnections([]); setPage(1); setPages(1);
         } finally {
             setLoading(false);
         }
@@ -96,6 +97,7 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
         if(JSON.stringify(activeFilters) !== JSON.stringify(filtersToApply)) { setActiveFilters(filtersToApply); setPage(1); }
         setIsFilterExpanded(false);
     }, [movieGenreInput, directorInput, actorInput, bookGenreInput, authorInput, activeFilters]);
+
     const handleClearLocalFilter = useCallback(() => {
         setMovieGenreInput(''); setDirectorInput(''); setActorInput(''); setBookGenreInput(''); setAuthorInput('');
         if(Object.keys(activeFilters).length > 0) { setActiveFilters({}); setPage(1); }
@@ -115,6 +117,13 @@ const HomePage = ({ currentFilterTag, clearTagFilter }) => {
     // --- Render Logic ---
     return (
          <div className={styles.mainContentArea}>
+            {/* Step 2: Add Helmet component */}
+            <Helmet>
+                <title>Discover Movie-Book Connections | Movie-Books</title>
+                <meta name="description" content="Explore a curated feed of fascinating connections between movies and books. Filter by genre, director, author, and more on Movie-Books." />
+                {/* Later, we can add Open Graph and Twitter Card meta tags here for social sharing */}
+            </Helmet>
+
              <h1>Movie-Books Feed</h1> {/* Updated name here */}
 
              {/* --- Filters UI (Restored Correctly) --- */}

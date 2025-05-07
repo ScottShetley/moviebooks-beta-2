@@ -1,8 +1,5 @@
 // server/server.js (Converted to ES Modules)
 
-// TEMPORARILY HARDCODE NODE_ENV for debugging static file serving (REMOVED)
-// END TEMPORARY HARDCODE (REMOVED)
-
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -10,9 +7,18 @@ import path from 'path';
 import { fileURLToPath } from 'url'; // Needed to replicate __dirname
 import fs from 'fs'; // Import fs for checking client build path
 
+// --- Sitemap Imports ---
+import { SitemapStream, streamToPromise } from 'sitemap';
+import { Readable } from 'stream'; // Needed to convert array of links to a stream
+
 // --- Import Custom Modules ---
 import connectDB from './config/db.js';
 import { notFound } from './middleware/errorMiddleware.js';
+
+// --- Import Mongoose Models (ensure paths are correct) ---
+// --- Import Mongoose Models (ensure paths are correct) ---
+import Connection from './models/Connection.js';
+import User from './models/User.js';
 
 // --- Import Route Files ---
 import authRoutes from './routes/authRoutes.js';
@@ -33,11 +39,6 @@ const __dirname = path.dirname(__filename);
 // Load environment variables
 dotenv.config();
 
-
-// *** Added Console Log for NODE_ENV verification (REMOVED) ***
-// ***************************************** (REMOVED)
-
-
 // Connect to MongoDB
 connectDB();
 
@@ -50,8 +51,6 @@ const allowedOrigin = process.env.NODE_ENV === 'production'
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or server-to-server requests)
-    // and allow the specific allowedOrigin
     if (!origin || origin === "null" || allowedOrigin === origin) {
       callback(null, true);
     } else {
@@ -71,47 +70,121 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // --- Serve Static Files (Uploaded Images) ---
-// This should be available in both production and development
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // --- Basic Logging Middleware ---
-// This block runs if NODE_ENV is 'development' (set by cross-env in package.json)
 if (process.env.NODE_ENV === 'development') {
-    console.log("Running in Development mode."); // Keep this confirmation log
-
-    // Serve static files from client/public in development
-    // This allows frontend to request assets like default avatars directly from backend during dev
-    // Make sure this comes *before* API routes or any specific development-only routes
+    console.log("Running in Development mode.");
     const staticPublicPath = path.join(__dirname, '../client/public');
-    // *** ADDED THIS LOG LINE TO SHOW THE STATIC PATH (REMOVED) ***
-    // **************************************************** (REMOVED)
-
-    app.use(express.static(staticPublicPath)); // This should now be active
-
+    app.use(express.static(staticPublicPath));
     app.use((req, res, next) => {
-        // Only log if not requesting a static file from client public, build or uploads
-        if (!req.originalUrl.startsWith('/images/') && !req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/')) {
+        if (!req.originalUrl.startsWith('/images/') && !req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/') && req.originalUrl !== '/sitemap.xml') {
              console.log(`${req.method} ${req.originalUrl}`);
         }
         next();
     });
 } else {
-    // This block runs if NODE_ENV is not 'development' (e.g., production)
      app.use((req, res, next) => {
-        // Only log if not requesting a static file from client build or uploads
-         if (!req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/')) {
+         if (!req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/') && req.originalUrl !== '/sitemap.xml') {
             console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} (Origin: ${req.headers.origin || 'N/A'})`);
          }
         next();
     });
 }
 
+// --- Sitemap Generation Route ---
+const sitemapBaseUrl = 'https://movie-books.com'; // Your production base URL
+
+app.get('/sitemap.xml', async (req, res) => {
+    // Disable logging for sitemap requests in the console to keep it clean
+    // console.log('Sitemap requested');
+    res.header('Content-Type', 'application/xml');
+    const links = [];
+
+    try {
+        // 1. Static Pages
+        const staticPages = [
+            { url: '/', changefreq: 'daily', priority: 1.0 },
+            { url: '/about', changefreq: 'monthly', priority: 0.7 },
+            { url: '/updates', changefreq: 'weekly', priority: 0.7 },
+            { url: '/all-users', changefreq: 'daily', priority: 0.8 },
+            { url: '/login', changefreq: 'yearly', priority: 0.3 },
+            { url: '/signup', changefreq: 'yearly', priority: 0.3 },
+        ];
+        staticPages.forEach(page => links.push({ ...page, url: `${sitemapBaseUrl}${page.url}` }));
+
+        // 2. Connections
+        const connections = await Connection.find({}).select('_id updatedAt').lean();
+        connections.forEach(conn => {
+            links.push({
+                url: `${sitemapBaseUrl}/connections/${conn._id}`,
+                changefreq: 'weekly',
+                priority: 0.9,
+                lastmod: conn.updatedAt ? conn.updatedAt.toISOString() : new Date().toISOString(),
+            });
+        });
+
+        // 3. Public User Profiles
+        const users = await User.find({ isPrivate: false }).select('_id updatedAt').lean();
+        users.forEach(user => {
+            links.push({
+                url: `${sitemapBaseUrl}/users/${user._id}`,
+                changefreq: 'weekly',
+                priority: 0.7,
+                lastmod: user.updatedAt ? user.updatedAt.toISOString() : new Date().toISOString(),
+            });
+        });
+
+        // 4. Movie Detail Pages (Derived from Connections)
+        const movies = await Connection.aggregate([
+            { $match: { 'movie.title': { $exists: true, $ne: null }, 'movie.year': { $exists: true, $ne: null } } },
+            { $group: { _id: { title: '$movie.title', year: '$movie.year' }, lastmod: { $max: '$updatedAt' } } },
+            { $project: { _id: 0, title: '$_id.title', year: '$_id.year', lastmod: 1 } }
+        ]);
+        movies.forEach(movie => {
+            if (movie.title && movie.year) { // Ensure title and year are present
+                 links.push({
+                    url: `${sitemapBaseUrl}/movies/${encodeURIComponent(movie.title)}/${movie.year}`,
+                    changefreq: 'monthly',
+                    priority: 0.8,
+                    lastmod: movie.lastmod ? movie.lastmod.toISOString() : new Date().toISOString(),
+                });
+            }
+        });
+
+        // 5. Book Detail Pages (Derived from Connections)
+        const books = await Connection.aggregate([
+            { $match: { 'book.title': { $exists: true, $ne: null } } }, // Author can be optional for grouping if needed, but good to have for URL
+            { $group: { _id: { title: '$book.title', author: '$book.author' }, lastmod: { $max: '$updatedAt' } } },
+            { $project: { _id: 0, title: '$_id.title', author: '$_id.author', lastmod: 1 } }
+        ]);
+        books.forEach(book => {
+            if (book.title) { // Ensure title is present
+                const bookAuthor = book.author ? encodeURIComponent(book.author) : 'Unknown';
+                links.push({
+                    url: `${sitemapBaseUrl}/books/${encodeURIComponent(book.title)}/${bookAuthor}`,
+                    changefreq: 'monthly',
+                    priority: 0.8,
+                    lastmod: book.lastmod ? book.lastmod.toISOString() : new Date().toISOString(),
+                });
+            }
+        });
+
+        const stream = new SitemapStream({ hostname: sitemapBaseUrl });
+        const xml = await streamToPromise(Readable.from(links).pipe(stream));
+        res.send(xml);
+
+    } catch (error) {
+        console.error('Sitemap generation error:', error);
+        res.status(500).end();
+    }
+});
+
 
 // --- Mount API Routes ---
-// Order matters: API routes should be processed after static file serving in development,
-// but before the production static file or SPA fallback routes.
-// In development, static files from client/public and uploads are served first.
+// Place API routes *after* the sitemap route if you want /sitemap.xml to be handled by the new handler
+// and *before* the production static serving & SPA fallback.
 app.use('/api/auth', authRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/connections', connectionRoutes);
@@ -125,54 +198,42 @@ app.use('/api/follows', followRoutes);
 // --- Serve Client Build in Production ---
 const clientBuildPath = path.resolve(__dirname, '../client/build');
 
-// In production, serve the static files from the client/build directory
 if (process.env.NODE_ENV === 'production') {
   if (!fs.existsSync(clientBuildPath)) {
       console.error("Production mode: Client build folder not found at:", clientBuildPath);
-      // Optionally, exit or throw error if build is missing in prod
-      // process.exit(1);
   } else {
       console.log("Serving client build from:", clientBuildPath);
-      // Serve static assets from the build directory (CSS, JS, images, etc.)
-      // This should come AFTER API routes and /uploads static route
       app.use(express.static(clientBuildPath));
 
-      // --- SPA Fallback Route ---
-      // For any GET request that is not an API call, /uploads, or a static file from the build,
-      // serve index.html. React Router will then handle the path.
-      // This should be the LAST GET route handler before the 404 middleware.
       app.get('*', (req, res) => {
-          // Add a log to confirm this route is being hit
+           // Check if the request is for sitemap.xml, if so, let the sitemap handler deal with it
+           // This check is actually redundant if sitemap route is defined before this '*' route,
+           // but kept here as a safeguard or if route order changes.
+           if (req.originalUrl === '/sitemap.xml') {
+               return next(); // Should be handled by the sitemap route defined earlier
+           }
            console.log(`SPA Fallback: Serving index.html for ${req.originalUrl}`);
            res.sendFile(path.join(clientBuildPath, 'index.html'));
       });
-      // --- END SPA Fallback ---
   }
 } else {
-    // In development, provide a simple root message as the frontend is served by Create React App's server (localhost:3000)
-    // Static files from client/public are served by the express.static middleware added above.
      app.get('/', (req, res) => {
         res.send(`MovieBooks API is running... (${process.env.NODE_ENV || 'development'} Mode)`);
       });
-      // Note: No catch-all needed here because webpack-dev-server handles frontend routing.
 }
 
 
 // --- Error Handling Middleware ---
-// 1. Catch 404s (These will only be hit if the request wasn't caught by API routes, /uploads, client/public static in dev, or the production SPA fallback)
 app.use(notFound);
 
-// 2. Catch all other errors
 app.use((err, req, res, next) => {
   const isCorsError = err.message === 'Not allowed by CORS';
-  // Determine status code: use the error's status if available, or 500 if it was a 200 response before error
   const statusCode = err.status || (res.statusCode === 200 ? 500 : res.statusCode);
 
   console.error('--- DETAILED ERROR HANDLER ---');
   console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   console.error('Status Code:', statusCode);
   console.error('Error Message:', err.message);
-  // Log stack trace only if not a CORS error and in development or test environment
   if (!isCorsError && (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) {
        console.error('Stack Trace:', err.stack);
   }
@@ -180,7 +241,6 @@ app.use((err, req, res, next) => {
 
   res.status(statusCode).json({
     message: err.message,
-    // Only include stack trace in development/test environments
     stack: (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? err.stack : null,
   });
 });

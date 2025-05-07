@@ -1,0 +1,15 @@
+{
+    "env": {
+      "es2021": true, // Allows modern ES syntax including import.meta
+      "node": true    // Defines Node.js global variables and Node.js scoping.
+    },
+    "extends": "eslint:recommended", // Or your preferred base configuration
+    "parserOptions": {
+      "ecmaVersion": "latest", // Use the latest ECMAScript features
+      "sourceType": "module"   // Important: Indicates you are using ES modules
+    },
+    "rules": {
+      // You can add custom rules here if needed
+      // e.g., "no-console": "off"
+    }
+  }
