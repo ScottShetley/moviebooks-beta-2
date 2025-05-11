@@ -44,14 +44,12 @@ connectDB();
 const app = express();
 
 // --- Trust Proxy for Render ---
-// This is crucial for accurately obtaining the client's IP address
-// when running behind Render's reverse proxy.
-app.set('trust proxy', 1); // Trust the first hop (Render's proxy)
+app.set('trust proxy', 1);
 
 // --- Determine CORS origin ---
 const allowedOrigin = process.env.NODE_ENV === 'production'
-    ? process.env.CLIENT_ORIGIN_URL // Use CLIENT_ORIGIN_URL for production
-    : 'http://localhost:3000'; // Default to localhost:3000 for development
+    ? process.env.CLIENT_ORIGIN_URL
+    : 'http://localhost:3000';
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -83,26 +81,20 @@ const getDurationInMilliseconds = (start) => {
 // --- NEW Detailed Request Logging Middleware ---
 app.use((req, res, next) => {
     const start = process.hrtime();
-
-    // Capture details on request
     const method = req.method;
     const url = req.originalUrl;
-    // req.ip will now correctly use X-Forwarded-For due to 'trust proxy'
     const ip = req.ip || (req.connection && req.connection.remoteAddress) || (req.socket && req.socket.remoteAddress) || (req.connection && req.connection.socket && req.connection.socket.remoteAddress) || 'N/A';
     const userAgent = req.headers['user-agent'] || 'N/A';
     const referer = req.headers['referer'] || req.headers['referrer'] || 'N/A';
 
-    // Log when the response finishes
     res.on('finish', () => {
         const durationInMilliseconds = getDurationInMilliseconds(start);
         const statusCode = res.statusCode;
         const timestamp = new Date().toISOString();
-
         console.log(
             `[${timestamp}] ${method} ${url} - STATUS ${statusCode} - IP ${ip} - User-Agent "${userAgent}" - Referer "${referer}" - ${durationInMilliseconds.toFixed(2)} ms`
         );
     });
-
     next();
 });
 
@@ -113,100 +105,39 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 if (process.env.NODE_ENV === 'development') {
     console.log("Running in Development mode.");
-    // The following express.static for /client/public was part of the old dev logging.
-    // If you still need to serve /client/public directly in dev (e.g., for assets not in build), keep it.
-    // Otherwise, if all dev assets are served by the React dev server, this might not be needed.
     const staticPublicPath = path.join(__dirname, '../client/public');
     app.use(express.static(staticPublicPath));
 }
 
 
 // --- Sitemap Generation Route ---
-const sitemapBaseUrl = process.env.CLIENT_ORIGIN_URL || 'https://movie-books.com'; // Use env var or default
-
+const sitemapBaseUrl = process.env.CLIENT_ORIGIN_URL || 'https://movie-books.com';
 app.get('/sitemap.xml', async (req, res) => {
     res.header('Content-Type', 'application/xml');
     const links = [];
-
     try {
-        // 1. Static Pages
         const staticPages = [
-            { url: '/', changefreq: 'daily', priority: 1.0 },
-            { url: '/about', changefreq: 'monthly', priority: 0.7 },
-            { url: '/updates', changefreq: 'weekly', priority: 0.7 },
-            { url: '/all-users', changefreq: 'daily', priority: 0.8 },
-            { url: '/login', changefreq: 'yearly', priority: 0.3 },
-            { url: '/signup', changefreq: 'yearly', priority: 0.3 },
+            { url: '/', changefreq: 'daily', priority: 1.0 }, { url: '/about', changefreq: 'monthly', priority: 0.7 },
+            { url: '/updates', changefreq: 'weekly', priority: 0.7 }, { url: '/all-users', changefreq: 'daily', priority: 0.8 },
+            { url: '/login', changefreq: 'yearly', priority: 0.3 }, { url: '/signup', changefreq: 'yearly', priority: 0.3 },
         ];
         staticPages.forEach(page => links.push({ ...page, url: `${sitemapBaseUrl}${page.url}` }));
-
-        // 2. Connections
         const connections = await Connection.find({}).select('_id updatedAt').lean();
-        connections.forEach(conn => {
-            links.push({
-                url: `${sitemapBaseUrl}/connections/${conn._id}`,
-                changefreq: 'weekly',
-                priority: 0.9,
-                lastmod: conn.updatedAt ? conn.updatedAt.toISOString() : new Date().toISOString(),
-            });
-        });
-
-        // 3. Public User Profiles
+        connections.forEach(conn => links.push({ url: `${sitemapBaseUrl}/connections/${conn._id}`, changefreq: 'weekly', priority: 0.9, lastmod: conn.updatedAt ? conn.updatedAt.toISOString() : new Date().toISOString() }));
         const users = await User.find({ isPrivate: false }).select('_id updatedAt').lean();
-        users.forEach(user => {
-            links.push({
-                url: `${sitemapBaseUrl}/users/${user._id}`,
-                changefreq: 'weekly',
-                priority: 0.7,
-                lastmod: user.updatedAt ? user.updatedAt.toISOString() : new Date().toISOString(),
-            });
-        });
-
-        // 4. Movie Detail Pages (Derived from Connections)
-        const movies = await Connection.aggregate([
-            { $match: { 'movie.title': { $exists: true, $ne: null }, 'movie.year': { $exists: true, $ne: null } } },
-            { $group: { _id: { title: '$movie.title', year: '$movie.year' }, lastmod: { $max: '$updatedAt' } } },
-            { $project: { _id: 0, title: '$_id.title', year: '$_id.year', lastmod: 1 } }
-        ]);
-        movies.forEach(movie => {
-            if (movie.title && movie.year) {
-                 links.push({
-                    url: `${sitemapBaseUrl}/movies/${encodeURIComponent(movie.title)}/${movie.year}`,
-                    changefreq: 'monthly',
-                    priority: 0.8,
-                    lastmod: movie.lastmod ? movie.lastmod.toISOString() : new Date().toISOString(),
-                });
-            }
-        });
-
-        // 5. Book Detail Pages (Derived from Connections)
-        const books = await Connection.aggregate([
-            { $match: { 'book.title': { $exists: true, $ne: null } } },
-            { $group: { _id: { title: '$book.title', author: '$book.author' }, lastmod: { $max: '$updatedAt' } } },
-            { $project: { _id: 0, title: '$_id.title', author: '$_id.author', lastmod: 1 } }
-        ]);
-        books.forEach(book => {
-            if (book.title) {
-                const bookAuthor = book.author ? encodeURIComponent(book.author) : 'Unknown';
-                links.push({
-                    url: `${sitemapBaseUrl}/books/${encodeURIComponent(book.title)}/${bookAuthor}`,
-                    changefreq: 'monthly',
-                    priority: 0.8,
-                    lastmod: book.lastmod ? book.lastmod.toISOString() : new Date().toISOString(),
-                });
-            }
-        });
-
+        users.forEach(user => links.push({ url: `${sitemapBaseUrl}/users/${user._id}`, changefreq: 'weekly', priority: 0.7, lastmod: user.updatedAt ? user.updatedAt.toISOString() : new Date().toISOString() }));
+        const movies = await Connection.aggregate([ { $match: { 'movie.title': { $exists: true, $ne: null }, 'movie.year': { $exists: true, $ne: null } } }, { $group: { _id: { title: '$movie.title', year: '$movie.year' }, lastmod: { $max: '$updatedAt' } } }, { $project: { _id: 0, title: '$_id.title', year: '$_id.year', lastmod: 1 } } ]);
+        movies.forEach(movie => { if (movie.title && movie.year) links.push({ url: `${sitemapBaseUrl}/movies/${encodeURIComponent(movie.title)}/${movie.year}`, changefreq: 'monthly', priority: 0.8, lastmod: movie.lastmod ? movie.lastmod.toISOString() : new Date().toISOString() }); });
+        const books = await Connection.aggregate([ { $match: { 'book.title': { $exists: true, $ne: null } } }, { $group: { _id: { title: '$book.title', author: '$book.author' }, lastmod: { $max: '$updatedAt' } } }, { $project: { _id: 0, title: '$_id.title', author: '$_id.author', lastmod: 1 } } ]);
+        books.forEach(book => { if (book.title) { const bookAuthor = book.author ? encodeURIComponent(book.author) : 'Unknown'; links.push({ url: `${sitemapBaseUrl}/books/${encodeURIComponent(book.title)}/${bookAuthor}`, changefreq: 'monthly', priority: 0.8, lastmod: book.lastmod ? book.lastmod.toISOString() : new Date().toISOString() }); } });
         const stream = new SitemapStream({ hostname: sitemapBaseUrl });
         const xml = await streamToPromise(Readable.from(links).pipe(stream));
         res.send(xml);
-
     } catch (error) {
         console.error('Sitemap generation error:', error);
         res.status(500).end();
     }
 });
-
 
 // --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
@@ -227,17 +158,39 @@ if (process.env.NODE_ENV === 'production') {
       console.error("Production mode: Client build folder not found at:", clientBuildPath);
   } else {
       console.log("Serving client build from:", clientBuildPath);
+
+      // === START: TEMPORARY DEBUG LOGGING ===
+      app.use((req, res, next) => {
+        if (req.originalUrl === '/logo192.png' || req.originalUrl === '/logo512.png') {
+          console.log(`DEBUG: Request for ${req.originalUrl} BEFORE express.static.`);
+          // Check if the file physically exists where express.static will look
+          const filePath = path.join(clientBuildPath, req.originalUrl.substring(1)); // remove leading /
+          if (fs.existsSync(filePath)) {
+            console.log(`DEBUG: File ${filePath} EXISTS on disk.`);
+          } else {
+            console.error(`DEBUG: File ${filePath} DOES NOT EXIST on disk.`);
+          }
+        }
+        next();
+      });
+      // === END: TEMPORARY DEBUG LOGGING ===
+
       app.use(express.static(clientBuildPath));
 
+      // === START: TEMPORARY DEBUG LOGGING FOR SPA FALLBACK ===
       app.get('*', (req, res, next) => {
            if (req.originalUrl === '/sitemap.xml') {
-               return next();
+               return next(); // Let sitemap handler take it
            }
-           // The new logger will capture this request's details.
-           // This console.log provides specific context for SPA fallbacks.
-           // console.log(`SPA Fallback: Serving index.html for ${req.originalUrl}`); // Optional: can be noisy
+           // If it's a request for our specific logos and it reached here, express.static didn't serve it
+           if (req.originalUrl === '/logo192.png' || req.originalUrl === '/logo512.png') {
+             console.error(`DEBUG: Request for ${req.originalUrl} FELL THROUGH to SPA fallback. express.static FAILED to serve it.`);
+           }
+           // Original SPA fallback logic
+           // console.log(`SPA Fallback: Serving index.html for ${req.originalUrl}`); // Optional
            res.sendFile(path.join(clientBuildPath, 'index.html'));
       });
+      // === END: TEMPORARY DEBUG LOGGING FOR SPA FALLBACK ===
   }
 } else {
      // Development mode: a simple message for the root.
@@ -248,7 +201,7 @@ if (process.env.NODE_ENV === 'production') {
 
 
 // --- Error Handling Middleware ---
-app.use(notFound); // Handles 404s for API routes or unhandled paths before SPA fallback
+app.use(notFound);
 
 app.use((err, req, res, next) => {
   const isCorsError = err.message === 'Not allowed by CORS';
