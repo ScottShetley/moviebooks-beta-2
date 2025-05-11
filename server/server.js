@@ -16,7 +16,6 @@ import connectDB from './config/db.js';
 import { notFound } from './middleware/errorMiddleware.js';
 
 // --- Import Mongoose Models (ensure paths are correct) ---
-// --- Import Mongoose Models (ensure paths are correct) ---
 import Connection from './models/Connection.js';
 import User from './models/User.js';
 
@@ -44,6 +43,11 @@ connectDB();
 
 const app = express();
 
+// --- Trust Proxy for Render ---
+// This is crucial for accurately obtaining the client's IP address
+// when running behind Render's reverse proxy.
+app.set('trust proxy', 1); // Trust the first hop (Render's proxy)
+
 // --- Determine CORS origin ---
 const allowedOrigin = process.env.NODE_ENV === 'production'
     ? process.env.CLIENT_ORIGIN_URL // Use CLIENT_ORIGIN_URL for production
@@ -68,37 +72,59 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// --- Helper function to calculate response time ---
+const getDurationInMilliseconds = (start) => {
+    const NS_PER_SEC = 1e9;
+    const NS_TO_MS = 1e-6;
+    const diff = process.hrtime(start);
+    return (diff[0] * NS_PER_SEC + diff[1]) * NS_TO_MS;
+};
+
+// --- NEW Detailed Request Logging Middleware ---
+app.use((req, res, next) => {
+    const start = process.hrtime();
+
+    // Capture details on request
+    const method = req.method;
+    const url = req.originalUrl;
+    // req.ip will now correctly use X-Forwarded-For due to 'trust proxy'
+    const ip = req.ip || (req.connection && req.connection.remoteAddress) || (req.socket && req.socket.remoteAddress) || (req.connection && req.connection.socket && req.connection.socket.remoteAddress) || 'N/A';
+    const userAgent = req.headers['user-agent'] || 'N/A';
+    const referer = req.headers['referer'] || req.headers['referrer'] || 'N/A';
+
+    // Log when the response finishes
+    res.on('finish', () => {
+        const durationInMilliseconds = getDurationInMilliseconds(start);
+        const statusCode = res.statusCode;
+        const timestamp = new Date().toISOString();
+
+        console.log(
+            `[${timestamp}] ${method} ${url} - STATUS ${statusCode} - IP ${ip} - User-Agent "${userAgent}" - Referer "${referer}" - ${durationInMilliseconds.toFixed(2)} ms`
+        );
+    });
+
+    next();
+});
+
 
 // --- Serve Static Files (Uploaded Images) ---
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-// --- Basic Logging Middleware ---
 if (process.env.NODE_ENV === 'development') {
     console.log("Running in Development mode.");
+    // The following express.static for /client/public was part of the old dev logging.
+    // If you still need to serve /client/public directly in dev (e.g., for assets not in build), keep it.
+    // Otherwise, if all dev assets are served by the React dev server, this might not be needed.
     const staticPublicPath = path.join(__dirname, '../client/public');
     app.use(express.static(staticPublicPath));
-    app.use((req, res, next) => {
-        if (!req.originalUrl.startsWith('/images/') && !req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/') && req.originalUrl !== '/sitemap.xml') {
-             console.log(`${req.method} ${req.originalUrl}`);
-        }
-        next();
-    });
-} else {
-     app.use((req, res, next) => {
-         if (!req.originalUrl.startsWith('/static/') && !req.originalUrl.startsWith('/uploads/') && req.originalUrl !== '/sitemap.xml') {
-            console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} (Origin: ${req.headers.origin || 'N/A'})`);
-         }
-        next();
-    });
 }
 
+
 // --- Sitemap Generation Route ---
-const sitemapBaseUrl = 'https://movie-books.com'; // Your production base URL
+const sitemapBaseUrl = process.env.CLIENT_ORIGIN_URL || 'https://movie-books.com'; // Use env var or default
 
 app.get('/sitemap.xml', async (req, res) => {
-    // Disable logging for sitemap requests in the console to keep it clean
-    // console.log('Sitemap requested');
     res.header('Content-Type', 'application/xml');
     const links = [];
 
@@ -143,7 +169,7 @@ app.get('/sitemap.xml', async (req, res) => {
             { $project: { _id: 0, title: '$_id.title', year: '$_id.year', lastmod: 1 } }
         ]);
         movies.forEach(movie => {
-            if (movie.title && movie.year) { // Ensure title and year are present
+            if (movie.title && movie.year) {
                  links.push({
                     url: `${sitemapBaseUrl}/movies/${encodeURIComponent(movie.title)}/${movie.year}`,
                     changefreq: 'monthly',
@@ -155,12 +181,12 @@ app.get('/sitemap.xml', async (req, res) => {
 
         // 5. Book Detail Pages (Derived from Connections)
         const books = await Connection.aggregate([
-            { $match: { 'book.title': { $exists: true, $ne: null } } }, // Author can be optional for grouping if needed, but good to have for URL
+            { $match: { 'book.title': { $exists: true, $ne: null } } },
             { $group: { _id: { title: '$book.title', author: '$book.author' }, lastmod: { $max: '$updatedAt' } } },
             { $project: { _id: 0, title: '$_id.title', author: '$_id.author', lastmod: 1 } }
         ]);
         books.forEach(book => {
-            if (book.title) { // Ensure title is present
+            if (book.title) {
                 const bookAuthor = book.author ? encodeURIComponent(book.author) : 'Unknown';
                 links.push({
                     url: `${sitemapBaseUrl}/books/${encodeURIComponent(book.title)}/${bookAuthor}`,
@@ -183,8 +209,6 @@ app.get('/sitemap.xml', async (req, res) => {
 
 
 // --- Mount API Routes ---
-// Place API routes *after* the sitemap route if you want /sitemap.xml to be handled by the new handler
-// and *before* the production static serving & SPA fallback.
 app.use('/api/auth', authRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/connections', connectionRoutes);
@@ -205,18 +229,18 @@ if (process.env.NODE_ENV === 'production') {
       console.log("Serving client build from:", clientBuildPath);
       app.use(express.static(clientBuildPath));
 
-      app.get('*', (req, res) => {
-           // Check if the request is for sitemap.xml, if so, let the sitemap handler deal with it
-           // This check is actually redundant if sitemap route is defined before this '*' route,
-           // but kept here as a safeguard or if route order changes.
+      app.get('*', (req, res, next) => {
            if (req.originalUrl === '/sitemap.xml') {
-               return next(); // Should be handled by the sitemap route defined earlier
+               return next();
            }
-           console.log(`SPA Fallback: Serving index.html for ${req.originalUrl}`);
+           // The new logger will capture this request's details.
+           // This console.log provides specific context for SPA fallbacks.
+           // console.log(`SPA Fallback: Serving index.html for ${req.originalUrl}`); // Optional: can be noisy
            res.sendFile(path.join(clientBuildPath, 'index.html'));
       });
   }
 } else {
+     // Development mode: a simple message for the root.
      app.get('/', (req, res) => {
         res.send(`MovieBooks API is running... (${process.env.NODE_ENV || 'development'} Mode)`);
       });
@@ -224,25 +248,30 @@ if (process.env.NODE_ENV === 'production') {
 
 
 // --- Error Handling Middleware ---
-app.use(notFound);
+app.use(notFound); // Handles 404s for API routes or unhandled paths before SPA fallback
 
 app.use((err, req, res, next) => {
   const isCorsError = err.message === 'Not allowed by CORS';
-  const statusCode = err.status || (res.statusCode === 200 ? 500 : res.statusCode);
+  let statusCode = res.statusCode !== 200 ? res.statusCode : (err.status || 500);
+  if (isCorsError && !err.status) statusCode = 403;
 
   console.error('--- DETAILED ERROR HANDLER ---');
-  console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  console.error('Status Code:', statusCode);
+  console.error(`[${new Date().toISOString()}] Encountered error for: ${req.method} ${req.originalUrl}`);
+  console.error('Status Code to be sent:', statusCode);
   console.error('Error Message:', err.message);
   if (!isCorsError && (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) {
        console.error('Stack Trace:', err.stack);
   }
   console.error('--- END DETAILED ERROR ---');
 
-  res.status(statusCode).json({
-    message: err.message,
-    stack: (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? err.stack : null,
-  });
+  if (!res.headersSent) {
+    res.status(statusCode).json({
+      message: err.message,
+      stack: (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? err.stack : null,
+    });
+  } else {
+    next(err);
+  }
 });
 
 
