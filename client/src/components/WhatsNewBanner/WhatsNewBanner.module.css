@@ -1,0 +1,55 @@
+/* client/src/components/WhatsNewBanner/WhatsNewBanner.module.css */
+.bannerContainer {
+    background-color: var(--color-accent);
+    /* Using existing accent color */
+    color: var(--color-text-on-accent);
+    /* Assuming you have a token for text on accent color */
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    /* Or 'sticky' if preferred within a specific layout */
+    bottom: 0;
+    /* Position at the bottom */
+    left: 0;
+    width: 100%;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    /* Ensure it's above most other content */
+    box-sizing: border-box;
+}
+
+.updateText {
+    margin: 0;
+    font-size: var(--font-size-small);
+}
+
+.learnMoreLink {
+    color: var(--color-text-on-accent);
+    /* Adjust if needed, or use a specific link color */
+    text-decoration: underline;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.learnMoreLink:hover {
+    text-decoration: none;
+}
+
+.dismissButton {
+    background: none;
+    border: none;
+    color: var(--color-text-on-accent);
+    /* Adjust if needed */
+    font-size: 1.5rem;
+    /* Makes the 'x' larger */
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
+    /* Helps center the 'x' visually */
+}
+
+.dismissButton:hover {
+    opacity: 0.8;
+}

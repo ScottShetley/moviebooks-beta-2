@@ -36,15 +36,18 @@ const UpdatesPage = () => {
       <section className={styles.updateSection}>
         <h2>✨ Latest Progress Highlights - {formattedDate} ✨</h2>
 
-        {/* --- NEW: Comment Notifications & UI Fix --- */}
+        {/* --- NEW: Comment Notifications, UI Fixes, and "What's New" Banner --- */}
         <section>
-          <h3 className={styles.subHeading}>💬 Comment Engagement & UI Polish</h3>
+          <h3 className={styles.subHeading}>💬 Engagement, UI Polish & Feature Announcements</h3>
           <ul>
             <li>
                 <strong>Comment Notifications:</strong> Users now receive a notification when another user comments on one of their connections. This helps keep connection creators engaged with discussions happening on their posts.
             </li>
             <li>
                 <strong>Improved Comment Area Visibility:</strong> Corrected the background color for the "Add your comment..." textarea and individual comment items on the Connection Detail page. Both now use a white background, making them much easier to see and interact with against the page's main background.
+            </li>
+            <li>
+                <strong>"What's New" Banner:</strong> Implemented a dismissible banner to inform users about recent key updates upon their first visit after a new version is deployed. The banner provides a brief highlight and a link to this Updates page for more details. It uses `localStorage` to remember if a user has dismissed it for the current update batch.
             </li>
           </ul>
         </section>

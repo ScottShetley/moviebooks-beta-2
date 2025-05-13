@@ -11,6 +11,10 @@
   /* Dark blue */
   --color-accent: #E3B23C;
   /* Gold */
+  /* --- NEW: Text color for use on accent backgrounds --- */
+  --color-text-on-accent: var(--color-secondary);
+  /* Using Dark Blue for text on Gold */
+  /* --- END NEW --- */
 
   --color-background: #F4F4F4;
   /* Main page background */

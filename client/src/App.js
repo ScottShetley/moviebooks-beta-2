@@ -1,5 +1,5 @@
 // client/src/App.js
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react'; // Added useEffect
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Header from './components/Layout/Header/Header';
@@ -20,25 +20,28 @@ import HelpPage from './pages/HelpPage/HelpPage';
 import EditProfilePage from './pages/EditProfilePage';
 import UpdatesPage from './pages/UpdatesPage';
 import SearchPage from './pages/SearchPage';
-
 import EditConnectionPage from './pages/EditConnectionPage';
 import ProfilePage from './pages/ProfilePage';
-// --- NEW: Import Follower and Following Pages ---
 import FollowersPage from './pages/FollowersPage';
 import FollowingPage from './pages/FollowingPage';
-// --- END NEW ---
-
-// --- NEW: Import the new UsersPage component ---
 import UsersPage from './pages/UsersPage';
-// --- END NEW ---
 
+// --- NEW: Import WhatsNewBanner ---
+import WhatsNewBanner from './components/WhatsNewBanner/WhatsNewBanner';
+// --- END NEW ---
 
 import './AppLayout.css'; // Import layout CSS
+
+// --- NEW: Define the current update batch ID and message ---
+// Increment this ID when new updates are deployed that you want to announce.
+const UPDATE_BATCH_ID = "20240328-comment-notifications-ui-fixes"; // Example: YYYYMMDD-feature-name
+const WHATS_NEW_MESSAGE = "New: Comment Notifications & UI improvements!";
+const LOCAL_STORAGE_KEY_WHATS_NEW = "dismissedUpdateBatchId";
+// --- END NEW ---
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading: authLoading } = useAuth();
-  // We wait for authLoading to be false before deciding to render children or redirect.
   if (authLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', fontSize: '1.2rem', color: 'var(--color-text-secondary)' }}>
@@ -46,24 +49,40 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-  // If not authenticated and not loading, redirect to login
   return user ? children : <Navigate to="/login" replace />;
 };
 
 
 // Main App Component
 function App() {
-  // --- DIAGNOSTIC LOG: Confirm App component is rendering and location ---
-  const location = useLocation(); // Get location here
-  console.log("[App Component Rendered]", { pathname: location.pathname, hash: location.hash, search: location.search });
-  // --- END DIAGNOSTIC LOG ---
+  const location = useLocation();
+  // console.log("[App Component Rendered]", { pathname: location.pathname, hash: location.hash, search: location.search }); // Kept for your diagnostic reference
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentFilterTag, setCurrentFilterTag] = useState(null);
+
+  // --- NEW: State for "What's New" banner ---
+  const [showWhatsNewBanner, setShowWhatsNewBanner] = useState(false);
+  // --- END NEW ---
+
+  // --- NEW: useEffect to check if "What's New" banner should be shown ---
+  useEffect(() => {
+    const dismissedBatchId = localStorage.getItem(LOCAL_STORAGE_KEY_WHATS_NEW);
+    if (dismissedBatchId !== UPDATE_BATCH_ID) {
+      setShowWhatsNewBanner(true);
+    }
+  }, []); // Empty dependency array: run once on component mount
+  // --- END NEW ---
+
+  // --- NEW: Handler to dismiss "What's New" banner ---
+  const handleDismissWhatsNew = () => {
+    localStorage.setItem(LOCAL_STORAGE_KEY_WHATS_NEW, UPDATE_BATCH_ID);
+    setShowWhatsNewBanner(false);
+  };
+  // --- END NEW ---
 
   const toggleSidebar = useCallback((forceState) => {
     setIsSidebarOpen(prev => typeof forceState === 'boolean' ? forceState : !prev);
@@ -74,24 +93,20 @@ function App() {
     if (location.pathname !== '/') {
       navigate('/');
     }
-    toggleSidebar(false); // Close sidebar after tag click
+    toggleSidebar(false);
   }, [navigate, toggleSidebar, location.pathname]);
 
   const clearTagFilter = useCallback(() => {
       setCurrentFilterTag(null);
   }, []);
 
-  // Show a global loading state while the initial authentication check is happening
   if (authLoading) {
     return (
       <>
-        {/* Minimal header while loading */}
         <Header isSidebarOpen={false} onSidebarToggle={() => {}} />
-        {/* Centered loading message */}
         <main className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: ' calc(100vh - var(--header-height) - var(--footer-height))' }}>
            Initializing Application...
         </main>
-        {/* Minimal footer */}
         <Footer />
       </>
     );
@@ -105,8 +120,6 @@ function App() {
       />
 
       <div className="appLayout">
-        {/* Added Overlay for closing sidebar on mobile */}
-        {/* Only show overlay if sidebar is open AND user is logged in (sidebar is only shown for logged-in users) */}
         {isSidebarOpen && user && (
             <div
                 className="sidebarOverlay"
@@ -115,7 +128,6 @@ function App() {
             ></div>
         )}
 
-        {/* Render Sidebar globally if user is logged in */}
         {user && (
            <Sidebar
              isOpen={isSidebarOpen}
@@ -125,11 +137,9 @@ function App() {
            />
          )}
 
-        {/* Main content area where routes are rendered */}
         <main className="mainContent">
           <Routes>
             {/* --- Public Routes --- */}
-            {/* The homepage element is conditional based on user */}
             <Route
               path="/"
               element={
@@ -141,7 +151,6 @@ function App() {
                   : <LandingPage />
               }
             />
-             {/* Redirect authenticated users away from login/signup */}
             <Route
                path="/login"
                element={!user ? <LoginPage /> : <Navigate to="/" replace />}
@@ -150,75 +159,61 @@ function App() {
                path="/signup"
                element={!user ? <SignupPage /> : <Navigate to="/" replace />}
             />
-
-            {/* --- NEW: Route for the Public Users List Page --- */}
-            {/* This route is public, doesn't require login */}
             <Route path="/all-users" element={<UsersPage />} />
-            {/* --- END NEW ROUTE --- */}
-
             <Route path="/movies/:movieId" element={<MovieDetailPage />} />
             <Route path="/books/:bookId" element={<BookDetailPage />} />
             <Route path="/connections/:connectionId" element={<ConnectionDetailPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/updates" element={<UpdatesPage />} />
-
-            {/* --- Route for Search Results Page --- */}
             <Route path="/search" element={<SearchPage />} />
-
 
             {/* --- Protected Routes (Require Login) --- */}
             <Route
                path="/create"
                element={<ProtectedRoute><CreateConnectionPage /></ProtectedRoute>}
             />
-             {/* Consolidated Profile Route: Handles /users (own via ID) and /users/:userId (other) */}
-            {/* *** THIS MUST MATCH LINKS GENERATED BY UserListItem and NotificationItem *** */}
-            {/* IMPORTANT: This route's path is /users/:userId? - the user LIST is at /all-users */}
             <Route
-              path="/users/:userId?" // Use /users/ to match links. userId param is optional (e.g., /users for own if no ID in params, but we mostly navigate with ID)
+              path="/users/:userId?"
               element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
             />
-             {/* Edit Profile Page - remains specific for logged-in user, typically no userId param in URL */}
-             {/* Uses /profile/edit route */}
             <Route
               path="/profile/edit"
               element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>}
             />
-             {/* Notifications Page - remains specific */}
             <Route
                path="/notifications"
                element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}
             />
-
-            {/* --- Route for Edit Connection Page --- */}
             <Route
                path="/connections/:connectionId/edit"
                element={<ProtectedRoute><EditConnectionPage /></ProtectedRoute>}
             />
-            {/* --- END NEW ROUTE --- */}
-
-            {/* --- Routes for Follower/Following Lists --- */}
-            {/* These are protected as they relate to a specific user's social network */}
             <Route
-               path="/users/:userId/followers" // Use /users/ to match links
+               path="/users/:userId/followers"
                element={<ProtectedRoute><FollowersPage /></ProtectedRoute>}
             />
              <Route
-               path="/users/:userId/following" // Use /users/ to match links
+               path="/users/:userId/following"
                element={<ProtectedRoute><FollowingPage /></ProtectedRoute>}
             />
-            {/* --- END Follower/Following Routes --- */}
 
-
-            {/* --- Not Found Route (Catch-all) --- */}
-            {/* This should be the last route */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>
 
       <Footer />
+
+      {/* --- NEW: Conditionally render the "What's New" Banner --- */}
+      {showWhatsNewBanner && (
+        <WhatsNewBanner
+          onDismiss={handleDismissWhatsNew}
+          updateMessage={WHATS_NEW_MESSAGE}
+          // updatesPageLink="/updates" // This is the default, but can be overridden if needed
+        />
+      )}
+      {/* --- END NEW --- */}
     </>
   );
 }
