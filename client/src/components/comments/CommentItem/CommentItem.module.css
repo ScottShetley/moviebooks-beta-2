@@ -1,7 +1,8 @@
 /* client/src/components/comments/CommentItem/CommentItem.module.css */
 
 .commentItem {
-    background-color: var(--color-white);
+    background-color: var(--color-card);
+    /* CHANGED: Was var(--color-white) */
     /* White background */
     border: 1px solid var(--color-border);
     /* Subtle border */
@@ -23,8 +24,10 @@
     /* Needed for absolute positioning of error message */
     /* --- NEW: Add a bottom border to separate items --- */
     border-bottom: 1px solid var(--color-grey-light);
+    /* Assuming --color-grey-light is defined in tokens.css or use var(--color-border-subtle) */
     /* Adjust margin-bottom slightly if needed, or keep as is */
     margin-bottom: var(--space-sm);
+    /* This is fine if you want space AND border */
     /* --- END NEW --- */
 }
 
@@ -47,6 +50,7 @@
     justify-content: center;
     align-items: center;
     border: 1px solid var(--color-grey-light);
+    /* Assuming --color-grey-light is defined or use var(--color-border-subtle) */
     /* Added a small border to avatar */
 }
 
@@ -106,6 +110,7 @@
     font-size: var(--font-size-xs);
     /* Even smaller font for timestamp */
     color: var(--color-text-lighter);
+    /* Assuming --color-text-lighter is defined in tokens.css or use var(--color-text-light) */
     /* Even lighter color */
     /* Remove margin-right added to authorLink */
     margin-right: 0;
@@ -128,6 +133,7 @@
     /* Small padding for icons */
     cursor: pointer;
     color: var(--color-icon);
+    /* Assuming --color-icon is defined in tokens.css or use var(--color-text-light) */
     /* Default icon color */
     font-size: var(--font-size-sm);
     /* Icon size */
@@ -167,6 +173,7 @@
 
 .actionButton[title="Delete comment"]:hover:not(:disabled) {
     color: var(--color-error-dark);
+    /* Assuming --color-error-dark is defined or use a darker shade of --color-error */
     background-color: rgba(var(--color-error-rgb), 0.1);
 }
 
@@ -202,6 +209,7 @@
     width: 100%;
     padding: var(--space-sm);
     border: 1px solid var(--color-grey-medium);
+    /* Assuming --color-grey-medium is defined or use var(--color-border) */
     border-radius: var(--border-radius-sm);
     font-size: var(--font-size-md);
     line-height: 1.5;
@@ -209,9 +217,12 @@
     box-sizing: border-box;
     font-family: inherit;
     color: var(--color-text-primary);
-    background-color: var(--color-white);
+    /* Assuming --color-text-primary is defined or use var(--color-text) */
+    background-color: var(--color-card);
+    /* CHANGED: Was var(--color-white) */
     /* White background */
     box-shadow: var(--shadow-input);
+    /* Assuming --shadow-input is defined or use var(--shadow-sm) */
     /* Subtle shadow */
     min-height: 80px;
     /* Minimum height for textarea */
@@ -245,14 +256,18 @@
 
 .saveButton:hover:not(:disabled) {
     background-color: rgba(var(--color-success-rgb), 0.1);
+    /* Assuming --color-success-rgb is defined */
     border-color: var(--color-success-dark);
+    /* Assuming --color-success-dark is defined */
     color: var(--color-success-dark);
+    /* Assuming --color-success-dark is defined */
 }
 
 .cancelButton {
     color: var(--color-text-secondary);
     /* Grey for cancel */
     border: 1px solid var(--color-grey-medium);
+    /* Assuming --color-grey-medium is defined */
     padding: var(--space-xxs) var(--space-sm);
     /* Add padding to cancel button */
     border-radius: var(--border-radius-sm);
@@ -263,8 +278,11 @@
 
 .cancelButton:hover:not(:disabled) {
     background-color: rgba(var(--color-text-secondary-rgb), 0.1);
+    /* Assuming --color-text-secondary-rgb is defined */
     border-color: var(--color-grey-dark);
+    /* Assuming --color-grey-dark is defined */
     color: var(--color-text-primary);
+    /* Assuming --color-text-primary is defined */
 }
 
 .editForm .actionButton {

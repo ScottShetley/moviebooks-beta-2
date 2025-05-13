@@ -36,7 +36,22 @@ const UpdatesPage = () => {
       <section className={styles.updateSection}>
         <h2>✨ Latest Progress Highlights - {formattedDate} ✨</h2>
 
-        {/* --- NEW: SEO Enhancements (Phase 2 - Technical SEO) --- */}
+        {/* --- NEW: Comment Notifications & UI Fix --- */}
+        <section>
+          <h3 className={styles.subHeading}>💬 Comment Engagement & UI Polish</h3>
+          <ul>
+            <li>
+                <strong>Comment Notifications:</strong> Users now receive a notification when another user comments on one of their connections. This helps keep connection creators engaged with discussions happening on their posts.
+            </li>
+            <li>
+                <strong>Improved Comment Area Visibility:</strong> Corrected the background color for the "Add your comment..." textarea and individual comment items on the Connection Detail page. Both now use a white background, making them much easier to see and interact with against the page's main background.
+            </li>
+          </ul>
+        </section>
+        {/* --- END NEW --- */}
+
+
+        {/* --- Previous: SEO Enhancements (Phase 2 - Technical SEO) --- */}
         <section>
           <h3 className={styles.subHeading}>🔍 SEO Enhancements (Phase 2 - Technical SEO)</h3>
           <ul>
@@ -65,7 +80,7 @@ const UpdatesPage = () => {
           </ul>
           <p>These technical SEO improvements help search engines better understand, crawl, and index Movie-Books content.</p>
         </section>
-        {/* --- END NEW --- */}
+        {/* --- END SEO --- */}
 
         {/* --- Production Launch & Stability (Previous Latest) --- */}
         <section>
@@ -154,14 +169,14 @@ const UpdatesPage = () => {
           <li><strong>Profile Enhancements (Phase 2):</strong> Further profile customization options.</li>
           <li><strong>Refined User Following UI:</strong> Improving the user interface and experience.</li>
           <li><strong>Profile Section Switching/Counts:</strong> Enhancing profile page with different sections and counts.</li>
-          {/* Dynamic Social Media Previews is now largely covered by OG tags, but specific image generation per connection could be a future thing */}
           <li><strong>Advanced Social Media Previews:</strong> Potentially generating unique preview images for shared connections.</li>
-          <li><strong>Refine Edit Connection:</strong> Add ability to explicitly remove existing screenshots, improve tag input, add more frontend validation.</li>
+          {/* <li><strong>Refine Edit Connection:</strong> Add ability to explicitly remove existing screenshots, improve tag input, add more frontend validation. (Partially done)</li> */}
           <li><strong>Advanced Search & Filtering:</strong> More powerful ways to search and filter.</li>
           <li><strong>Tagging System Improvements:</strong> Refining tag creation, management, and utilization.</li>
           <li><strong>User Roles & Permissions (Potential):</strong> Exploring different roles.</li>
           <li><strong>API Documentation (Potential):</strong> Publishing documentation for the API.</li>
           <li><strong>Long-Term SEO:</strong> Explore options like pre-rendering or SSR if client-side rendering proves insufficient for certain crawlers or social media previews.</li>
+          <li><strong>PWA Icon Resolution:</strong> Investigate and resolve the issue with <code>logo192.png</code> and <code>logo512.png</code> not serving correctly on Render, leading to blurry PWA icons (currently deferred).</li>
         </ul>
         <p>Your feedback is valuable! Let us know if you have suggestions for future features.</p>
       </section>
