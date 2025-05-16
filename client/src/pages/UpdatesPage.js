@@ -183,6 +183,16 @@ const UpdatesPage = () => {
         </ul>
         <p>Your feedback is valuable! Let us know if you have suggestions for future features.</p>
       </section>
+
+      {/* --- CONTACT US SECTION --- */}
+      <section className={`${styles.updateSection} ${styles.contactSection || ''}`}>
+        <h2>📬 Contact Us</h2>
+        <p>
+          Have questions, feedback, or suggestions? We'd love to hear from you!
+          Please reach out to us at: <a href="mailto:contact@movie-books.com">contact@movie-books.com</a>.
+        </p>
+      </section>
+
     </div>
   );
 };

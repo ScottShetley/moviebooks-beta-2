@@ -48,6 +48,11 @@ const AboutPage = () => {
                     feedback!
                 </p>
                 {/* Add more content as desired */}
+
+                <p className={styles.contactInfo || ''}> {/* Added an optional class for styling */}
+                    For any inquiries, feedback, or suggestions, please feel free to contact us at: <a href="mailto:contact@movie-books.com">contact@movie-books.com</a>.
+                </p>
+                
                 {/*
                 // Uncomment or add a footer if needed, updating the name here too:
                 // <footer className={styles.aboutFooter}>
